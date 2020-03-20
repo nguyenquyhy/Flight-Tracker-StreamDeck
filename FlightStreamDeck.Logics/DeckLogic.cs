@@ -30,6 +30,7 @@ namespace FlightStreamDeck.Logics
             client = new StreamDeckClient(args.ToArray(), loggerFactory.CreateLogger<StreamDeckClient>());
 
             client.RegisterAction("tech.flighttracker.streamdeck.master.activate", () => (ApMasterAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApMasterAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.heading.activate", () => (ApHdgAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApHdgAction)));
 
             client.KeyDown += Client_KeyDown;
 
