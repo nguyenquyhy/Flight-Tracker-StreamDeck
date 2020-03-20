@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StreamDeckSharp" Version="1.0.0" />
+    <PackageReference Include="StreamDeckLib" Version="0.4.480" />
   </ItemGroup>
 
 </Project>

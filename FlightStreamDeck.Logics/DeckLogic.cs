@@ -1,22 +1,28 @@
-﻿using OpenMacroBoard.SDK;
-using StreamDeckSharp;
+﻿using Microsoft.Extensions.Logging;
+using StreamDeckLib;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics
 {
     public class DeckLogic
     {
-        public event EventHandler KeyPressed;
+        private readonly ILoggerFactory loggerFactory;
 
-        public void Initialize()
+        public DeckLogic(ILoggerFactory loggerFactory)
         {
-            var device = StreamDeck.OpenDevice();
-            device.KeyStateChanged += Device_KeyStateChanged;
+            this.loggerFactory = loggerFactory;
         }
 
-        private void Device_KeyStateChanged(object sender, KeyEventArgs e)
+        public async Task InitializeAsync()
         {
-            KeyPressed?.Invoke(this, new EventArgs());
+            var args = Environment.GetCommandLineArgs().ToList();
+            args.RemoveAt(0);
+            loggerFactory.CreateLogger<DeckLogic>().LogInformation("Initialize with args: {args}", string.Join("|", args));
+            await ConnectionManager.Initialize(args.ToArray(), loggerFactory)
+                .RegisterAllActions(typeof(DeckLogic).Assembly)
+                .StartAsync();
         }
     }
 }

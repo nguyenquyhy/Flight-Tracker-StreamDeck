@@ -13,23 +13,12 @@ namespace FlightStreamDeck.AddOn
         public MainWindow(DeckLogic deckLogic)
         {
             InitializeComponent();
-
-            deckLogic.KeyPressed += DeckLogic_KeyPressed;
-
             this.deckLogic = deckLogic;
         }
 
-        private void DeckLogic_KeyPressed(object sender, System.EventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                MessageBox.Show(this, $"Key pressed");
-            });
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            deckLogic.Initialize();
+            await deckLogic.InitializeAsync();
         }
     }
 }
