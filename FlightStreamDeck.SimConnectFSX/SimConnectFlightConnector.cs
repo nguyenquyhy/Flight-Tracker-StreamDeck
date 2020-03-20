@@ -91,12 +91,17 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void ApOn()
         {
-            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.AUTOPILOT_ON, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            SendCommand(EVENTS.AUTOPILOT_ON);
         }
 
         public void ApOff()
         {
-            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.AUTOPILOT_OFF, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            SendCommand(EVENTS.AUTOPILOT_OFF);
+        }
+
+        private void SendCommand(EVENTS sendingEvent)
+        {
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
         }
 
         public void CloseConnection()
