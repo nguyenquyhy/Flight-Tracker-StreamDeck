@@ -5,7 +5,11 @@
       "Name": "AP Master",
       "States": [
         {
-          "Image": "Images/aircraft",
+          "Image": "Images/button",
+          "ShowTitle": false
+        },
+        {
+          "Image": "Images/button_active",
           "ShowTitle": false
         }
       ],
