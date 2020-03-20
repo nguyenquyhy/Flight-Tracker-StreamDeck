@@ -34,7 +34,7 @@ namespace FlightStreamDeck.Logics.Actions
                 // Turn off
                 flightConnector.ApOff();
             }
-            var image = imageLogic.DrawText(args.Payload.State == 0 ? "Images/button_active.png" : "Images/button.png", "AP");
+            var image = imageLogic.GetImage("AP", args.Payload.State == 0);
             await SetImageAsync(image);
         }
     }
