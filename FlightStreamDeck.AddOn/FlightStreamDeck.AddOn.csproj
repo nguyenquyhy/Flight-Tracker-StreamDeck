@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FlightStreamDeck.Logics\FlightStreamDeck.Logics.csproj" />
+    <ProjectReference Include="..\FlightStreamDeck.SimConnectFSX\FlightStreamDeck.SimConnectFSX.csproj" />
   </ItemGroup>
 
   <ItemGroup>

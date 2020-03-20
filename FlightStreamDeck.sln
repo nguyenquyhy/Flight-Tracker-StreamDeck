@@ -3,14 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlightStreamDeck.AddOn", "FlightStreamDeck.AddOn\FlightStreamDeck.AddOn.csproj", "{42B9357C-1C8F-4CE1-8004-87FD9BA5D1D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightStreamDeck.AddOn", "FlightStreamDeck.AddOn\FlightStreamDeck.AddOn.csproj", "{42B9357C-1C8F-4CE1-8004-87FD9BA5D1D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlightStreamDeck.Logics", "FlightStreamDeck.Logics\FlightStreamDeck.Logics.csproj", "{24CC2B15-4D4D-488C-8B42-B1B7F489BF33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightStreamDeck.Logics", "FlightStreamDeck.Logics\FlightStreamDeck.Logics.csproj", "{24CC2B15-4D4D-488C-8B42-B1B7F489BF33}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A33D2176-6EEB-4C53-8282-8130D42C0198}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlightStreamDeck.SimConnectFSX", "FlightStreamDeck.SimConnectFSX\FlightStreamDeck.SimConnectFSX.csproj", "{3354971D-4772-4364-843F-A3CF91BC71B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +28,10 @@ Global
 		{24CC2B15-4D4D-488C-8B42-B1B7F489BF33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24CC2B15-4D4D-488C-8B42-B1B7F489BF33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24CC2B15-4D4D-488C-8B42-B1B7F489BF33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3354971D-4772-4364-843F-A3CF91BC71B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3354971D-4772-4364-843F-A3CF91BC71B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3354971D-4772-4364-843F-A3CF91BC71B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3354971D-4772-4364-843F-A3CF91BC71B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

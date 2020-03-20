@@ -10,12 +10,13 @@ namespace FlightStreamDeck.AddOn
     {
         private readonly DeckLogic deckLogic;
 
-        public MainWindow()
+        public MainWindow(DeckLogic deckLogic)
         {
             InitializeComponent();
 
-            deckLogic = new DeckLogic();
             deckLogic.KeyPressed += DeckLogic_KeyPressed;
+
+            this.deckLogic = deckLogic;
         }
 
         private void DeckLogic_KeyPressed(object sender, System.EventArgs e)
