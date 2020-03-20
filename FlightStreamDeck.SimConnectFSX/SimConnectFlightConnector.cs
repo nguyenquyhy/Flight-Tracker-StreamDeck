@@ -82,6 +82,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_TOGGLE, "AP_HDG_HOLD");
         }
 
         public void Send(string message)
@@ -97,6 +98,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApOff()
         {
             SendCommand(EVENTS.AUTOPILOT_OFF);
+        }
+
+        public void ApHdgToggle()
+        {
+            SendCommand(EVENTS.AP_HDG_TOGGLE);
         }
 
         private void SendCommand(EVENTS sendingEvent)
@@ -259,6 +265,20 @@ namespace FlightStreamDeck.SimConnectFSX
                 SimConnect.SIMCONNECT_UNUSED);
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT HEADING LOCK DIR",
+                "Degrees",
+                SIMCONNECT_DATATYPE.FLOAT64,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT HEADING LOCK",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 "TRANSPONDER CODE:1",
                 "Hz",
                 SIMCONNECT_DATATYPE.INT32,
@@ -315,6 +335,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                     StallWarning = flightStatus.Value.StallWarning == 1,
                                     OverspeedWarning = flightStatus.Value.OverspeedWarning == 1,
                                     IsAutopilotOn = flightStatus.Value.IsAutopilotOn == 1,
+                                    ApHeading = flightStatus.Value.ApHdg,
+                                    IsApHdgOn = flightStatus.Value.IsApHdgOn == 1,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,
                                     FreqencyCom2 = flightStatus.Value.Com2,

@@ -28,7 +28,8 @@ namespace FlightStreamDeck.SimConnectFSX
     {
         MESSAGE_RECEIVED,
         AUTOPILOT_ON,
-        AUTOPILOT_OFF
+        AUTOPILOT_OFF,
+        AP_HDG_TOGGLE
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
@@ -71,6 +72,8 @@ namespace FlightStreamDeck.SimConnectFSX
         public int OverspeedWarning;
 
         public int IsAutopilotOn;
+        public double ApHdg;
+        public int IsApHdgOn;
 
         public int Transponder;
         public int Com1;

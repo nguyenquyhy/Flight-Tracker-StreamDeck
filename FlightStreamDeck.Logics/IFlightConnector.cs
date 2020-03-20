@@ -7,6 +7,7 @@ namespace FlightStreamDeck.Logics
         event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
         void ApOff();
         void ApOn();
+        void ApHdgToggle();
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
@@ -50,6 +51,10 @@ namespace FlightStreamDeck.Logics
         public bool OverspeedWarning { get; set; }
 
         public bool IsAutopilotOn { get; set; }
+
+        public double ApHeading { get; set; }
+        public bool IsApHdgOn { get; set; }
+
         public string Transponder { get; set; }
         public int FreqencyCom1 { get; set; }
         public int FreqencyCom2 { get; set; }
