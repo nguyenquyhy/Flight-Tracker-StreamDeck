@@ -29,7 +29,9 @@ namespace FlightStreamDeck.SimConnectFSX
         MESSAGE_RECEIVED,
         AUTOPILOT_ON,
         AUTOPILOT_OFF,
-        AP_HDG_TOGGLE
+        AP_HDG_TOGGLE,
+        AP_HDG_INC,
+        AP_HDG_DEC
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

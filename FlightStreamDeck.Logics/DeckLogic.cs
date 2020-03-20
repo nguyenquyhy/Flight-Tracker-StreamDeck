@@ -31,6 +31,8 @@ namespace FlightStreamDeck.Logics
 
             client.RegisterAction("tech.flighttracker.streamdeck.master.activate", () => (ApMasterAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApMasterAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.heading.activate", () => (ApHdgAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApHdgAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.heading.increase", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.heading.decrease", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
 
             client.KeyDown += Client_KeyDown;
 

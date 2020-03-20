@@ -83,6 +83,8 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_TOGGLE, "AP_HDG_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_DEC, "HEADING_BUG_DEC");
         }
 
         public void Send(string message)
@@ -103,6 +105,16 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApHdgToggle()
         {
             SendCommand(EVENTS.AP_HDG_TOGGLE);
+        }
+
+        public void ApHdgInc()
+        {
+            SendCommand(EVENTS.AP_HDG_INC);
+        }
+
+        public void ApHdgDec()
+        {
+            SendCommand(EVENTS.AP_HDG_DEC);
         }
 
         private void SendCommand(EVENTS sendingEvent)

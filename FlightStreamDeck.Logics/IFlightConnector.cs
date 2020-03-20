@@ -8,6 +8,8 @@ namespace FlightStreamDeck.Logics
         void ApOff();
         void ApOn();
         void ApHdgToggle();
+        void ApHdgInc();
+        void ApHdgDec();
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
