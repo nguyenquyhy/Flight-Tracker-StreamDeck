@@ -1,18 +1,26 @@
 ﻿using Microsoft.Extensions.Logging;
-using StreamDeckLib;
-using StreamDeckLib.Messages;
+using SharpDeck;
+using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
-    [ActionUuid(Uuid = "tech.flighttracker.streamdeck.master.activate")]
-    public class ApMasterAction : BaseStreamDeckAction
+    [StreamDeckAction("AP Master", "tech.flighttracker.streamdeck.master.activate")]
+    public class ApMasterAction : StreamDeckAction
     {
-        public override async Task OnKeyDown(StreamDeckEventPayload args)
-        {
-            Logger.LogInformation("Toggle AP Master. Current state: {state}.", args.payload.state);
+        private readonly ILogger<ApMasterAction> logger;
 
-            if (args.payload.state == 0)
+        public ApMasterAction(ILogger<ApMasterAction> logger)
+        {
+            this.logger = logger;
+        }
+
+        protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
+        {
+            logger.LogInformation("Toggle AP Master. Current state: {state}.", args.Payload.State);
+
+            if (args.Payload.State == 0)
             {
                 // Turn on
             }

@@ -16,9 +16,9 @@ namespace FlightStreamDeck.AddOn
             this.deckLogic = deckLogic;
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            await deckLogic.InitializeAsync();
+            deckLogic.Initialize();
         }
     }
 }
