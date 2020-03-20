@@ -41,7 +41,7 @@ namespace FlightStreamDeck.Logics
 
         private void Client_KeyDown(object sender, ActionEventArgs<KeyPayload> e)
         {
-             //client.SetTitleAsync(e.Context, "Hello world");
+            //client.SetTitleAsync(e.Context, "Hello world");
         }
     }
 }

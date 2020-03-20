@@ -11,11 +11,13 @@ namespace FlightStreamDeck.Logics.Actions
     {
         private readonly ILogger<ApMasterAction> logger;
         private readonly IFlightConnector flightConnector;
+        private readonly IImageLogic imageLogic;
 
-        public ApMasterAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector)
+        public ApMasterAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
+            this.imageLogic = imageLogic;
         }
 
         protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -32,6 +34,8 @@ namespace FlightStreamDeck.Logics.Actions
                 // Turn off
                 flightConnector.ApOff();
             }
+            var image = imageLogic.DrawText(args.Payload.State == 0 ? "Images/button_active.png" : "Images/button.png", "AP");
+            await SetImageAsync(image);
         }
     }
 }

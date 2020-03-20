@@ -64,6 +64,7 @@ namespace FlightStreamDeck.AddOn
             //services.AddSingleton(new UserPreferencesLoader("preferences.json"));
 
             services.AddTransient(typeof(MainWindow));
+            services.AddTransient<IImageLogic, ImageLogic>();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
