@@ -7,10 +7,6 @@
         {
           "Image": "Images/button",
           "ShowTitle": false
-        },
-        {
-          "Image": "Images/button_active",
-          "ShowTitle": false
         }
       ],
       "SupportedInMultiActions": false,

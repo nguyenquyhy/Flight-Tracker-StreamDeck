@@ -13,18 +13,32 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
 
+        private volatile bool isEnabled = false;
+
         public ApMasterAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
+            this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
+        }
+
+        private async void FlightConnector_AircraftStatusUpdated(object sender, AircraftStatusUpdatedEventArgs e)
+        {
+
+            if (e.AircraftStatus.IsAutopilotOn != isEnabled)
+            {
+                logger.LogInformation("Received AP update: {state}", e.AircraftStatus.IsAutopilotOn);
+                isEnabled = e.AircraftStatus.IsAutopilotOn;
+                await UpdateImage();
+            }
         }
 
         protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            logger.LogInformation("Toggle AP Master. Current state: {state}.", args.Payload.State);
+            logger.LogInformation("Toggle AP Master. Current state: {state}.", isEnabled);
 
-            if (args.Payload.State == 0)
+            if (!isEnabled)
             {
                 // Turn on
                 flightConnector.ApOn();
@@ -34,8 +48,11 @@ namespace FlightStreamDeck.Logics.Actions
                 // Turn off
                 flightConnector.ApOff();
             }
-            var image = imageLogic.GetImage("AP", args.Payload.State == 0);
-            await SetImageAsync(image);
+        }
+
+        private async Task UpdateImage()
+        {
+            await SetImageAsync(imageLogic.GetImage("AP", isEnabled));
         }
     }
 }
