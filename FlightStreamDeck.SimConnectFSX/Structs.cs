@@ -5,6 +5,7 @@ namespace FlightStreamDeck.SimConnectFSX
     enum GROUPID
     {
         FLAG = 2000000000,
+        MAX = 1,
     };
 
     enum DEFINITIONS
@@ -25,8 +26,9 @@ namespace FlightStreamDeck.SimConnectFSX
 
     internal enum EVENTS
     {
-        CONNECTED,
-        MESSAGE_RECEIVED
+        MESSAGE_RECEIVED,
+        AUTOPILOT_ON,
+        AUTOPILOT_OFF
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

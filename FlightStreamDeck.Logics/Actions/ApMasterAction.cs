@@ -10,10 +10,12 @@ namespace FlightStreamDeck.Logics.Actions
     public class ApMasterAction : StreamDeckAction
     {
         private readonly ILogger<ApMasterAction> logger;
+        private readonly IFlightConnector flightConnector;
 
-        public ApMasterAction(ILogger<ApMasterAction> logger)
+        public ApMasterAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector)
         {
             this.logger = logger;
+            this.flightConnector = flightConnector;
         }
 
         protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -23,10 +25,12 @@ namespace FlightStreamDeck.Logics.Actions
             if (args.Payload.State == 0)
             {
                 // Turn on
+                flightConnector.ApOn();
             }
             else
             {
                 // Turn off
+                flightConnector.ApOff();
             }
         }
     }

@@ -79,11 +79,24 @@ namespace FlightStreamDeck.SimConnectFSX
             RegisterFlightStatusDefinition();
 
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
+
+            simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
+            simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
         }
 
         public void Send(string message)
         {
             simconnect?.Text(SIMCONNECT_TEXT_TYPE.PRINT_BLACK, 3, EVENTS.MESSAGE_RECEIVED, message);
+        }
+
+        public void ApOn()
+        {
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.AUTOPILOT_ON, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+        }
+
+        public void ApOff()
+        {
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.AUTOPILOT_OFF, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
         }
 
         public void CloseConnection()

@@ -5,6 +5,8 @@ namespace FlightStreamDeck.Logics
     public interface IFlightConnector
     {
         event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
+        void ApOff();
+        void ApOn();
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
