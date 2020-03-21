@@ -3,17 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FlightStreamDeck.AddOn"
         mc:Ignorable="d" Loaded="Window_Loaded" Closed="Window_Closed"
         ShowInTaskbar="False" Visibility="Hidden"
-        Title="MainWindow" Height="300" Width="300">
+        Title="Flight Tracker Plugin" Height="300" Width="300">
     
     <Grid>
         <tb:TaskbarIcon 
             x:Name="myNotifyIcon"
             xmlns:tb="http://www.hardcodet.net/taskbar"
             ToolTipText="Flight Tracker Stream Deck"
-            IconSource="Images/button_active@2x.ico"
+            IconSource="icon.ico"
             />
     </Grid>
 </Window>

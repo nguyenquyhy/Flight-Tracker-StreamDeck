@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.FlightSimulator.SimConnect;
 using System;
-using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +47,10 @@ namespace FlightStreamDeck.SimConnectFSX
                             {
                                 this.simconnect.ReceiveMessage();
                             }
-                            catch { RecoverFromError(); }
+                            catch (Exception ex) 
+                            { 
+                                RecoverFromError(ex); 
+                            }
 
                             isHandled = true;
                         }
@@ -135,7 +138,14 @@ namespace FlightStreamDeck.SimConnectFSX
 
         private void SendCommand(EVENTS sendingEvent, uint data = 0)
         {
-            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, data, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            try
+            {
+                simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, data, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            }
+            catch (COMException ex) when (ex.Message == "0xC00000B0")
+            {
+                RecoverFromError(ex);
+            }
         }
 
         public void CloseConnection()
@@ -443,21 +453,15 @@ namespace FlightStreamDeck.SimConnectFSX
         void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
             logger.LogError("Exception received: {0}", data.dwException);
+            CloseConnection();
+            Closed?.Invoke(this, new EventArgs());
         }
 
-        private void RecoverFromError()
+        private void RecoverFromError(Exception exception)
         {
-            string errorMessage;
-            //Disconnect();
-
-            //bool wasSuccess = Connect(out errorMessage);
-
-            //// Start monitoring the user's SimObject. This will continuously monitor information
-            //// about the user's Stations attached to their SimObject.
-            //if (wasSuccess)
-            //{
-            //    StartMonitoring();
-            //}
+            logger.LogError(exception, "Exception received");
+            CloseConnection();
+            Closed?.Invoke(this, new EventArgs());
         }
     }
 }
