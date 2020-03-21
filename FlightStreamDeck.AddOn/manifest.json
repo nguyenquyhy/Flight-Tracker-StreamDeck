@@ -28,6 +28,19 @@
     },
     {
       "Icon": "Images/actionIcon",
+      "Name": "AP Altitude",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Activate/Deactivate AP heading",
+      "UUID": "tech.flighttracker.streamdeck.altitude.activate"
+    },
+    {
+      "Icon": "Images/actionIcon",
       "Name": "AP Heading Increase",
       "States": [
         {

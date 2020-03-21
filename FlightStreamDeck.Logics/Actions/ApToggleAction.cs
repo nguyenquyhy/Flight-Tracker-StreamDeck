@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using SharpDeck;
 using SharpDeck.Events.Received;
-using SharpDeck.Manifest;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
-    [StreamDeckAction("AP HDG", "tech.flighttracker.streamdeck.heading.activate")]
-    public class ApHdgAction : StreamDeckAction
+    public class ApToggleAction : StreamDeckAction
     {
         private readonly ILogger<ApMasterAction> logger;
         private readonly IFlightConnector flightConnector;
@@ -16,7 +14,7 @@ namespace FlightStreamDeck.Logics.Actions
         private volatile bool isEnabled = false;
         private volatile int currentHeading = 0;
 
-        public ApHdgAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public ApToggleAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
@@ -26,7 +24,6 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async void FlightConnector_AircraftStatusUpdated(object sender, AircraftStatusUpdatedEventArgs e)
         {
-
             if (e.AircraftStatus.ApHeading != currentHeading || e.AircraftStatus.IsApHdgOn != isEnabled)
             {
                 logger.LogInformation("Received HDG update: {state} {state2}", e.AircraftStatus.IsAutopilotOn, e.AircraftStatus.ApHeading);
