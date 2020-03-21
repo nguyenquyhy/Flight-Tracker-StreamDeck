@@ -64,6 +64,32 @@
       "SupportedInMultiActions": false,
       "Tooltip": "Decrease AP heading",
       "UUID": "tech.flighttracker.streamdeck.heading.decrease"
+    },
+    {
+      "Icon": "Images/plusIcon",
+      "Name": "AP Altitude Increase",
+      "States": [
+        {
+          "Image": "Images/plus",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Increase AP altitude",
+      "UUID": "tech.flighttracker.streamdeck.altitude.increase"
+    },
+    {
+      "Icon": "Images/minusIcon",
+      "Name": "AP Altitude Decrease",
+      "States": [
+        {
+          "Image": "Images/minus",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Decrease AP altitude",
+      "UUID": "tech.flighttracker.streamdeck.altitude.decrease"
     }
   ],
   "Author": "Nguyen Quy Hy",

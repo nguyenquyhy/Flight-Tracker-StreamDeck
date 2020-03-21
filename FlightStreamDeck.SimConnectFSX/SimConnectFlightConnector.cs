@@ -89,6 +89,10 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_DEC, "HEADING_BUG_DEC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_SET, "AP_ALT_VAR_SET_METRIC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_INC, "AP_ALT_VAR_INC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_DEC, "AP_ALT_VAR_DEC");
+            
         }
 
         public void Send(string message)
@@ -134,6 +138,21 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApHdgDec()
         {
             SendCommand(EVENTS.AP_HDG_DEC);
+        }
+
+        public void ApAltSet(int altitude)
+        {
+            SendCommand(EVENTS.AP_ALT_SET, 10000);
+        }
+
+        public void ApAltInc()
+        {
+            SendCommand(EVENTS.AP_ALT_INC);
+        }
+
+        public void ApAltDec()
+        {
+            SendCommand(EVENTS.AP_ALT_DEC);
         }
 
         private void SendCommand(EVENTS sendingEvent, uint data = 0)

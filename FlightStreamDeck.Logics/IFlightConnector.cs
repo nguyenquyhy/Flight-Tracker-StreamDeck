@@ -13,6 +13,9 @@ namespace FlightStreamDeck.Logics
         void ApHdgSet(uint heading);
         void ApHdgInc();
         void ApHdgDec();
+        void ApAltSet(int altitude);
+        void ApAltInc();
+        void ApAltDec();
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
