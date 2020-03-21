@@ -88,8 +88,8 @@ namespace FlightStreamDeck.Logics.Actions
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
             action = args.Action;
-            Process();
             stopwatch.Restart();
+            Process();
             timer.Start();
             return Task.CompletedTask;
 
