@@ -7,6 +7,7 @@ namespace FlightStreamDeck.Logics
         event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
         void ApOff();
         void ApOn();
+        void ApToggle();
         void ApHdgToggle();
         void ApAltToggle();
         void ApHdgSet(uint heading);

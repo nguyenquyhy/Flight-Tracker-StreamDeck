@@ -7,14 +7,14 @@ namespace FlightStreamDeck.Logics.Actions
 {
     public class ApToggleAction : StreamDeckAction
     {
-        private readonly ILogger<ApMasterAction> logger;
+        private readonly ILogger<ApToggleAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
 
         private AircraftStatus status = null;
         private string action;
 
-        public ApToggleAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public ApToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
@@ -28,6 +28,13 @@ namespace FlightStreamDeck.Logics.Actions
 
             switch (action)
             {
+                case "tech.flighttracker.streamdeck.master.activate":
+                    if (e.AircraftStatus.IsAutopilotOn != lastStatus?.IsAutopilotOn)
+                    {
+                        logger.LogInformation("Received AP update: {state}", e.AircraftStatus.IsAutopilotOn);
+                        await UpdateImage();
+                    }
+                    break;
                 case "tech.flighttracker.streamdeck.heading.activate":
                     if (e.AircraftStatus.ApHeading != lastStatus?.ApHeading || e.AircraftStatus.IsApHdgOn != lastStatus?.IsApHdgOn)
                     {
@@ -48,7 +55,7 @@ namespace FlightStreamDeck.Logics.Actions
         protected override Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
             action = args.Action;
-
+            status = null;
             this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
 
             return Task.CompletedTask;
@@ -57,27 +64,37 @@ namespace FlightStreamDeck.Logics.Actions
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
         {
             this.flightConnector.AircraftStatusUpdated -= FlightConnector_AircraftStatusUpdated;
+            status = null;
 
-            return base.OnWillDisappear(args);
+            return Task.CompletedTask;
         }
 
-        protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
+        protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (status != null)
+            var currentStatus = status;
+            if (currentStatus != null)
             {
                 switch (action)
                 {
+                    case "tech.flighttracker.streamdeck.master.activate":
+                        logger.LogInformation("Toggle AP Master. Current state: {state}.", currentStatus.IsAutopilotOn);
+                        flightConnector.ApToggle();
+                        break;
+
                     case "tech.flighttracker.streamdeck.heading.activate":
-                        logger.LogInformation("Toggle AP HDG. Current state: {state}.", status?.IsApHdgOn);
+                        logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
                         flightConnector.ApHdgToggle();
                         break;
+
                     case "tech.flighttracker.streamdeck.altitude.activate":
-                        logger.LogInformation("Toggle AP ALT. Current state: {state}.", status?.IsApAltOn);
+                        logger.LogInformation("Toggle AP ALT. Current state: {state}.", currentStatus.IsApAltOn);
                         flightConnector.ApAltToggle();
                         break;
 
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task UpdateImage()
@@ -87,6 +104,10 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 switch (action)
                 {
+                    case "tech.flighttracker.streamdeck.master.activate":
+                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn));
+                        break;
+
                     case "tech.flighttracker.streamdeck.heading.activate":
                         await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString()));
                         break;

@@ -29,6 +29,7 @@ namespace FlightStreamDeck.SimConnectFSX
         MESSAGE_RECEIVED,
         AUTOPILOT_ON,
         AUTOPILOT_OFF,
+        AUTOPILOT_TOGGLE,
         AP_HDG_TOGGLE,
         AP_ALT_TOGGLE,
         AP_HDG_SET,

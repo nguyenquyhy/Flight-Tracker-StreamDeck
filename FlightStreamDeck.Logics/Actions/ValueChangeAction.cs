@@ -11,7 +11,7 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("ValueChange", "tech.flighttracker.streamdeck.valueChange")]
     public class ValueChangeAction : StreamDeckAction
     {
-        private readonly ILogger<ApMasterAction> logger;
+        private readonly ILogger<ValueChangeAction> logger;
         private readonly IFlightConnector flightConnector;
 
         private int currentValue;
@@ -19,7 +19,7 @@ namespace FlightStreamDeck.Logics.Actions
         private string action;
         private Stopwatch stopwatch = new Stopwatch();
 
-        public ValueChangeAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector)
+        public ValueChangeAction(ILogger<ValueChangeAction> logger, IFlightConnector flightConnector)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
