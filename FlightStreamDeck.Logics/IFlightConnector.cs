@@ -8,6 +8,7 @@ namespace FlightStreamDeck.Logics
         void ApOff();
         void ApOn();
         void ApHdgToggle();
+        void ApHdgSet(uint heading);
         void ApHdgInc();
         void ApHdgDec();
     }
@@ -54,7 +55,7 @@ namespace FlightStreamDeck.Logics
 
         public bool IsAutopilotOn { get; set; }
 
-        public double ApHeading { get; set; }
+        public int ApHeading { get; set; }
         public bool IsApHdgOn { get; set; }
 
         public string Transponder { get; set; }

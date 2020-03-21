@@ -2,7 +2,9 @@
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
@@ -11,43 +13,94 @@ namespace FlightStreamDeck.Logics.Actions
     {
         private readonly ILogger<ApMasterAction> logger;
         private readonly IFlightConnector flightConnector;
-        private readonly IImageLogic imageLogic;
 
-        private volatile bool isEnabled = false;
-        private volatile int currentHeading = 0;
+        private int currentValue;
+        private Timer timer;
+        private string action;
+        private Stopwatch stopwatch = new Stopwatch();
 
-        public ValueChangeAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public ValueChangeAction(ILogger<ApMasterAction> logger, IFlightConnector flightConnector)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
-            this.imageLogic = imageLogic;
+            timer = new Timer { Interval = 300 };
+            timer.Elapsed += Timer_Elapsed;
+
+            this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
         }
 
-        protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            var actions = args.Action.Split('.');
+            Process();
+        }
+
+        private void FlightConnector_AircraftStatusUpdated(object sender, AircraftStatusUpdatedEventArgs e)
+        {
+            currentValue = e.AircraftStatus.ApHeading;
+        }
+
+        private void Process()
+        {
+            if (string.IsNullOrEmpty(action)) return;
+
+            var actions = action.Split('.');
 
             if (actions.Length < 2)
             {
                 return;
             }
 
-            var valueToChange = actions[actions.Length - 2];
-            bool isIncrease = actions[actions.Length - 1].Contains("inc");
-
+            var valueToChange = actions[^2];
+            var change = actions[^1];
 
             switch (valueToChange)
             {
                 case "heading":
-                    if (isIncrease) { flightConnector.ApHdgInc(); } else { flightConnector.ApHdgDec(); }
+                    var increment = stopwatch.ElapsedMilliseconds < 2000 ? 1 : 10;
+                    //var newHeading = currentValue + change switch
+                    //{
+                    //    "increase" => increment,
+                    //    "decrease" => -increment,
+                    //    _ => 0
+                    //};
+                    //flightConnector.ApHdgSet((uint)(newHeading + 360) % 360);
+                    // Workaround
+                    switch (change)
+                    {
+                        case "increase":
+                            for (int i = 0; i < increment; i++)
+                            {
+                                flightConnector.ApHdgInc();
+                            }
+                            break;
+                        case "decrease":
+                            for (int i = 0; i < increment; i++)
+                            {
+                                flightConnector.ApHdgDec();
+                            }
+                            break;
+                    }
+
                     break;
             }
+        }
+
+        protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
+        {
+            action = args.Action;
+            Process();
+            stopwatch.Restart();
+            timer.Start();
+            return Task.CompletedTask;
 
         }
 
-        private async Task UpdateImage()
+        protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
         {
-            await SetImageAsync(imageLogic.GetImage("HDG", isEnabled, currentHeading.ToString()));
+            action = null;
+            timer.Stop();
+            stopwatch.Stop();
+            return Task.CompletedTask;
         }
     }
 }

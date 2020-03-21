@@ -12,9 +12,7 @@ namespace FlightStreamDeck.SimConnectFSX
     {
         public event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
 
-        private List<string> atcConnectionIds = new List<string>();
-
-        private const int StatusDelayMilliseconds = 500;
+        private const int StatusDelayMilliseconds = 100;
 
         public event EventHandler Closed;
 
@@ -83,6 +81,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_TOGGLE, "AP_HDG_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_DEC, "HEADING_BUG_DEC");
         }
@@ -107,6 +106,11 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AP_HDG_TOGGLE);
         }
 
+        public void ApHdgSet(uint heading)
+        {
+            SendCommand(EVENTS.AP_HDG_SET, heading);
+        }
+
         public void ApHdgInc()
         {
             SendCommand(EVENTS.AP_HDG_INC);
@@ -117,9 +121,9 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AP_HDG_DEC);
         }
 
-        private void SendCommand(EVENTS sendingEvent)
+        private void SendCommand(EVENTS sendingEvent, uint data = 0)
         {
-            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, data, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
         }
 
         public void CloseConnection()
@@ -279,7 +283,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 "AUTOPILOT HEADING LOCK DIR",
                 "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
+                SIMCONNECT_DATATYPE.INT32,
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
 
@@ -364,14 +368,14 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        private async void Simconnect_OnRecvSystemState(SimConnect sender, SIMCONNECT_RECV_SYSTEM_STATE data)
+        private void Simconnect_OnRecvSystemState(SimConnect sender, SIMCONNECT_RECV_SYSTEM_STATE data)
         {
             switch (data.dwRequestID)
             {
                 case (int)DATA_REQUESTS.FLIGHT_PLAN:
                     if (!string.IsNullOrEmpty(data.szString))
                     {
-                        logger.LogInformation($"Receive flight plan {data.szString}");
+                        logger.LogInformation("Receive flight plan {flightPlan}", data.szString);
                     }
                     break;
             }
@@ -424,12 +428,6 @@ namespace FlightStreamDeck.SimConnectFSX
             //{
             //    StartMonitoring();
             //}
-        }
-
-        public void RequestFlightPlan(string connectionId)
-        {
-            atcConnectionIds.Add(connectionId);
-            simconnect.RequestDataOnSimObjectType(DATA_REQUESTS.AIRCRAFT_DATA, DEFINITIONS.AircraftData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
         }
     }
 }
