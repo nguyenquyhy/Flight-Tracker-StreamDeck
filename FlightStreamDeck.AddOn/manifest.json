@@ -1,7 +1,7 @@
 ﻿{
   "Actions": [
     {
-      "Icon": "Images/actionIcon",
+      "Icon": "Images/toggleIcon",
       "Name": "AP Master",
       "States": [
         {
@@ -14,7 +14,7 @@
       "UUID": "tech.flighttracker.streamdeck.master.activate"
     },
     {
-      "Icon": "Images/actionIcon",
+      "Icon": "Images/toggleIcon",
       "Name": "AP Heading",
       "States": [
         {
@@ -23,11 +23,11 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Activate/Deactivate AP heading",
+      "Tooltip": "Activate/Deactivate AP heading hold",
       "UUID": "tech.flighttracker.streamdeck.heading.activate"
     },
     {
-      "Icon": "Images/actionIcon",
+      "Icon": "Images/toggleIcon",
       "Name": "AP Altitude",
       "States": [
         {
@@ -36,11 +36,11 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Activate/Deactivate AP heading",
+      "Tooltip": "Activate/Deactivate AP altitude hold",
       "UUID": "tech.flighttracker.streamdeck.altitude.activate"
     },
     {
-      "Icon": "Images/actionIcon",
+      "Icon": "Images/plusIcon",
       "Name": "AP Heading Increase",
       "States": [
         {
@@ -53,7 +53,7 @@
       "UUID": "tech.flighttracker.streamdeck.heading.increase"
     },
     {
-      "Icon": "Images/actionIcon",
+      "Icon": "Images/minusIcon",
       "Name": "AP Heading Decrease",
       "States": [
         {
