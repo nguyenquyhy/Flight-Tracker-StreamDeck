@@ -30,6 +30,7 @@ namespace FlightStreamDeck.SimConnectFSX
         AUTOPILOT_ON,
         AUTOPILOT_OFF,
         AP_HDG_TOGGLE,
+        AP_ALT_TOGGLE,
         AP_HDG_SET,
         AP_HDG_INC,
         AP_HDG_DEC
@@ -75,8 +76,10 @@ namespace FlightStreamDeck.SimConnectFSX
         public int OverspeedWarning;
 
         public int IsAutopilotOn;
-        public int ApHdg;
         public int IsApHdgOn;
+        public int ApHdg;
+        public int IsApAltOn;
+        public int ApAlt;
 
         public int Transponder;
         public int Com1;

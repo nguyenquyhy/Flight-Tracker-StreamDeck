@@ -8,6 +8,7 @@ namespace FlightStreamDeck.Logics
         void ApOff();
         void ApOn();
         void ApHdgToggle();
+        void ApAltToggle();
         void ApHdgSet(uint heading);
         void ApHdgInc();
         void ApHdgDec();
@@ -57,6 +58,9 @@ namespace FlightStreamDeck.Logics
 
         public int ApHeading { get; set; }
         public bool IsApHdgOn { get; set; }
+
+        public int ApAltitude { get; set; }
+        public bool IsApAltOn { get; set; }
 
         public string Transponder { get; set; }
         public int FreqencyCom1 { get; set; }

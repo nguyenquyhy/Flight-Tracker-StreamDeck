@@ -81,6 +81,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_TOGGLE, "AP_HDG_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_TOGGLE, "AP_ALT_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_DEC, "HEADING_BUG_DEC");
@@ -104,6 +105,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApHdgToggle()
         {
             SendCommand(EVENTS.AP_HDG_TOGGLE);
+        }
+
+        public void ApAltToggle()
+        {
+            SendCommand(EVENTS.AP_ALT_TOGGLE);
         }
 
         public void ApHdgSet(uint heading)
@@ -273,16 +279,11 @@ namespace FlightStreamDeck.SimConnectFSX
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
 
+            #region Autopilot
+
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 "AUTOPILOT MASTER",
                 "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT HEADING LOCK DIR",
-                "Degrees",
                 SIMCONNECT_DATATYPE.INT32,
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
@@ -293,6 +294,27 @@ namespace FlightStreamDeck.SimConnectFSX
                 SIMCONNECT_DATATYPE.INT32,
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT HEADING LOCK DIR",
+                "Degrees",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT ALTITUDE LOCK",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT ALTITUDE LOCK VAR",
+                "Feet",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            #endregion
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 "TRANSPONDER CODE:1",
@@ -351,8 +373,10 @@ namespace FlightStreamDeck.SimConnectFSX
                                     StallWarning = flightStatus.Value.StallWarning == 1,
                                     OverspeedWarning = flightStatus.Value.OverspeedWarning == 1,
                                     IsAutopilotOn = flightStatus.Value.IsAutopilotOn == 1,
-                                    ApHeading = flightStatus.Value.ApHdg,
                                     IsApHdgOn = flightStatus.Value.IsApHdgOn == 1,
+                                    ApHeading = flightStatus.Value.ApHdg,
+                                    IsApAltOn = flightStatus.Value.IsApAltOn == 1,
+                                    ApAltitude = flightStatus.Value.ApAlt,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,
                                     FreqencyCom2 = flightStatus.Value.Com2,
