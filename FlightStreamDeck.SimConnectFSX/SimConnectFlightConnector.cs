@@ -85,6 +85,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_TOGGLE, "AP_MASTER");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_TOGGLE, "AP_HDG_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_NAV_TOGGLE, "AP_NAV1_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_TOGGLE, "AP_ALT_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
@@ -118,6 +119,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApHdgToggle()
         {
             SendCommand(EVENTS.AP_HDG_TOGGLE);
+        }
+
+        public void ApNavToggle()
+        {
+            SendCommand(EVENTS.AP_NAV_TOGGLE);
         }
 
         public void ApAltToggle()
@@ -337,6 +343,13 @@ namespace FlightStreamDeck.SimConnectFSX
                 SimConnect.SIMCONNECT_UNUSED);
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT NAV1 LOCK",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 "AUTOPILOT ALTITUDE LOCK",
                 "number",
                 SIMCONNECT_DATATYPE.INT32,
@@ -410,6 +423,7 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsAutopilotOn = flightStatus.Value.IsAutopilotOn == 1,
                                     IsApHdgOn = flightStatus.Value.IsApHdgOn == 1,
                                     ApHeading = flightStatus.Value.ApHdg,
+                                    IsApNavOn = flightStatus.Value.IsApNavOn == 1,
                                     IsApAltOn = flightStatus.Value.IsApAltOn == 1,
                                     ApAltitude = flightStatus.Value.ApAlt,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
@@ -471,7 +485,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
         void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
-            logger.LogError("Exception received: {0}", data.dwException);
+            logger.LogError("Exception received: {0}", (SIMCONNECT_EXCEPTION)data.dwException);
             CloseConnection();
             Closed?.Invoke(this, new EventArgs());
         }

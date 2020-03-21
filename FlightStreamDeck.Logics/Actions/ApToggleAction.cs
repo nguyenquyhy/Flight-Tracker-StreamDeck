@@ -42,6 +42,13 @@ namespace FlightStreamDeck.Logics.Actions
                         await UpdateImage();
                     }
                     break;
+                case "tech.flighttracker.streamdeck.nav.activate":
+                    if (e.AircraftStatus.IsApNavOn != lastStatus?.IsApNavOn)
+                    {
+                        logger.LogInformation("Received HDG update: {IsApNavOn}", e.AircraftStatus.IsApNavOn);
+                        await UpdateImage();
+                    }
+                    break;
                 case "tech.flighttracker.streamdeck.altitude.activate":
                     if (e.AircraftStatus.ApAltitude != lastStatus?.ApAltitude || e.AircraftStatus.IsApAltOn != lastStatus?.IsApAltOn)
                     {
@@ -86,6 +93,11 @@ namespace FlightStreamDeck.Logics.Actions
                         flightConnector.ApHdgToggle();
                         break;
 
+                    case "tech.flighttracker.streamdeck.nav.activate":
+                        logger.LogInformation("Toggle AP NAV. Current state: {state}.", currentStatus.IsApNavOn);
+                        flightConnector.ApNavToggle();
+                        break;
+
                     case "tech.flighttracker.streamdeck.altitude.activate":
                         logger.LogInformation("Toggle AP ALT. Current state: {state}.", currentStatus.IsApAltOn);
                         flightConnector.ApAltToggle();
@@ -110,6 +122,10 @@ namespace FlightStreamDeck.Logics.Actions
 
                     case "tech.flighttracker.streamdeck.heading.activate":
                         await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString()));
+                        break;
+
+                    case "tech.flighttracker.streamdeck.nav.activate":
+                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn));
                         break;
 
                     case "tech.flighttracker.streamdeck.altitude.activate":

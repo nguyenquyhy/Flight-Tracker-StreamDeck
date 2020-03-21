@@ -13,6 +13,7 @@
       "Tooltip": "Activate/Deactivate AP",
       "UUID": "tech.flighttracker.streamdeck.master.activate"
     },
+
     {
       "Icon": "Images/toggleIcon",
       "Name": "AP Heading",
@@ -28,6 +29,19 @@
     },
     {
       "Icon": "Images/toggleIcon",
+      "Name": "AP Nav",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Activate/Deactivate AP Nav mode",
+      "UUID": "tech.flighttracker.streamdeck.nav.activate"
+    },
+    {
+      "Icon": "Images/toggleIcon",
       "Name": "AP Altitude",
       "States": [
         {
@@ -39,6 +53,7 @@
       "Tooltip": "Activate/Deactivate AP altitude hold",
       "UUID": "tech.flighttracker.streamdeck.altitude.activate"
     },
+
     {
       "Icon": "Images/plusIcon",
       "Name": "AP Heading Increase",
