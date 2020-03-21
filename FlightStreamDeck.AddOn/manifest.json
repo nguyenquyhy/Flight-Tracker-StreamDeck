@@ -18,7 +18,7 @@
       "Name": "AP Heading",
       "States": [
         {
-          "Image": "Images/aircraft",
+          "Image": "Images/button",
           "ShowTitle": false
         }
       ],

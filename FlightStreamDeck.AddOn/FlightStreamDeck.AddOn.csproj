@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\button%402x.ico" />
+    <None Remove="Images\button_active%402x.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf.NetCore" Version="1.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.2" />
@@ -22,6 +28,11 @@
   <ItemGroup>
     <ProjectReference Include="..\FlightStreamDeck.Logics\FlightStreamDeck.Logics.csproj" />
     <ProjectReference Include="..\FlightStreamDeck.SimConnectFSX\FlightStreamDeck.SimConnectFSX.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\button@2x.ico" />
+    <Resource Include="Images\button_active@2x.ico" />
   </ItemGroup>
 
   <ItemGroup>
