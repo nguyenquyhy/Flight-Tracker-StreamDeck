@@ -86,6 +86,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_TOGGLE, "AP_MASTER");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_TOGGLE, "AP_HDG_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_NAV_TOGGLE, "AP_NAV1_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_APR_TOGGLE, "AP_APR_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_TOGGLE, "AP_ALT_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
@@ -124,6 +125,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApNavToggle()
         {
             SendCommand(EVENTS.AP_NAV_TOGGLE);
+        }
+
+        public void ApAprToggle()
+        {
+            SendCommand(EVENTS.AP_APR_TOGGLE);
         }
 
         public void ApAltToggle()
@@ -350,6 +356,13 @@ namespace FlightStreamDeck.SimConnectFSX
                 SimConnect.SIMCONNECT_UNUSED);
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT APPROACH HOLD",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 "AUTOPILOT ALTITUDE LOCK",
                 "number",
                 SIMCONNECT_DATATYPE.INT32,
@@ -424,6 +437,7 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsApHdgOn = flightStatus.Value.IsApHdgOn == 1,
                                     ApHeading = flightStatus.Value.ApHdg,
                                     IsApNavOn = flightStatus.Value.IsApNavOn == 1,
+                                    IsApAprOn = flightStatus.Value.IsApAprOn == 1,
                                     IsApAltOn = flightStatus.Value.IsApAltOn == 1,
                                     ApAltitude = flightStatus.Value.ApAlt,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),

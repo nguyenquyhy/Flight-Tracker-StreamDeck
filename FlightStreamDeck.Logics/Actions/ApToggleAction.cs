@@ -45,7 +45,14 @@ namespace FlightStreamDeck.Logics.Actions
                 case "tech.flighttracker.streamdeck.nav.activate":
                     if (e.AircraftStatus.IsApNavOn != lastStatus?.IsApNavOn)
                     {
-                        logger.LogInformation("Received HDG update: {IsApNavOn}", e.AircraftStatus.IsApNavOn);
+                        logger.LogInformation("Received NAV update: {IsApNavOn}", e.AircraftStatus.IsApNavOn);
+                        await UpdateImage();
+                    }
+                    break;
+                case "tech.flighttracker.streamdeck.approach.activate":
+                    if (e.AircraftStatus.IsApAprOn != lastStatus?.IsApAprOn)
+                    {
+                        logger.LogInformation("Received APR update: {IsApAprOn}", e.AircraftStatus.IsApAprOn);
                         await UpdateImage();
                     }
                     break;
@@ -98,6 +105,11 @@ namespace FlightStreamDeck.Logics.Actions
                         flightConnector.ApNavToggle();
                         break;
 
+                    case "tech.flighttracker.streamdeck.approach.activate":
+                        logger.LogInformation("Toggle AP APR. Current state: {state}.", currentStatus.IsApAprOn);
+                        flightConnector.ApAprToggle();
+                        break;
+
                     case "tech.flighttracker.streamdeck.altitude.activate":
                         logger.LogInformation("Toggle AP ALT. Current state: {state}.", currentStatus.IsApAltOn);
                         flightConnector.ApAltToggle();
@@ -126,6 +138,10 @@ namespace FlightStreamDeck.Logics.Actions
 
                     case "tech.flighttracker.streamdeck.nav.activate":
                         await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn));
+                        break;
+
+                    case "tech.flighttracker.streamdeck.approach.activate":
+                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn));
                         break;
 
                     case "tech.flighttracker.streamdeck.altitude.activate":

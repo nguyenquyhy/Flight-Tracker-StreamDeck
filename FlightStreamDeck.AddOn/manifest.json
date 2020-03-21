@@ -42,6 +42,19 @@
     },
     {
       "Icon": "Images/toggleIcon",
+      "Name": "AP Approach",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Activate/Deactivate AP Approach mode",
+      "UUID": "tech.flighttracker.streamdeck.approach.activate"
+    },
+    {
+      "Icon": "Images/toggleIcon",
       "Name": "AP Altitude",
       "States": [
         {

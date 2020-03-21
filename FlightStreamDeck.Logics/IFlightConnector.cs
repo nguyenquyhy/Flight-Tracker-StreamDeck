@@ -10,6 +10,7 @@ namespace FlightStreamDeck.Logics
         void ApToggle();
         void ApHdgToggle();
         void ApNavToggle();
+        void ApAprToggle();
         void ApAltToggle();
         void ApHdgSet(uint heading);
         void ApHdgInc();
@@ -65,6 +66,8 @@ namespace FlightStreamDeck.Logics
         public int ApHeading { get; set; }
 
         public bool IsApNavOn { get; set; }
+
+        public bool IsApAprOn { get; set; }
 
         public bool IsApAltOn { get; set; }
         public int ApAltitude { get; set; }
