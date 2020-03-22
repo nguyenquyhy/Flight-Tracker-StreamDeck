@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FlightStreamDeck.Core\FlightStreamDeck.Core.csproj" />
     <ProjectReference Include="..\FlightStreamDeck.Logics\FlightStreamDeck.Logics.csproj" />
   </ItemGroup>
 

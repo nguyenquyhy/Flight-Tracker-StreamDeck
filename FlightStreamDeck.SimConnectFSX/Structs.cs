@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace FlightStreamDeck.SimConnectFSX
 {
@@ -11,7 +12,8 @@ namespace FlightStreamDeck.SimConnectFSX
     enum DEFINITIONS
     {
         AircraftData,
-        FlightStatus
+        FlightStatus,
+        GenericData
     }
 
     internal enum DATA_REQUESTS
@@ -21,10 +23,11 @@ namespace FlightStreamDeck.SimConnectFSX
         AIRCRAFT_DATA,
         FLIGHT_STATUS,
         ENVIRONMENT_DATA,
-        FLIGHT_PLAN
+        FLIGHT_PLAN,
+        TOGGLE_VALUE_DATA
     }
 
-    internal enum EVENTS
+    public enum EVENTS
     {
         MESSAGE_RECEIVED,
         AUTOPILOT_ON,
@@ -92,5 +95,16 @@ namespace FlightStreamDeck.SimConnectFSX
         public int Transponder;
         public int Com1;
         public int Com2;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+    struct GenericValuesStruct
+    {
+        unsafe public fixed ulong Data[64];
+
+        unsafe public ulong Get(int index)
+        {
+            return Data[index];
+        }
     }
 }
