@@ -31,6 +31,8 @@ namespace FlightStreamDeck.AddOn
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            deckLogic.Initialize();
+
             // Initialize SimConnect
             if (flightConnector is SimConnectFlightConnector simConnect)
             {
@@ -74,8 +76,6 @@ namespace FlightStreamDeck.AddOn
                     App.Current.Shutdown(-1);
                 }
             }
-
-            deckLogic.Initialize();
         }
 
         private async Task InitializeSimConnectAsync(SimConnectFlightConnector simConnect)

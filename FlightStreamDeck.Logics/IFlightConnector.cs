@@ -1,10 +1,13 @@
-﻿using System;
+﻿using FlightStreamDeck.Core;
+using System;
+using System.Collections.Generic;
 
 namespace FlightStreamDeck.Logics
 {
     public interface IFlightConnector
     {
         event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
+        event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
         void ApOff();
         void ApOn();
         void ApToggle();
@@ -18,6 +21,13 @@ namespace FlightStreamDeck.Logics
         void ApAltSet(int altitude);
         void ApAltInc();
         void ApAltDec();
+
+        void Toggle(TOGGLE_EVENT toggleAction);
+
+        void RegisterToggleEvent(TOGGLE_EVENT toggleAction);
+
+        void RegisterSimValue(TOGGLE_VALUE simValue);
+        void DeRegisterSimValue(TOGGLE_VALUE simValue);
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
@@ -28,6 +38,16 @@ namespace FlightStreamDeck.Logics
         }
 
         public AircraftStatus AircraftStatus { get; }
+    }
+
+    public class ToggleValueUpdatedEventArgs : EventArgs
+    {
+        public ToggleValueUpdatedEventArgs(Dictionary<TOGGLE_VALUE, string> toggleValueStatus)
+        {
+            GenericValueStatus = toggleValueStatus;
+        }
+
+        public Dictionary<TOGGLE_VALUE, string> GenericValueStatus { get; }
     }
 
     public class AircraftStatus

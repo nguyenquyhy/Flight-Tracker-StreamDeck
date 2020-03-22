@@ -1,7 +1,9 @@
-﻿using FlightStreamDeck.Logics;
+﻿using FlightStreamDeck.Core;
+using FlightStreamDeck.Logics;
 using Microsoft.Extensions.Logging;
 using Microsoft.FlightSimulator.SimConnect;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,10 +13,16 @@ namespace FlightStreamDeck.SimConnectFSX
     public class SimConnectFlightConnector : IFlightConnector
     {
         public event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
+        public event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
 
         private const int StatusDelayMilliseconds = 100;
 
         public event EventHandler Closed;
+
+        private List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
+        private List<TOGGLE_VALUE> genericValues = new List<TOGGLE_VALUE>();
+
+        private readonly object lockLists = new object();
 
         // User-defined win32 event
         const int WM_USER_SIMCONNECT = 0x0402;
@@ -78,6 +86,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
             simconnect.OnRecvSimobjectDataBytype += Simconnect_OnRecvSimobjectDataBytypeAsync;
             RegisterFlightStatusDefinition();
+            RegisterGenericValues(true);
 
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
 
@@ -172,6 +181,18 @@ namespace FlightStreamDeck.SimConnectFSX
             try
             {
                 simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, data, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            }
+            catch (COMException ex) when (ex.Message == "0xC00000B0")
+            {
+                RecoverFromError(ex);
+            }
+        }
+
+        private void SendGenericCommand(TOGGLE_EVENT sendingEvent)
+        {
+            try
+            {
+                simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
             }
             catch (COMException ex) when (ex.Message == "0xC00000B0")
             {
@@ -452,6 +473,40 @@ namespace FlightStreamDeck.SimConnectFSX
                         }
                     }
                     break;
+
+                case (uint)DATA_REQUESTS.TOGGLE_VALUE_DATA:
+                    {
+                        var result = new Dictionary<TOGGLE_VALUE, string>();
+                        lock (lockLists)
+                        {
+                            if (data.dwDefineCount != genericValues.Count)
+                            {
+                                logger.LogError("Incompaitable count");
+                                return;
+                            }
+
+                            var dataArray = data.dwData[0] as GenericValuesStruct?;
+
+                            if (!dataArray.HasValue)
+                            {
+                                logger.LogError("Invalid data received");
+                                return;
+                            }
+
+                            logger.LogInformation("Copy arrays {1} {2} {3}", genericValues.Count, dataArray, data.dwDefineCount);
+
+                            for (int i = 0; i < data.dwDefineCount; i++)
+                            {
+                                logger.LogInformation("Adding index {1} => {2} {3} to results", i, genericValues[i], dataArray.ToString());
+                                var toggleEntry = genericValues[i];
+                                ulong toggleValue = dataArray.Value.Get(i);
+                                result.Add(genericValues[i], toggleValue.ToString());
+                            }
+                        }
+
+                        GenericValuesUpdated?.Invoke(this, new ToggleValueUpdatedEventArgs(result));
+                    }
+                    break;
             }
         }
 
@@ -483,6 +538,11 @@ namespace FlightStreamDeck.SimConnectFSX
                         await Task.Delay(StatusDelayMilliseconds);
                         cts?.Token.ThrowIfCancellationRequested();
                         simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.FLIGHT_STATUS, DEFINITIONS.FlightStatus, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
+
+                        if (genericValues.Count > 0)
+                        {
+                            simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
+                        }
                     }
                 }
                 catch (TaskCanceledException) { }
@@ -510,5 +570,64 @@ namespace FlightStreamDeck.SimConnectFSX
             CloseConnection();
             Closed?.Invoke(this, new EventArgs());
         }
+
+        #region Experimental
+        public void RegisterToggleEvent(TOGGLE_EVENT toggleAction)
+        {
+            logger.LogInformation("RegisterEvent {1} {2}", toggleAction, toggleAction.ToString());
+            simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
+        }
+
+        public void RegisterSimValue(TOGGLE_VALUE simValue)
+        {
+            lock (lockLists)
+            {
+                bool isEmpty = genericValues.Count == 0;
+                genericValues.Add(simValue);
+                RegisterGenericValues(isEmpty);
+            }
+        }
+
+        public void DeRegisterSimValue(TOGGLE_VALUE simValue)
+        {
+            lock (lockLists)
+            {
+                logger.LogInformation("De-Registering {1}", simValue);
+                genericValues.Remove(simValue);
+                RegisterGenericValues(false);
+            }
+        }
+
+        public void RegisterGenericValues(bool wasEmpty)
+        {
+            if (!wasEmpty)
+            {
+                logger.LogInformation("Clearing Data definition");
+                simconnect.ClearDataDefinition(DEFINITIONS.GenericData);
+            }
+
+            foreach(TOGGLE_VALUE simValue in genericValues)
+            {
+                logger.LogInformation("RegisterValue {1} {2}", simValue, simValue.ToString().Replace("_", " "));
+                simconnect.AddToDataDefinition(
+                    DEFINITIONS.GenericData,
+                    simValue.ToString().Replace("_", " "),
+                    "number",
+                    SIMCONNECT_DATATYPE.INT64,
+                    0.0f,
+                    SimConnect.SIMCONNECT_UNUSED
+                );
+            }
+
+            simconnect.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
+        }
+
+        public void Toggle(TOGGLE_EVENT toggleAction)
+        {
+            logger.LogInformation("Toggle {1}", toggleAction);
+            SendGenericCommand(toggleAction);
+        }
+
+        #endregion
     }
 }

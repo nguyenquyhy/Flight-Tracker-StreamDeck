@@ -29,6 +29,7 @@ namespace FlightStreamDeck.Logics
 
             client = new StreamDeckClient(args.ToArray(), loggerFactory.CreateLogger<StreamDeckClient>());
 
+            client.RegisterAction("tech.flighttracker.streamdeck.generic.toggle", () => (GenericToggleAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(GenericToggleAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.master.activate", () => (ApToggleAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApToggleAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.heading.activate", () => (ApToggleAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApToggleAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.nav.activate", () => (ApToggleAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApToggleAction))); 
