@@ -21,6 +21,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
         private List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
         private List<TOGGLE_VALUE> genericValues = new List<TOGGLE_VALUE>();
+        private EventValueLibrary eventLib = new EventValueLibrary();
 
         private readonly object lockLists = new object();
 
@@ -481,7 +482,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         {
                             if (data.dwDefineCount != genericValues.Count)
                             {
-                                logger.LogError("Incompaitable count");
+                                logger.LogError("Incompaitable array count. Skipping received data");
                                 return;
                             }
 
@@ -495,8 +496,8 @@ namespace FlightStreamDeck.SimConnectFSX
 
                             for (int i = 0; i < data.dwDefineCount; i++)
                             {
-                                var toggleEntry = genericValues[i];
-                                ulong toggleValue = dataArray.Value.Get(i);
+                                int decimals = eventLib.GetDecimals(genericValues[i]);
+                                double toggleValue = Math.Round(dataArray.Value.Get(i), decimals);
                                 result.Add(genericValues[i], toggleValue.ToString());
                             }
                         }
@@ -617,12 +618,14 @@ namespace FlightStreamDeck.SimConnectFSX
 
             foreach(TOGGLE_VALUE simValue in genericValues)
             {
-                logger.LogInformation("RegisterValue {1} {2}", simValue, simValue.ToString().Replace("_", " "));
+                string value = simValue.ToString().Replace("_", " ");
+                logger.LogInformation("RegisterValue {1} {2}", simValue, value);
+
                 simconnect.AddToDataDefinition(
                     DEFINITIONS.GenericData,
-                    simValue.ToString().Replace("_", " "),
-                    "number",
-                    SIMCONNECT_DATATYPE.INT64,
+                    value,
+                    eventLib.GetUnit(simValue),
+                    SIMCONNECT_DATATYPE.FLOAT64,
                     0.0f,
                     SimConnect.SIMCONNECT_UNUSED
                 );

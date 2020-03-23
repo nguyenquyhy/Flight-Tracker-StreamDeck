@@ -101,9 +101,9 @@ namespace FlightStreamDeck.SimConnectFSX
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
     struct GenericValuesStruct
     {
-        unsafe public fixed ulong Data[64];
+        unsafe public fixed double Data[64];
 
-        unsafe public ulong Get(int index)
+        unsafe public double Get(int index)
         {
             return Data[index];
         }
