@@ -493,11 +493,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                 return;
                             }
 
-                            logger.LogInformation("Copy arrays {1} {2} {3}", genericValues.Count, dataArray, data.dwDefineCount);
-
                             for (int i = 0; i < data.dwDefineCount; i++)
                             {
-                                logger.LogInformation("Adding index {1} => {2} {3} to results", i, genericValues[i], dataArray.ToString());
                                 var toggleEntry = genericValues[i];
                                 ulong toggleValue = dataArray.Value.Get(i);
                                 result.Add(genericValues[i], toggleValue.ToString());
@@ -574,6 +571,13 @@ namespace FlightStreamDeck.SimConnectFSX
         #region Experimental
         public void RegisterToggleEvent(TOGGLE_EVENT toggleAction)
         {
+            if (genericEvents.Contains(toggleAction))
+            {
+                logger.LogInformation("Already registered: {1}", toggleAction);
+                return;
+            }
+
+            genericEvents.Add(toggleAction);
             logger.LogInformation("RegisterEvent {1} {2}", toggleAction, toggleAction.ToString());
             simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
         }
@@ -582,6 +586,11 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             lock (lockLists)
             {
+                if (genericValues.Contains(simValue))
+                {
+                    return;
+                }
+
                 bool isEmpty = genericValues.Count == 0;
                 genericValues.Add(simValue);
                 RegisterGenericValues(isEmpty);
