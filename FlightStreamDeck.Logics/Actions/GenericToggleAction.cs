@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.PropertyInspectors;
+using System;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -14,11 +15,10 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
 
-        private string action;
-        private string header = "YD";
-        private TOGGLE_EVENT? toggleEvent = TOGGLE_EVENT.YAW_DAMPER_TOGGLE;
-        private TOGGLE_VALUE? feedbackValue = TOGGLE_VALUE.AUTOPILOT_YAW_DAMPER;
-        private TOGGLE_VALUE? displayValue = TOGGLE_VALUE.AUTOPILOT_MASTER;
+        private string header = "";
+        private TOGGLE_EVENT? toggleEvent = null;
+        private TOGGLE_VALUE? feedbackValue = null;
+        private TOGGLE_VALUE? displayValue = null;
 
         private string currentValue = "";
         private bool currentStatus = false;
@@ -32,13 +32,55 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            action = args.Action;
+            setValues(args.Payload.Settings);
+
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
-            if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
-            if (feedbackValue.HasValue) flightConnector.RegisterSimValue(feedbackValue.Value);
-            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+
+            RegisterValues();
 
             await UpdateImage();
+        }
+
+        private void setValues(JObject settings)
+        {
+            string newHeader = settings.Value<string>("Header");
+            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.Value<string>("ToggleValue"));
+            TOGGLE_VALUE? newFeedbackValue = GetValueValue(settings.Value<string>("FeedbackValue"));
+            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.Value<string>("DisplayValue"));
+
+            if (newFeedbackValue != feedbackValue || newDisplayValue != displayValue)
+            {
+                DeRegisterValues();
+            }
+
+            header = newHeader;
+            toggleEvent = newToggleEvent;
+            feedbackValue = newFeedbackValue;
+            displayValue = newDisplayValue;
+
+            RegisterValues();
+        }
+
+        private TOGGLE_EVENT? GetEventValue(string value)
+        {
+            TOGGLE_EVENT result;
+            if (Enum.TryParse<TOGGLE_EVENT>(value, true, out result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
+        private TOGGLE_VALUE? GetValueValue(string value)
+        {
+            TOGGLE_VALUE result;
+            if (Enum.TryParse<TOGGLE_VALUE>(value.Replace(" ", "_"), true, out result))
+            {
+                return result;
+            }
+
+            return null;
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
@@ -58,17 +100,28 @@ namespace FlightStreamDeck.Logics.Actions
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated -= FlightConnector_GenericValuesUpdated;
-
-            if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
-            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
-
+            DeRegisterValues();
             return Task.CompletedTask;
         }
 
         protected override Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            logger.LogInformation("Received PI stuff {1}", args.Payload.ToString());
+            setValues(args.Payload);
+            _= UpdateImage();
             return Task.CompletedTask;
+        }
+
+        private void RegisterValues()
+        {
+            if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
+            if (feedbackValue.HasValue) flightConnector.RegisterSimValue(feedbackValue.Value);
+            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+        }
+
+        private void DeRegisterValues()
+        {
+            if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
+            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)

@@ -9,19 +9,19 @@
     <div class="sdpi-wrapper">
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Header</div>
-            <input class="sdpi-item-value" id="Header" value="YD" placeholder="YD" onchange="sendValueToPlugin(event.target.value, 'Header')">
+            <input class="sdpi-item-value" id="Header" value="" placeholder="YD" onchange="updateData()">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Toggle value</div>
-            <input class="sdpi-item-value" id="ToggleValue" value="YAW_DAMPER_TOGGLE" placeholder="YAW_DAMPER_TOGGLE" onchange="sendValueToPlugin(event.target.value, 'ToggleValue')">
+            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Feedback value</div>
-            <input class="sdpi-item-value" id="FeedbackValue" value="AUTOPILOT YAW DAMPER" placeholder="AUTOPILOT YAW DAMPER" onchange="sendValueToPlugin(event.target.value, 'FeedbackValue')">
+            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="AUTOPILOT YAW DAMPER" onchange="updateData()" pattern="[A-Z0-9: ]">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" onchange="sendValueToPlugin(event.target.value, 'DisplayValue')">
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" onchange="updateData()" pattern="[A-Z0-9: ]">
         </div>
     </div>
     <script language="JavaScript" type="text/javascript">
@@ -36,6 +36,7 @@
             // please note: the incoming arguments are of type STRING, so
             // in case of the inActionInfo, we must parse it into JSON first
             actionInfo = JSON.parse(inActionInfo); // cache the info
+            loadSettings(actionInfo['payload']['settings'])
             websocket = new WebSocket('ws://localhost:' + inPort);
 
             // if connection was established, the websocket sends
@@ -50,17 +51,45 @@
             }
         }
 
+        function loadSettings(settings) {
+            if (settings['Header']) { Header.value = settings['Header'] };
+            if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
+            if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
+            if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+        }
+
+        function updateData() {
+            const payload = {
+                "Header": Header.value,
+                "ToggleValue": ToggleValue.value,
+                "FeedbackValue": FeedbackValue.value,
+                "DisplayValue": DisplayValue.value
+            };
+
+            sendValueToPlugin(payload);
+            setSettings(payload);
+        }
+
         // our method to pass values to the plugin
-        function sendValueToPlugin(value, param) {
-            console.info(value);
+        function sendValueToPlugin(payload) {
             if (websocket) {
                 const json = {
-                        "action": actionInfo['action'],
-                        "event": "sendToPlugin",
-                        "context": uuid,
-                        "payload": {
-                            [param] : value
-                        }
+                    "action": actionInfo['action'],
+                    "event": "sendToPlugin",
+                    "context": uuid,
+                    "payload": payload
+                 };
+                 websocket.send(JSON.stringify(json));
+            }
+        }
+
+        function setSettings(payload) {
+            console.log(payload)
+            if (websocket) {
+                const json = {
+                    "event": "setSettings",
+                    "context": uuid,
+                    "payload": payload
                  };
                  websocket.send(JSON.stringify(json));
             }
