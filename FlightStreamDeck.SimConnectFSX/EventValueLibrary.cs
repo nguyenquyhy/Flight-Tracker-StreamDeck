@@ -8,6 +8,8 @@ namespace FlightStreamDeck.SimConnectFSX
     class EventValueLibrary
     {
         private Dictionary<TOGGLE_VALUE, ValueEntry> availableValues = new Dictionary<TOGGLE_VALUE, ValueEntry>();
+        private const string DEFAULT_UNIT = "number";
+        private const int DEFAULT_DECIMALS = 0;
 
         public EventValueLibrary()
         {
@@ -21,12 +23,12 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public string GetUnit(TOGGLE_VALUE value)
         {
-            return availableValues[value].Unit;
+            return isSpecial(value) ? availableValues[value].Unit : DEFAULT_UNIT;
         }
 
-        public short GetDecimals(TOGGLE_VALUE value)
+        public int GetDecimals(TOGGLE_VALUE value)
         {
-            return availableValues[value].Decimals;
+            return isSpecial(value) ? availableValues[value].Decimals : DEFAULT_DECIMALS;
         }
 
         private void InitializeData()
