@@ -16,8 +16,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         private string action;
         private string header = "YD";
-        private TOGGLE_EVENT toggleEvent = TOGGLE_EVENT.YAW_DAMPER_TOGGLE;
-        private TOGGLE_VALUE feedbackValue = TOGGLE_VALUE.AUTOPILOT_YAW_DAMPER;
+        private TOGGLE_EVENT? toggleEvent = TOGGLE_EVENT.YAW_DAMPER_TOGGLE;
+        private TOGGLE_VALUE? feedbackValue = TOGGLE_VALUE.AUTOPILOT_YAW_DAMPER;
         private TOGGLE_VALUE? displayValue = TOGGLE_VALUE.AUTOPILOT_MASTER;
 
         private string currentValue = "";
@@ -34,40 +34,33 @@ namespace FlightStreamDeck.Logics.Actions
         {
             action = args.Action;
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
-            flightConnector.RegisterToggleEvent(toggleEvent);
-            flightConnector.RegisterSimValue(feedbackValue);
-            if (displayValue.HasValue)
-            {
-                flightConnector.RegisterSimValue(displayValue.Value);
-            }
+            if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
+            if (feedbackValue.HasValue) flightConnector.RegisterSimValue(feedbackValue.Value);
+            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
 
             await UpdateImage();
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
-            if (e.GenericValueStatus.ContainsKey(feedbackValue))
+            if (feedbackValue.HasValue && e.GenericValueStatus.ContainsKey(feedbackValue.Value))
             {
-                currentStatus = e.GenericValueStatus[feedbackValue].Contains('1');
-
-                if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
-                {
-                    currentValue = e.GenericValueStatus[displayValue.Value];
-                }
-
-                await UpdateImage();
+                currentStatus = e.GenericValueStatus[feedbackValue.Value].Contains('1');
             }
+            if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
+            {
+                currentValue = e.GenericValueStatus[displayValue.Value];
+            }
+
+            await UpdateImage();
         }
 
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated -= FlightConnector_GenericValuesUpdated;
-            flightConnector.DeRegisterSimValue(feedbackValue);
 
-            if (displayValue.HasValue)
-            {
-                flightConnector.DeRegisterSimValue(displayValue.Value);
-            }
+            if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
+            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
 
             return Task.CompletedTask;
         }
@@ -80,7 +73,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            flightConnector.Toggle(toggleEvent);
+            if (toggleEvent.HasValue) flightConnector.Toggle(toggleEvent.Value);
             return Task.CompletedTask;
         }
 
