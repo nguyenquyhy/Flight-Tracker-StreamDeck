@@ -618,7 +618,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
             foreach(TOGGLE_VALUE simValue in genericValues)
             {
-                string value = simValue.ToString().Replace("_", " ");
+                string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
                 logger.LogInformation("RegisterValue {1} {2}", simValue, value);
 
                 simconnect.AddToDataDefinition(

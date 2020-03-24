@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
-using SharpDeck.PropertyInspectors;
 using System;
 using System.Threading.Tasks;
 
@@ -75,7 +74,7 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? GetValueValue(string value)
         {
             TOGGLE_VALUE result;
-            if (Enum.TryParse<TOGGLE_VALUE>(value.Replace(" ", "_"), true, out result))
+            if (Enum.TryParse<TOGGLE_VALUE>(value.Replace(":", "__").Replace(" ", "_"), true, out result))
             {
                 return result;
             }
