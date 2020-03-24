@@ -86,7 +86,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (feedbackValue.HasValue && e.GenericValueStatus.ContainsKey(feedbackValue.Value))
             {
-                currentStatus = e.GenericValueStatus[feedbackValue.Value].Contains('1');
+                currentStatus = e.GenericValueStatus[feedbackValue.Value] != "0";
             }
             if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
             {
@@ -121,6 +121,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
+            currentValue = null;
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)

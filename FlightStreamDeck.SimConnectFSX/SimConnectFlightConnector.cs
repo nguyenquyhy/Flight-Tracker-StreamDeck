@@ -498,7 +498,7 @@ namespace FlightStreamDeck.SimConnectFSX
                             {
                                 int decimals = eventLib.GetDecimals(genericValues[i]);
                                 double toggleValue = Math.Round(dataArray.Value.Get(i), decimals);
-                                result.Add(genericValues[i], toggleValue.ToString());
+                                result.Add(genericValues[i], toggleValue.ToString("F" + decimals.ToString()));
                             }
                         }
 
