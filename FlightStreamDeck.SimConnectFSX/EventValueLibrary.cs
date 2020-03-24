@@ -292,6 +292,14 @@ namespace FlightStreamDeck.SimConnectFSX
             availableValues.Add(TOGGLE_VALUE.PRESSURIZATION_CABIN_ALTITUDE_GOAL, new ValueEntry("Feet", 0));
             availableValues.Add(TOGGLE_VALUE.PRESSURIZATION_CABIN_ALTITUDE_RATE, new ValueEntry("Feet per second", 0));
             availableValues.Add(TOGGLE_VALUE.PRESSURIZATION_PRESSURE_DIFFERENTIAL, new ValueEntry("Pounds per square foot", 0));
+            availableValues.Add(TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__1, new ValueEntry("MHz", 2));
+            availableValues.Add(TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__1, new ValueEntry("MHz", 2));
+            availableValues.Add(TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2, new ValueEntry("MHz", 2));
+            availableValues.Add(TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2, new ValueEntry("MHz", 2));
+            availableValues.Add(TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1, new ValueEntry("MHz", 2));
+            availableValues.Add(TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1, new ValueEntry("MHz", 2));
+            availableValues.Add(TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2, new ValueEntry("MHz", 2));
+            availableValues.Add(TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2, new ValueEntry("MHz", 2));
         }
     }
 }
