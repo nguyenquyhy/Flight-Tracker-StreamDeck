@@ -166,7 +166,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void ApAltSet(int altitude)
         {
-            SendCommand(EVENTS.AP_ALT_SET, 10000);
+            SendCommand(EVENTS.AP_ALT_SET, (uint)(altitude * 0.3048));
         }
 
         public void ApAltInc()
@@ -183,6 +183,7 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             try
             {
+                logger.LogInformation("Sending command {1} with value {2}", sendingEvent, data);
                 simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, data, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
             }
             catch (COMException ex) when (ex.Message == "0xC00000B0")
