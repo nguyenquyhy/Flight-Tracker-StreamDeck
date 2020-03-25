@@ -387,6 +387,11 @@
       "DeviceType": 0
     },
     {
+      "Name": "Profiles/Numpad_XL",
+      "ReadOnly": true,
+      "DeviceType": 2
+    },
+    {
       "Name": "Profiles/Numpad",
       "ReadOnly": true,
       "DeviceType": 3
