@@ -19,5 +19,18 @@ namespace FlightStreamDeck.Logics.Actions
             var number = int.Parse(tokens[^1]);
             await SetImageAsync(imageLogic.GetNumberImage(number));
         }
+
+        protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
+        {
+            var tokens = args.Action.Split(".");
+            var number = int.Parse(tokens[^1]);
+
+            if (DeckLogic.NumpadValue.Length < 5)
+            {
+                DeckLogic.NumpadValue += number.ToString();
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

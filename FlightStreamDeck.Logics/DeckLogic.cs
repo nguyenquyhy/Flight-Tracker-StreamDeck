@@ -4,13 +4,16 @@ using Microsoft.Extensions.Logging;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics
 {
     public class DeckLogic
     {
+        public static string NumpadType { get; set; }
+        public static string NumpadValue { get; set; }
+        public static TaskCompletionSource<string> NumpadTcs { get; set; }
+
         private readonly ILoggerFactory loggerFactory;
         private readonly IServiceProvider serviceProvider;
         private StreamDeckClient client;
@@ -41,8 +44,11 @@ namespace FlightStreamDeck.Logics
             
             client.RegisterAction("tech.flighttracker.streamdeck.generic.navcom", () => (NavComAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NavComAction)));
 
-            client.RegisterAction("tech.flighttracker.streamdeck.number.enter", () => (EnterAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(EnterAction)));
-
+            client.RegisterAction("tech.flighttracker.streamdeck.number.enter", () => (NumberFunctionAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NumberFunctionAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.number.backspace", () => (NumberFunctionAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NumberFunctionAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.number.cancel", () => (NumberFunctionAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NumberFunctionAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.number.transfer", () => (NumberFunctionAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NumberFunctionAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.number.display", () => (NumberDisplayAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NumberDisplayAction)));
             for (var i = 0; i <= 9; i++)
             {
                 client.RegisterAction("tech.flighttracker.streamdeck.number." + i, () => (NumberAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NumberAction)));

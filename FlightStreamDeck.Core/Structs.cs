@@ -1193,4 +1193,12 @@
         YAXIS_INVERT_TOGGLE,
         AUTORUDDER_TOGGLE
     }
+
+    public enum SET_EVENT
+    {
+        NAV1_STBY_SET = 1000,
+        NAV2_STBY_SET,
+        COM_STBY_RADIO_SET,
+        COM2_STBY_RADIO_SET
+    }
 }

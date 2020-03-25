@@ -19,6 +19,8 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? active;
         private TOGGLE_VALUE? standby;
         private TOGGLE_EVENT? toggle;
+        private SET_EVENT? set;
+        private string mask;
 
         public NavComAction(IImageLogic imageLogic, IFlightConnector flightConnector)
         {
@@ -32,8 +34,34 @@ namespace FlightStreamDeck.Logics.Actions
         {
             timer.Stop();
 
-            var param = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
-            await StreamDeck.SwitchToProfileAsync(param.PluginUUID, device, "Profiles/Numpad");
+            if (type != null && set != null && mask != null)
+            {
+                var set = this.set;
+                var mask = this.mask;
+                DeckLogic.NumpadType = type;
+                DeckLogic.NumpadValue = "1";
+                DeckLogic.NumpadTcs = new TaskCompletionSource<string>();
+
+                var param = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
+                await StreamDeck.SwitchToProfileAsync(param.PluginUUID, device, "Profiles/Numpad");
+
+                var result = await DeckLogic.NumpadTcs.Task;
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result += "11800".Substring(result.Length);
+                    // NOTE: ignore first 1
+                    result = result[1..];
+
+                    // BCD encode
+                    uint data = 0;
+                    for (var i = 0; i < result.Length; i++)
+                    {
+                        uint digit = (byte)result[i] - (uint)48;
+                        data = data * 16 + digit;
+                    }
+                    flightConnector.Set(set.Value, data);
+                }
+            }
         }
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -113,26 +141,35 @@ namespace FlightStreamDeck.Logics.Actions
                     active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__1;
                     standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__1;
                     toggle = TOGGLE_EVENT.NAV1_RADIO_SWAP;
+                    set = SET_EVENT.NAV1_STBY_SET;
+                    mask = "108.00";
                     break;
                 case "NAV2":
                     active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2;
                     standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2;
                     toggle = TOGGLE_EVENT.NAV2_RADIO_SWAP;
+                    set = SET_EVENT.NAV2_STBY_SET; 
+                    mask = "108.00";
                     break;
                 case "COM1":
                     active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1;
                     standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1;
                     toggle = TOGGLE_EVENT.COM_STBY_RADIO_SWAP;
+                    set = SET_EVENT.COM_STBY_RADIO_SET;
+                    mask = "118.00";
                     break;
                 case "COM2":
                     active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2;
                     standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2;
                     toggle = TOGGLE_EVENT.COM2_RADIO_SWAP;
+                    set = SET_EVENT.COM2_STBY_RADIO_SET;
+                    mask = "118.00";
                     break;
                 default:
                     active = null;
                     standby = null;
                     toggle = null;
+                    set = null;
                     break;
             }
             if (active != null)
@@ -146,6 +183,10 @@ namespace FlightStreamDeck.Logics.Actions
             if (toggle != null)
             {
                 flightConnector.RegisterToggleEvent(toggle.Value);
+            }
+            if (set != null)
+            {
+                flightConnector.RegisterSetEvent(set.Value);
             }
         }
     }
