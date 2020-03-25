@@ -23,11 +23,10 @@ namespace FlightStreamDeck.Logics
 
         public void Initialize()
         {
-            var args = Environment.GetCommandLineArgs().ToList();
-            args.RemoveAt(0);
+            var args = Environment.GetCommandLineArgs();
             loggerFactory.CreateLogger<DeckLogic>().LogInformation("Initialize with args: {args}", string.Join("|", args));
 
-            client = new StreamDeckClient(args.ToArray(), loggerFactory.CreateLogger<StreamDeckClient>());
+            client = new StreamDeckClient(args[1..], loggerFactory.CreateLogger<StreamDeckClient>());
 
             client.RegisterAction("tech.flighttracker.streamdeck.generic.toggle", () => (GenericToggleAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(GenericToggleAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.master.activate", () => (ApToggleAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ApToggleAction)));
@@ -39,9 +38,18 @@ namespace FlightStreamDeck.Logics
             client.RegisterAction("tech.flighttracker.streamdeck.heading.decrease", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.altitude.increase", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.altitude.decrease", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
+            client.RegisterAction("tech.flighttracker.streamdeck.switch", () => (SwitchAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(SwitchAction)));
+
+            client.RegisterAction("tech.flighttracker.streamdeck.number.enter", () => (EnterAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(EnterAction)));
+
+            for (var i = 0; i <= 9; i++)
+            {
+                client.RegisterAction("tech.flighttracker.streamdeck.number." + i, () => (NumberAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NumberAction)));
+            }
+
 
             client.KeyDown += Client_KeyDown;
-
+            
             Task.Run(() =>
             {
                 client.Start(); // continuously listens until the connection closes
