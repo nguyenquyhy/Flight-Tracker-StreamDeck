@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>Property Inspector</title>
     <link rel="stylesheet" href="sdpi.css">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.js"></script>
 </head>
 <body>
     <div class="sdpi-wrapper">
@@ -11,17 +12,17 @@
             <div class="sdpi-item-label">Header</div>
             <input class="sdpi-item-value" id="Header" value="" placeholder="YD" onchange="updateData()">
         </div>
-        <div class="sdpi-item" type="field">
+        <div class="sdpi-item" type="select">
             <div class="sdpi-item-label">Toggle value</div>
-            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
+            <select class="sdpi-item-value select" id="ToggleValue" onchange="updateData()"></select>
         </div>
-        <div class="sdpi-item" type="field">
+        <div class="sdpi-item" type="select">
             <div class="sdpi-item-label">Feedback value</div>
-            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="AUTOPILOT YAW DAMPER" onchange="updateData()" pattern="[A-Z0-9: ]">
+            <select class="sdpi-item-value select" id="FeedbackValue" onchange="updateData()"></select>
         </div>
-        <div class="sdpi-item" type="field">
+        <div class="sdpi-item" type="select">
             <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" onchange="updateData()" pattern="[A-Z0-9: ]">
+            <select class="sdpi-item-value select" id="DisplayValue" onchange="updateData()"></select>
         </div>
     </div>
     <script language="JavaScript" type="text/javascript">
@@ -48,7 +49,12 @@
                 };
                 // register property inspector to Stream Deck
                 websocket.send(JSON.stringify(json));
+                sendInitRequest();
             }
+
+            websocket.onmessage = function (event) {
+                fillDropDowns(event);
+            };
         }
 
         function loadSettings(settings) {
@@ -58,12 +64,69 @@
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
         }
 
+        function sendInitRequest() {
+            if (websocket) {
+                const json = {
+                    "action": actionInfo['action'],
+                    "event": "sendToPlugin",
+                    "context": uuid,
+                    "payload": { "Action": "Init" }
+                 };
+                 websocket.send(JSON.stringify(json));
+            }
+        }
+
+        function fillDropDowns(event) {
+            $('#ToggleValue').children().remove().end();
+            $('#FeedbackValue').children().remove().end();
+            $('#DisplayValue').children().remove().end();
+
+            var data = JSON.parse(event.data)['payload'];
+
+            $(function () { 
+                var opt = data['values'];
+                $.each(opt, function (key, value) {
+                    var group = $('<optgroup label="' + key + '" />');
+                    $.each(value, function(){
+                        $('<option value="' + this.valueId + '" />').html(this.name).appendTo(group);
+                    });
+
+					group.appendTo($('#FeedbackValue'));
+                });
+            });
+
+			$(function () {
+                var opt = data['values'];
+                $.each(opt, function (key, value) {
+                    var group = $('<optgroup label="' + key + '" />');
+                    $.each(value, function(){
+                        $('<option value="' + this.valueId + '" />').html(this.name).appendTo(group);
+                    });
+
+					group.appendTo($('#DisplayValue'));
+                });
+            });
+
+			$(function () { 
+                var opt = data['events'];
+                $.each(opt, function (key, value) {
+                    var group = $('<optgroup label="' + key + '" />');
+                    $.each(value, function(){
+                        $('<option value="' + this.valueId + '" />').html(this.name).appendTo(group);
+                    });
+
+					group.appendTo($('#ToggleValue'));
+                });
+            });
+        }
+
         function updateData() {
             const payload = {
-                "Header": Header.value,
-                "ToggleValue": ToggleValue.value,
-                "FeedbackValue": FeedbackValue.value,
-                "DisplayValue": DisplayValue.value
+                "Action": "UpdateData",
+                "Header": parseInt(Header.value),
+                "ToggleValue": parseInt(ToggleValue.value),
+                "FeedbackValue": parseInt(FeedbackValue.value),
+                "DisplayValue": parseInt(DisplayValue.value)
             };
 
             sendValueToPlugin(payload);

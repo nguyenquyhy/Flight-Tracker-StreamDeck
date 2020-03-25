@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -25,7 +26,7 @@ namespace FlightStreamDeck.Logics.Actions
         public GenericToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
-            this.flightConnector = flightConnector;
+            //this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
         }
 
@@ -33,11 +34,70 @@ namespace FlightStreamDeck.Logics.Actions
         {
             setValues(args.Payload.Settings);
 
-            flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
+            //flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
             RegisterValues();
 
             await UpdateImage();
+        }
+
+        private void SendEventsValues()
+        {
+            try
+            {
+                JObject data = new JObject(
+                    new JProperty("values", generateValues()), 
+                    new JProperty("events", generateEvents())
+                );
+
+                _ = SendToPropertyInspectorAsync(data);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e.Message);
+            }
+        }
+
+        private JObject generateValues()
+        {
+            JObject values = new JObject();
+
+            foreach (GROUP group in (GROUP[])Enum.GetValues(typeof(GROUP)))
+            {
+                JArray groupArray = new JArray();
+                foreach (TOGGLE_VALUE val in EventValueLibrary.AvailableValues[group])
+                {
+                    groupArray.Add(new JObject(
+                        new JProperty("valueId", (int)val),
+                        new JProperty("name", val.ToString().Replace('_', ' '))
+                    ));
+                }
+
+                values.Add(new JProperty(EventValueLibrary.GroupNames[group], groupArray));
+            }
+
+            return values;
+        }
+
+        private JObject generateEvents()
+        {
+            JObject events = new JObject();
+
+            foreach (GROUP group in (GROUP[])Enum.GetValues(typeof(GROUP)))
+            {
+                JArray groupArray = new JArray();
+                foreach (TOGGLE_EVENT val in EventValueLibrary.AvailableEvents[group])
+                {
+                    groupArray.Add(new JObject(
+                        new JProperty("valueId", (int)val),
+                        new JProperty("name", val.ToString())
+                    ));
+                }
+
+                events.Add(new JProperty(EventValueLibrary.GroupNames[group], groupArray));
+            }
+
+            return events;
         }
 
         private void setValues(JObject settings)
@@ -98,35 +158,44 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
         {
-            flightConnector.GenericValuesUpdated -= FlightConnector_GenericValuesUpdated;
+            //flightConnector.GenericValuesUpdated -= FlightConnector_GenericValuesUpdated;
             DeRegisterValues();
             return Task.CompletedTask;
         }
 
         protected override Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            setValues(args.Payload);
-            _= UpdateImage();
+            switch(args.Payload.Value<string>("Action"))
+            {
+                case "Init":
+                    SendEventsValues();
+                    break;
+                case "UpdateData":
+                    setValues(args.Payload);
+                    _ = UpdateImage();
+                    break;
+            }
+
             return Task.CompletedTask;
         }
 
         private void RegisterValues()
         {
-            if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
-            if (feedbackValue.HasValue) flightConnector.RegisterSimValue(feedbackValue.Value);
-            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+            //if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
+            //if (feedbackValue.HasValue) flightConnector.RegisterSimValue(feedbackValue.Value);
+            //if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
         }
 
         private void DeRegisterValues()
         {
-            if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
-            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
+            //if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
+            //if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
             currentValue = null;
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue) flightConnector.Toggle(toggleEvent.Value);
+            //if (toggleEvent.HasValue) flightConnector.Toggle(toggleEvent.Value);
             return Task.CompletedTask;
         }
 
