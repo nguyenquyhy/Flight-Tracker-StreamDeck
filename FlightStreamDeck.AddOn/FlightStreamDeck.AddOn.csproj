@@ -113,6 +113,9 @@
     <None Update="manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="PropertyInspector\NavCom.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="PropertyInspector\sdpi.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

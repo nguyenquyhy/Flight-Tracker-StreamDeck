@@ -1,19 +1,6 @@
 ﻿{
   "Actions": [
     {
-      "Icon": "Images/actionIcon",
-      "Name": "Switch",
-      "States": [
-        {
-          "Image": "Images/aircraft",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Switch",
-      "UUID": "tech.flighttracker.streamdeck.switch"
-    },
-    {
       "Icon": "Images/toggleIcon",
       "Name": "Generic Toggle Button",
       "States": [
@@ -39,6 +26,20 @@
       "SupportedInMultiActions": false,
       "Tooltip": "Use the SimConnect variables to define the value button. No action when pressed!",
       "UUID": "tech.flighttracker.streamdeck.generic.value"
+    },
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "NAV & COM",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "PropertyInspector/NavCom.html",
+      "Tooltip": "Nav & Com",
+      "UUID": "tech.flighttracker.streamdeck.generic.navcom"
     },
     {
       "Icon": "Images/toggleIcon",

@@ -8,20 +8,13 @@
 <body>
     <div class="sdpi-wrapper">
         <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Header</div>
-            <input class="sdpi-item-value" id="Header" value="" placeholder="YD" onchange="updateData()">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Toggle value</div>
-            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Feedback value</div>
-            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="AUTOPILOT YAW DAMPER" onchange="updateData()" pattern="[A-Z0-9: ]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" onchange="updateData()" pattern="[A-Z0-9: ]">
+            <div class="sdpi-item-label">Type</div>
+            <select class="sdpi-item-value select" id="Type" onchange="updateData()">
+                <option value="COM1">COM1</option>
+                <option value="COM2">COM2</option>
+                <option value="NAV1">NAV1</option>
+                <option value="NAV2">NAV2</option>
+            </select>
         </div>
     </div>
     <script language="JavaScript" type="text/javascript">
@@ -52,18 +45,12 @@
         }
 
         function loadSettings(settings) {
-            if (settings['Header']) { Header.value = settings['Header'] };
-            if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
-            if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
-            if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+            if (settings['Type']) { Type.value = settings['Type'] };
         }
 
         function updateData() {
             const payload = {
-                "Header": Header.value,
-                "ToggleValue": ToggleValue.value,
-                "FeedbackValue": FeedbackValue.value,
-                "DisplayValue": DisplayValue.value
+                "Type": Type.value,
             };
 
             sendValueToPlugin(payload);
