@@ -19,6 +19,8 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public event EventHandler Closed;
 
+        private List<SET_EVENT> setEvents = new List<SET_EVENT>();
+
         private List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
         private List<TOGGLE_VALUE> genericValues = new List<TOGGLE_VALUE>();
         private EventValueLibrary eventLib = new EventValueLibrary();
@@ -56,9 +58,9 @@ namespace FlightStreamDeck.SimConnectFSX
                             {
                                 this.simconnect.ReceiveMessage();
                             }
-                            catch (Exception ex) 
-                            { 
-                                RecoverFromError(ex); 
+                            catch (Exception ex)
+                            {
+                                RecoverFromError(ex);
                             }
 
                             isHandled = true;
@@ -104,7 +106,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_SET, "AP_ALT_VAR_SET_METRIC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_INC, "AP_ALT_VAR_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_DEC, "AP_ALT_VAR_DEC");
-            
+
         }
 
         public void Send(string message)
@@ -194,6 +196,18 @@ namespace FlightStreamDeck.SimConnectFSX
             try
             {
                 simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            }
+            catch (COMException ex) when (ex.Message == "0xC00000B0")
+            {
+                RecoverFromError(ex);
+            }
+        }
+
+        private void SendGenericCommand(SET_EVENT sendingEvent, uint dwData)
+        {
+            try
+            {
+                simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, dwData, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
             }
             catch (COMException ex) when (ex.Message == "0xC00000B0")
             {
@@ -482,7 +496,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         {
                             if (data.dwDefineCount != genericValues.Count)
                             {
-                                logger.LogError("Incompaitable array count. Skipping received data");
+                                logger.LogError("Incompatible array count {actual}, expected {expected}. Skipping received data", data.dwDefineCount, genericValues.Count);
                                 return;
                             }
 
@@ -570,8 +584,11 @@ namespace FlightStreamDeck.SimConnectFSX
         }
 
         #region Experimental
+
         public void RegisterToggleEvent(TOGGLE_EVENT toggleAction)
         {
+            if (simconnect == null) return;
+
             if (genericEvents.Contains(toggleAction))
             {
                 logger.LogInformation("Already registered: {1}", toggleAction);
@@ -581,6 +598,21 @@ namespace FlightStreamDeck.SimConnectFSX
             genericEvents.Add(toggleAction);
             logger.LogInformation("RegisterEvent {1} {2}", toggleAction, toggleAction.ToString());
             simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
+        }
+
+        public void RegisterSetEvent(SET_EVENT action)
+        {
+            if (simconnect == null) return;
+
+            if (setEvents.Contains(action))
+            {
+                logger.LogInformation("Already registered: {action}", action);
+                return;
+            }
+
+            setEvents.Add(action);
+            logger.LogInformation("RegisterEvent {action} {simConnectAction}", action, action.ToString());
+            simconnect.MapClientEventToSimEvent(action, action.ToString());
         }
 
         public void RegisterSimValue(TOGGLE_VALUE simValue)
@@ -610,13 +642,15 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void RegisterGenericValues(bool wasEmpty)
         {
+            if (simconnect == null) return;
+
             if (!wasEmpty)
             {
                 logger.LogInformation("Clearing Data definition");
                 simconnect.ClearDataDefinition(DEFINITIONS.GenericData);
             }
 
-            foreach(TOGGLE_VALUE simValue in genericValues)
+            foreach (TOGGLE_VALUE simValue in genericValues)
             {
                 string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
                 logger.LogInformation("RegisterValue {1} {2}", simValue, value);
@@ -638,6 +672,12 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             logger.LogInformation("Toggle {1}", toggleAction);
             SendGenericCommand(toggleAction);
+        }
+
+        public void Set(SET_EVENT action, uint data)
+        {
+            logger.LogInformation("Set {action} to {data}", action, data);
+            SendGenericCommand(action, data);
         }
 
         #endregion

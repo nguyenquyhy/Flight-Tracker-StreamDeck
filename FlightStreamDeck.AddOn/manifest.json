@@ -211,6 +211,36 @@
     },
     {
       "Icon": "Images/numberIcon",
+      "Name": "Backspace",
+      "States": [
+        {
+          "Image": "Images/button",
+          "Title": "Bksp",
+          "TitleAlignment": "middle",
+          "FontSize": "12"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "VisibleInActionsList": true,
+      "Tooltip": "Backspace",
+      "UUID": "tech.flighttracker.streamdeck.number.backspace"
+    },
+    {
+      "Icon": "Images/numberIcon",
+      "Name": "Display Current Number",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "VisibleInActionsList": true,
+      "Tooltip": "Display Current Number",
+      "UUID": "tech.flighttracker.streamdeck.number.display"
+    },
+    {
+      "Icon": "Images/numberIcon",
       "Name": "Number 1",
       "States": [
         {
