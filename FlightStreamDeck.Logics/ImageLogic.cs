@@ -12,7 +12,7 @@ namespace FlightStreamDeck.Logics
     {
         string GetImage(string text, bool active, string value = null);
         string GetNumberImage(int number);
-        string GetNavComImage(string type);
+        string GetNavComImage(string type, string value1 = null, string value2 = null);
     }
 
     public class ImageLogic : IImageLogic
@@ -70,17 +70,32 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        public string GetNavComImage(string type)
+        public string GetNavComImage(string type, string value1 = null, string value2 = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
+            var valueFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
 
-            var text = type.ToUpperInvariant();
             Image img = backGround;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
-                var size = TextMeasurer.Measure(text, new RendererOptions(font));
-                ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+
+                if (type != null)
+                {
+                    var size = TextMeasurer.Measure(type, new RendererOptions(font));
+                    ctx.DrawText(type, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                }
+
+                if (!string.IsNullOrWhiteSpace(value1))
+                {
+                    var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
+                    ctx.DrawText(value1, valueFont, Color.Yellow, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
+                }
+                if (!string.IsNullOrWhiteSpace(value2))
+                {
+                    var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
+                    ctx.DrawText(value2, valueFont, Color.White, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));
+                }
             });
             using var memoryStream = new MemoryStream();
             img2.Save(memoryStream, new PngEncoder());
