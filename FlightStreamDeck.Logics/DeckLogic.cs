@@ -38,7 +38,8 @@ namespace FlightStreamDeck.Logics
             client.RegisterAction("tech.flighttracker.streamdeck.heading.decrease", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.altitude.increase", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
             client.RegisterAction("tech.flighttracker.streamdeck.altitude.decrease", () => (ValueChangeAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(ValueChangeAction)));
-            client.RegisterAction("tech.flighttracker.streamdeck.switch", () => (SwitchAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(SwitchAction)));
+            
+            client.RegisterAction("tech.flighttracker.streamdeck.generic.navcom", () => (NavComAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(NavComAction)));
 
             client.RegisterAction("tech.flighttracker.streamdeck.number.enter", () => (EnterAction)ActivatorUtilities.CreateInstance(serviceProvider, typeof(EnterAction)));
 
