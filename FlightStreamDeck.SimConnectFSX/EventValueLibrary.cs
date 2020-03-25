@@ -168,10 +168,10 @@ namespace FlightStreamDeck.SimConnectFSX
             availableValues.Add(TOGGLE_VALUE.GEAR_RIGHT_POSITION, new ValueEntry("Percent over 100", 0));
             availableValues.Add(TOGGLE_VALUE.GEAR_TAIL_POSITION, new ValueEntry("Percent over 100", 0));
             availableValues.Add(TOGGLE_VALUE.GEAR_AUX_POSITION, new ValueEntry("Percent over 100", 0));
-            availableValues.Add(TOGGLE_VALUE.GEAR_TOTAL_PCT_EXTENDED, new ValueEntry("Percentage", 0));
+            availableValues.Add(TOGGLE_VALUE.GEAR_TOTAL_PCT_EXTENDED, new ValueEntry("Percent", 2));
             availableValues.Add(TOGGLE_VALUE.WATER_RUDDER_HANDLE_POSITION, new ValueEntry("Percent over 100", 0));
-            availableValues.Add(TOGGLE_VALUE.WATER_LEFT_RUDDER_EXTENDED, new ValueEntry("Percentage", 0));
-            availableValues.Add(TOGGLE_VALUE.WATER_RIGHT_RUDDER_EXTENDED, new ValueEntry("Percentage", 0));
+            availableValues.Add(TOGGLE_VALUE.WATER_LEFT_RUDDER_EXTENDED, new ValueEntry("Percentage", 2));
+            availableValues.Add(TOGGLE_VALUE.WATER_RIGHT_RUDDER_EXTENDED, new ValueEntry("Percentage", 2));
             availableValues.Add(TOGGLE_VALUE.GEAR_CENTER_STEER_ANGLE, new ValueEntry("Percent over 100", 0));
             availableValues.Add(TOGGLE_VALUE.GEAR_LEFT_STEER_ANGLE, new ValueEntry("Percent over 100", 0));
             availableValues.Add(TOGGLE_VALUE.GEAR_RIGHT_STEER_ANGLE, new ValueEntry("Percent over 100", 0));
