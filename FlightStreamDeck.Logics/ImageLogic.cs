@@ -11,6 +11,7 @@ namespace FlightStreamDeck.Logics
     public interface IImageLogic
     {
         string GetImage(string text, bool active, string value = null);
+        string GetNumberImage(int number);
     }
 
     public class ImageLogic : IImageLogic
@@ -40,6 +41,26 @@ namespace FlightStreamDeck.Logics
                     size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
                     ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
                 }
+            });
+            using var memoryStream = new MemoryStream();
+            img2.Save(memoryStream, new PngEncoder());
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            return "data:image/png;base64, " + base64;
+        }
+
+        /// <returns>Base64 image data</returns>
+        public string GetNumberImage(int number)
+        {
+            var font = SystemFonts.CreateFont("Arial", 20, FontStyle.Bold);
+
+            var text = number.ToString();
+            Image img = backGround;
+            using var img2 = img.Clone(ctx =>
+            {
+                var imgSize = ctx.GetCurrentSize();
+                var size = TextMeasurer.Measure(text, new RendererOptions(font));
+                ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 2 - size.Height / 2));
             });
             using var memoryStream = new MemoryStream();
             img2.Save(memoryStream, new PngEncoder());
