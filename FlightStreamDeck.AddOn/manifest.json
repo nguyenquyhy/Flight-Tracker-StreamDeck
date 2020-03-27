@@ -412,5 +412,8 @@
       "Platform": "windows",
       "MinimumVersion": "10"
     }
-  ]
+  ],
+  "Software": {
+    "MinimumVersion": "4.1"
+  }
 }
