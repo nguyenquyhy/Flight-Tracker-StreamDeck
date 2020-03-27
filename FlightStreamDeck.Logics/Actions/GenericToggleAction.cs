@@ -63,7 +63,7 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_EVENT? GetEventValue(string value)
         {
             TOGGLE_EVENT result;
-            if (Enum.TryParse<TOGGLE_EVENT>(value, true, out result))
+            if (Enum.TryParse(value, true, out result))
             {
                 return result;
             }
@@ -74,7 +74,7 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? GetValueValue(string value)
         {
             TOGGLE_VALUE result;
-            if (Enum.TryParse<TOGGLE_VALUE>(value.Replace(":", "__").Replace(" ", "_"), true, out result))
+            if (Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out result))
             {
                 return result;
             }
@@ -84,16 +84,25 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
+            bool isUpdated = false;
+
             if (feedbackValue.HasValue && e.GenericValueStatus.ContainsKey(feedbackValue.Value))
             {
-                currentStatus = e.GenericValueStatus[feedbackValue.Value] != "0";
+                bool newStatus = e.GenericValueStatus[feedbackValue.Value] != "0";
+                isUpdated = newStatus != currentStatus;
+                currentStatus = newStatus;
             }
             if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
             {
-                currentValue = e.GenericValueStatus[displayValue.Value];
+                string newValue = e.GenericValueStatus[displayValue.Value];
+                isUpdated |= newValue != currentValue;
+                currentValue = newValue;
             }
 
-            await UpdateImage();
+            if (isUpdated)
+            {
+                await UpdateImage();
+            }
         }
 
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
