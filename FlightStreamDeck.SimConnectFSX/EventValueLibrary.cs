@@ -278,7 +278,11 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1, new ValueEntry("MHz", 2) },
             { TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1, new ValueEntry("MHz", 2) },
             { TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2, new ValueEntry("MHz", 2) },
-            { TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2, new ValueEntry("MHz", 2) }
+            { TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2, new ValueEntry("MHz", 2) },
+            { TOGGLE_VALUE.PLANE_PITCH_DEGREES, new ValueEntry("Degrees", 2) },
+            { TOGGLE_VALUE.PLANE_BANK_DEGREES, new ValueEntry("Degrees", 2) },
+            { TOGGLE_VALUE.PLANE_HEADING_DEGREES_TRUE, new ValueEntry("Degrees", 2) },
+            { TOGGLE_VALUE.PLANE_HEADING_DEGREES_MAGNETIC, new ValueEntry("Degrees", 2) }
         };
 
         public EventValueLibrary()
