@@ -16,7 +16,7 @@
     },
     {
       "Icon": "Images/toggleIcon",
-      "Name": "Generic Value Button",
+      "Name": "Horizon Button",
       "States": [
         {
           "Image": "Images/button",
@@ -24,8 +24,8 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Use the SimConnect variables to define the value button. No action when pressed!",
-      "UUID": "tech.flighttracker.streamdeck.generic.value"
+      "Tooltip": "Artifical horizon",
+      "UUID": "tech.flighttracker.streamdeck.artificial.horizon"
     },
     {
       "Icon": "Images/toggleIcon",
