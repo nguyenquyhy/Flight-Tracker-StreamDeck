@@ -384,17 +384,20 @@
     {
       "Name": "Profiles/Numpad",
       "ReadOnly": true,
-      "DeviceType": 0
+      "DeviceType": 0,
+      "DontAutoSwitchWhenInstalled":  true
     },
     {
       "Name": "Profiles/Numpad_XL",
       "ReadOnly": true,
-      "DeviceType": 2
+      "DeviceType": 2,
+      "DontAutoSwitchWhenInstalled": true
     },
     {
       "Name": "Profiles/Numpad",
       "ReadOnly": true,
-      "DeviceType": 3
+      "DeviceType": 3,
+      "DontAutoSwitchWhenInstalled": true
     }
   ],
   "SDKVersion": 2,
