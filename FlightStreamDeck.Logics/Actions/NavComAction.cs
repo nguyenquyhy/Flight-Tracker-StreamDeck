@@ -110,6 +110,9 @@ namespace FlightStreamDeck.Logics.Actions
             await SetImageAsync(imageLogic.GetNavComImage(type));
         }
 
+        string lastValue1 = null;
+        string lastValue2 = null;
+
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
             string value1 = null, value2 = null;
@@ -122,7 +125,12 @@ namespace FlightStreamDeck.Logics.Actions
                 value2 = e.GenericValueStatus[standby.Value];
             }
 
-            await SetImageAsync(imageLogic.GetNavComImage(type, value1, value2));
+            if (lastValue1 != value1 || lastValue2 != value2)
+            {
+                lastValue1 = value1;
+                lastValue2 = value2;
+                await SetImageAsync(imageLogic.GetNavComImage(type, value1, value2));
+            }
         }
 
         private void SwitchTo(string type)
@@ -170,6 +178,8 @@ namespace FlightStreamDeck.Logics.Actions
                     standby = null;
                     toggle = null;
                     set = null;
+                    lastValue1 = null;
+                    lastValue2 = null;
                     break;
             }
             if (active != null)
