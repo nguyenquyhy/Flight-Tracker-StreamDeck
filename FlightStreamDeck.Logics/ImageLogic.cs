@@ -4,6 +4,7 @@ using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
+using SixLabors.Shapes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,6 +17,7 @@ namespace FlightStreamDeck.Logics
         string GetNumberImage(int number);
         string GetNavComImage(string type, string value1 = null, string value2 = null);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
+        public string GetGaugeImage(string text, float value, float min, float max);
     }
 
     public class ImageLogic : IImageLogic
@@ -23,6 +25,7 @@ namespace FlightStreamDeck.Logics
         readonly Image backGround = Image.Load("Images/button.png");
         readonly Image activeBackground = Image.Load("Images/button_active.png");
         readonly Image horizon = Image.Load("Images/horizon.png");
+        readonly Image gaugeImage = Image.Load("Images/gauge.png");
 
         private static int WIDTH = 72;
         private static int HALF_WIDTH = 36;
@@ -154,6 +157,50 @@ namespace FlightStreamDeck.Logics
 
                 return "data:image/png;base64, " + base64;
             }
+        }
+
+        public string GetGaugeImage(string text, float value, float min, float max)
+        {
+            var font = SystemFonts.CreateFont("Arial", 23, FontStyle.Regular);
+            var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
+            var pen = new Pen(Color.DarkRed, 5);
+            var range = max - min;
+
+            if (range <= 0)
+            {
+                throw new InvalidDataException("Delta can't be 0");
+            }
+
+            using var img = gaugeImage.Clone(ctx =>
+            {
+                var startPoint = new PointF(HALF_WIDTH, 50);
+                var middlePoint = new PointF(
+                    (float)((HALF_WIDTH - 16) * Math.Cos(Math.PI * (value / range) - Math.PI)),
+                    (float)((HALF_WIDTH - 16) * Math.Sin(Math.PI * (value / range) - Math.PI))
+                    );
+
+                var endPoint = new PointF(
+                    (float)(HALF_WIDTH * Math.Cos(Math.PI * (value / range) - Math.PI)),
+                    (float)(HALF_WIDTH * Math.Sin(Math.PI * (value / range) - Math.PI))
+                    );
+
+                PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
+
+                ctx.DrawLines(pen, needle);
+
+                var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 2));
+
+                var valueText = value.ToString();
+                size = TextMeasurer.Measure(valueText, new RendererOptions(font));
+                ctx.DrawText(valueText, font, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 50));
+            });
+
+            using var memoryStream = new MemoryStream();
+            img.Save(memoryStream, new PngEncoder());
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            return "data:image/png;base64, " + base64;
         }
     }
 }

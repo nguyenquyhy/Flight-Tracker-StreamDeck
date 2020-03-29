@@ -1,385 +1,399 @@
 ﻿{
-  "Actions": [
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "Generic Toggle Button",
-      "States": [
+    "Actions": [
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/GenericToggle.html",
-      "Tooltip": "Use the SimConnect variables to define the toggle button",
-      "UUID": "tech.flighttracker.streamdeck.generic.toggle"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "Horizon Button",
-      "States": [
+            "Icon": "Images/toggleIcon",
+            "Name": "Generic Toggle Button",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "PropertyInspectorPath": "PropertyInspector/GenericToggle.html",
+            "Tooltip": "Use the SimConnect variables to define the toggle button",
+            "UUID": "tech.flighttracker.streamdeck.generic.toggle"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Artifical horizon",
-      "UUID": "tech.flighttracker.streamdeck.artificial.horizon"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "NAV & COM",
-      "States": [
+            "Icon": "Images/toggleIcon",
+            "Name": "Generic Gauge",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "PropertyInspectorPath": "PropertyInspector/GenericGauge.html",
+            "Tooltip": "Genric gauge to display any numeric value. Setable limits for green, yellow and red",
+            "UUID": "tech.flighttracker.streamdeck.generic.gauge"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/NavCom.html",
-      "Tooltip": "Nav & Com",
-      "UUID": "tech.flighttracker.streamdeck.generic.navcom"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Master",
-      "States": [
+            "Icon": "Images/toggleIcon",
+            "Name": "Horizon Button",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Artifical horizon",
+            "UUID": "tech.flighttracker.streamdeck.artificial.horizon"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Activate/Deactivate AP",
-      "UUID": "tech.flighttracker.streamdeck.master.activate"
-    },
+            "Icon": "Images/toggleIcon",
+            "Name": "NAV & COM",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "PropertyInspectorPath": "PropertyInspector/NavCom.html",
+            "Tooltip": "Nav & Com",
+            "UUID": "tech.flighttracker.streamdeck.generic.navcom"
+        },
+        {
+            "Icon": "Images/toggleIcon",
+            "Name": "AP Master",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Activate/Deactivate AP",
+            "UUID": "tech.flighttracker.streamdeck.master.activate"
+        },
 
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Heading",
-      "States": [
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Activate/Deactivate AP heading hold",
-      "UUID": "tech.flighttracker.streamdeck.heading.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Nav",
-      "States": [
+            "Icon": "Images/toggleIcon",
+            "Name": "AP Heading",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Activate/Deactivate AP heading hold",
+            "UUID": "tech.flighttracker.streamdeck.heading.activate"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Activate/Deactivate AP Nav mode",
-      "UUID": "tech.flighttracker.streamdeck.nav.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Approach",
-      "States": [
+            "Icon": "Images/toggleIcon",
+            "Name": "AP Nav",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Activate/Deactivate AP Nav mode",
+            "UUID": "tech.flighttracker.streamdeck.nav.activate"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Activate/Deactivate AP Approach mode",
-      "UUID": "tech.flighttracker.streamdeck.approach.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Altitude",
-      "States": [
+            "Icon": "Images/toggleIcon",
+            "Name": "AP Approach",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Activate/Deactivate AP Approach mode",
+            "UUID": "tech.flighttracker.streamdeck.approach.activate"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Activate/Deactivate AP altitude hold",
-      "UUID": "tech.flighttracker.streamdeck.altitude.activate"
-    },
+            "Icon": "Images/toggleIcon",
+            "Name": "AP Altitude",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Activate/Deactivate AP altitude hold",
+            "UUID": "tech.flighttracker.streamdeck.altitude.activate"
+        },
 
-    {
-      "Icon": "Images/plusIcon",
-      "Name": "AP Heading Increase",
-      "States": [
         {
-          "Image": "Images/plus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Increase AP heading",
-      "UUID": "tech.flighttracker.streamdeck.heading.increase"
-    },
-    {
-      "Icon": "Images/minusIcon",
-      "Name": "AP Heading Decrease",
-      "States": [
+            "Icon": "Images/plusIcon",
+            "Name": "AP Heading Increase",
+            "States": [
+                {
+                    "Image": "Images/plus",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Increase AP heading",
+            "UUID": "tech.flighttracker.streamdeck.heading.increase"
+        },
         {
-          "Image": "Images/minus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Decrease AP heading",
-      "UUID": "tech.flighttracker.streamdeck.heading.decrease"
-    },
-    {
-      "Icon": "Images/plusIcon",
-      "Name": "AP Altitude Increase",
-      "States": [
+            "Icon": "Images/minusIcon",
+            "Name": "AP Heading Decrease",
+            "States": [
+                {
+                    "Image": "Images/minus",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Decrease AP heading",
+            "UUID": "tech.flighttracker.streamdeck.heading.decrease"
+        },
         {
-          "Image": "Images/plus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Increase AP altitude",
-      "UUID": "tech.flighttracker.streamdeck.altitude.increase"
-    },
-    {
-      "Icon": "Images/minusIcon",
-      "Name": "AP Altitude Decrease",
-      "States": [
+            "Icon": "Images/plusIcon",
+            "Name": "AP Altitude Increase",
+            "States": [
+                {
+                    "Image": "Images/plus",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Increase AP altitude",
+            "UUID": "tech.flighttracker.streamdeck.altitude.increase"
+        },
         {
-          "Image": "Images/minus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Decrease AP altitude",
-      "UUID": "tech.flighttracker.streamdeck.altitude.decrease"
-    },
+            "Icon": "Images/minusIcon",
+            "Name": "AP Altitude Decrease",
+            "States": [
+                {
+                    "Image": "Images/minus",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "Tooltip": "Decrease AP altitude",
+            "UUID": "tech.flighttracker.streamdeck.altitude.decrease"
+        },
 
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Enter",
-      "States": [
         {
-          "Image": "Images/button",
-          "Title": "Enter",
-          "TitleAlignment": "middle",
-          "FontSize": "12"
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Enter",
-      "UUID": "tech.flighttracker.streamdeck.number.enter"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Transfer",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Enter",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "Title": "Enter",
+                    "TitleAlignment": "middle",
+                    "FontSize": "12"
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Enter",
+            "UUID": "tech.flighttracker.streamdeck.number.enter"
+        },
         {
-          "Image": "Images/button",
-          "Title": "Xfer",
-          "TitleAlignment": "middle",
-          "FontSize": "12"
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Transfer",
-      "UUID": "tech.flighttracker.streamdeck.number.transfer"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Cancel",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Transfer",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "Title": "Xfer",
+                    "TitleAlignment": "middle",
+                    "FontSize": "12"
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Transfer",
+            "UUID": "tech.flighttracker.streamdeck.number.transfer"
+        },
         {
-          "Image": "Images/button",
-          "Title": "Cancel",
-          "TitleAlignment": "middle",
-          "FontSize": "12"
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Cancel",
-      "UUID": "tech.flighttracker.streamdeck.number.cancel"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Backspace",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Cancel",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "Title": "Cancel",
+                    "TitleAlignment": "middle",
+                    "FontSize": "12"
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Cancel",
+            "UUID": "tech.flighttracker.streamdeck.number.cancel"
+        },
         {
-          "Image": "Images/button",
-          "Title": "Bksp",
-          "TitleAlignment": "middle",
-          "FontSize": "12"
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Backspace",
-      "UUID": "tech.flighttracker.streamdeck.number.backspace"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Display Current Number",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Backspace",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "Title": "Bksp",
+                    "TitleAlignment": "middle",
+                    "FontSize": "12"
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Backspace",
+            "UUID": "tech.flighttracker.streamdeck.number.backspace"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Display Current Number",
-      "UUID": "tech.flighttracker.streamdeck.number.display"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 1",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Display Current Number",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Display Current Number",
+            "UUID": "tech.flighttracker.streamdeck.number.display"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 1",
-      "UUID": "tech.flighttracker.streamdeck.number.1"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 2",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 1",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 1",
+            "UUID": "tech.flighttracker.streamdeck.number.1"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 2",
-      "UUID": "tech.flighttracker.streamdeck.number.2"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 3",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 2",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 2",
+            "UUID": "tech.flighttracker.streamdeck.number.2"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 3",
-      "UUID": "tech.flighttracker.streamdeck.number.3"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 4",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 3",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 3",
+            "UUID": "tech.flighttracker.streamdeck.number.3"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 4",
-      "UUID": "tech.flighttracker.streamdeck.number.4"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 5",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 4",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 4",
+            "UUID": "tech.flighttracker.streamdeck.number.4"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 5",
-      "UUID": "tech.flighttracker.streamdeck.number.5"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 6",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 5",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 5",
+            "UUID": "tech.flighttracker.streamdeck.number.5"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 6",
-      "UUID": "tech.flighttracker.streamdeck.number.6"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 7",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 6",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 6",
+            "UUID": "tech.flighttracker.streamdeck.number.6"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 7",
-      "UUID": "tech.flighttracker.streamdeck.number.7"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 8",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 7",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 7",
+            "UUID": "tech.flighttracker.streamdeck.number.7"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 8",
-      "UUID": "tech.flighttracker.streamdeck.number.8"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 9",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 8",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 8",
+            "UUID": "tech.flighttracker.streamdeck.number.8"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 9",
-      "UUID": "tech.flighttracker.streamdeck.number.9"
-    },
-    {
-      "Icon": "Images/numberIcon",
-      "Name": "Number 0",
-      "States": [
+            "Icon": "Images/numberIcon",
+            "Name": "Number 9",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 9",
+            "UUID": "tech.flighttracker.streamdeck.number.9"
+        },
         {
-          "Image": "Images/button",
-          "ShowTitle": false
+            "Icon": "Images/numberIcon",
+            "Name": "Number 0",
+            "States": [
+                {
+                    "Image": "Images/button",
+                    "ShowTitle": false
+                }
+            ],
+            "SupportedInMultiActions": false,
+            "VisibleInActionsList": false,
+            "Tooltip": "Number 0",
+            "UUID": "tech.flighttracker.streamdeck.number.0"
         }
-      ],
-      "SupportedInMultiActions": false,
-      "VisibleInActionsList": false,
-      "Tooltip": "Number 0",
-      "UUID": "tech.flighttracker.streamdeck.number.0"
-    }
-  ],
+    ],
   "Profiles": [
     {
       "Name": "Profiles/Numpad",

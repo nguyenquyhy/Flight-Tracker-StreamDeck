@@ -12,13 +12,34 @@ namespace FlightStreamDeck.Logics.Tests
     public class ImageLogicTests
     {
         [TestMethod()]
-        public void GetImageTest()
+        public void GetHorizonImageTest()
         {
             ImageLogic images = new ImageLogic();
 
             string result = images.GetHorizonImage(30, 20, 359);
             
-            var path = @"result\export.png";
+            var path = @"result\horizon.png";
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            using (FileStream fs = File.Create(path))
+            {
+                var bytes = Convert.FromBase64String(result.Substring(23));
+                fs.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        [TestMethod()]
+        public void GetGaugeImageTest()
+        {
+            ImageLogic images = new ImageLogic();
+
+            string result = images.GetGaugeImage("Throttle", 100, 0, 100);
+
+            var path = @"result\gauge.png";
 
             if (File.Exists(path))
             {

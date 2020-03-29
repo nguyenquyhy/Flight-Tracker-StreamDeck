@@ -77,6 +77,9 @@
     <None Update="Images\categoryIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Images\gauge.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Images\horizon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -121,6 +124,9 @@
     </None>
     <None Update="Profiles\Numpad_XL.streamDeckProfile">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PropertyInspector\GenericGauge.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="PropertyInspector\GenericToggle.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
