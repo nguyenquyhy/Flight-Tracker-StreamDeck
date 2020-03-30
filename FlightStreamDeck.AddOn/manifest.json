@@ -25,7 +25,7 @@
             ],
             "SupportedInMultiActions": false,
             "PropertyInspectorPath": "PropertyInspector/GenericGauge.html",
-            "Tooltip": "Genric gauge to display any numeric value. Setable limits for green, yellow and red",
+            "Tooltip": "Genric gauge to display any numeric value with setable limits.",
             "UUID": "tech.flighttracker.streamdeck.generic.gauge"
         },
         {
