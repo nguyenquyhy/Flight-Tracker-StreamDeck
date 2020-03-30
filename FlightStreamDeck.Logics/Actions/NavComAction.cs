@@ -1,8 +1,10 @@
 ﻿using FlightStreamDeck.Core;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
+using SharpDeck.Enums;
 using SharpDeck.Events.Received;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -11,10 +13,13 @@ namespace FlightStreamDeck.Logics.Actions
     class NavComAction : StreamDeckAction
     {
         private const int HOLD_DURATION_MILLISECONDS = 1000;
+        
+        private readonly RegistrationParameters registration;
         private readonly IImageLogic imageLogic;
         private readonly IFlightConnector flightConnector;
         private readonly Timer timer;
-        private string device;
+
+        private IdentifiableDeviceInfo device;
         private string type;
         private TOGGLE_VALUE? active;
         private TOGGLE_VALUE? standby;
@@ -24,10 +29,13 @@ namespace FlightStreamDeck.Logics.Actions
 
         public NavComAction(IImageLogic imageLogic, IFlightConnector flightConnector)
         {
+            registration = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
+
             this.imageLogic = imageLogic;
             this.flightConnector = flightConnector;
             timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
             timer.Elapsed += Timer_Elapsed;
+            
         }
 
         private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -42,8 +50,9 @@ namespace FlightStreamDeck.Logics.Actions
                 DeckLogic.NumpadValue = "1";
                 DeckLogic.NumpadTcs = new TaskCompletionSource<string>();
 
-                var param = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
-                await StreamDeck.SwitchToProfileAsync(param.PluginUUID, device, "Profiles/Numpad");
+                await StreamDeck.SwitchToProfileAsync(registration.PluginUUID, 
+                    device.Id, 
+                    device.Type == DeviceType.StreamDeckXL ? "Profiles/Numpad_XL" : "Profiles/Numpad");
 
                 var result = await DeckLogic.NumpadTcs.Task;
                 if (!string.IsNullOrEmpty(result))
@@ -67,7 +76,6 @@ namespace FlightStreamDeck.Logics.Actions
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
-            device = args.Device;
 
             type = args.Payload.Settings.Value<string>("Type");
             await SetImageAsync(imageLogic.GetNavComImage(type));
@@ -85,13 +93,19 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            timer.Start();
+            var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
+            if (device.Type != DeviceType.StreamDeckMini)
+            {
+                this.device = device;
+                timer.Start();
+            }
             return Task.CompletedTask;
         }
 
         protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
         {
-            if (timer.Enabled)
+            var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
+            if (timer.Enabled || device.Type == DeviceType.StreamDeckMini)
             {
                 timer.Stop();
                 // Transfer
