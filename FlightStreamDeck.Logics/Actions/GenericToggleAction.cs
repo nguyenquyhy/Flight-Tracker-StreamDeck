@@ -62,6 +62,11 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_EVENT? GetEventValue(string value)
         {
+            if (value == null)
+            {
+                return null;
+            }
+
             TOGGLE_EVENT result;
             if (Enum.TryParse(value, true, out result))
             {
@@ -73,6 +78,11 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_VALUE? GetValueValue(string value)
         {
+            if (value == null)
+            {
+                return null;
+            }
+
             TOGGLE_VALUE result;
             if (Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out result))
             {
