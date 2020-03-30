@@ -593,12 +593,11 @@ namespace FlightStreamDeck.SimConnectFSX
 
             if (genericEvents.Contains(toggleAction))
             {
-                logger.LogInformation("Already registered: {1}", toggleAction);
                 return;
             }
 
             genericEvents.Add(toggleAction);
-            logger.LogInformation("RegisterEvent {1} {2}", toggleAction, toggleAction.ToString());
+            logger.LogInformation("RegisterEvent {1}", toggleAction);
             simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
         }
 
