@@ -37,7 +37,7 @@ namespace FlightStreamDeck.Logics.Tests
         {
             ImageLogic images = new ImageLogic();
 
-            string result = images.GetGaugeImage("Throttle", 100, 0, 100);
+            string result = images.GetGaugeImage("TRQ", 50, 0, 100);
 
             var path = @"result\gauge.png";
 

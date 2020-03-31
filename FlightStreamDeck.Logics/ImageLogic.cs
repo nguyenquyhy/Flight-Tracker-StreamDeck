@@ -161,27 +161,30 @@ namespace FlightStreamDeck.Logics
 
         public string GetGaugeImage(string text, float value, float min, float max)
         {
-            var font = SystemFonts.CreateFont("Arial", 23, FontStyle.Regular);
+            var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
             var pen = new Pen(Color.DarkRed, 5);
             var range = max - min;
 
             if (range <= 0)
             {
-                throw new InvalidDataException("Delta can't be 0");
+                range = 1;
             }
 
             using var img = gaugeImage.Clone(ctx =>
             {
-                var startPoint = new PointF(HALF_WIDTH, 50);
+                double angleOffset = Math.PI * -1.25;
+                double angle = Math.PI * ((value - min) / range) + angleOffset;
+
+                var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
                 var middlePoint = new PointF(
-                    (float)((HALF_WIDTH - 16) * Math.Cos(Math.PI * (value / range) - Math.PI)),
-                    (float)((HALF_WIDTH - 16) * Math.Sin(Math.PI * (value / range) - Math.PI))
+                    (float)((HALF_WIDTH - 16) * Math.Cos(angle)),
+                    (float)((HALF_WIDTH - 16) * Math.Sin(angle))
                     );
 
                 var endPoint = new PointF(
-                    (float)(HALF_WIDTH * Math.Cos(Math.PI * (value / range) - Math.PI)),
-                    (float)(HALF_WIDTH * Math.Sin(Math.PI * (value / range) - Math.PI))
+                    (float)(HALF_WIDTH * Math.Cos(angle)),
+                    (float)(HALF_WIDTH * Math.Sin(angle))
                     );
 
                 PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
@@ -189,11 +192,11 @@ namespace FlightStreamDeck.Logics
                 ctx.DrawLines(pen, needle);
 
                 var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 2));
+                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 57));
 
                 var valueText = value.ToString();
                 size = TextMeasurer.Measure(valueText, new RendererOptions(font));
-                ctx.DrawText(valueText, font, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 50));
+                ctx.DrawText(valueText, font, Color.White, new PointF(25, 30));
             });
 
             using var memoryStream = new MemoryStream();
