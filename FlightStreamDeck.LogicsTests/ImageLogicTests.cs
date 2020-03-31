@@ -16,7 +16,7 @@ namespace FlightStreamDeck.Logics.Tests
         {
             ImageLogic images = new ImageLogic();
 
-            string result = images.GetHorizonImage(30, 20, 359);
+            string result = images.GetHorizonImage(-10, 20, 359);
             
             var path = @"result\horizon.png";
 

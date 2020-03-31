@@ -15,7 +15,7 @@
             "UUID": "tech.flighttracker.streamdeck.generic.toggle"
         },
         {
-            "Icon": "Images/toggleIcon",
+            "Icon": "Images/gaugeIcon",
             "Name": "Generic Gauge",
             "States": [
                 {
@@ -29,7 +29,7 @@
             "UUID": "tech.flighttracker.streamdeck.generic.gauge"
         },
         {
-            "Icon": "Images/toggleIcon",
+            "Icon": "Images/horizonIcon",
             "Name": "Horizon Button",
             "States": [
                 {
