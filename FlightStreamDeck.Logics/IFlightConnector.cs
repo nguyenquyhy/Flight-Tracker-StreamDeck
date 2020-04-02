@@ -15,10 +15,14 @@ namespace FlightStreamDeck.Logics
         void ApNavToggle();
         void ApAprToggle();
         void ApAltToggle();
+
+        /// <param name="heading">In Degree</param>
         void ApHdgSet(uint heading);
         void ApHdgInc();
         void ApHdgDec();
-        void ApAltSet(int altitude);
+
+        /// <param name="altitude">In Feet</param>
+        void ApAltSet(uint altitude);
         void ApAltInc();
         void ApAltDec();
 
