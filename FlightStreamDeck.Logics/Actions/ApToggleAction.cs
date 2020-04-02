@@ -2,6 +2,7 @@
 using SharpDeck;
 using SharpDeck.Events.Received;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
@@ -10,15 +11,36 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly ILogger<ApToggleAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
-
+        private readonly Timer timer;
         private AircraftStatus status = null;
         private string action;
+        private bool timerHasTick;
 
         public ApToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
+            timer = new Timer { Interval = 1000 };
+            timer.Elapsed += Timer_Elapsed;
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            timerHasTick = true;
+            timer.Stop();
+
+            var currentStatus = status;
+            if (currentStatus != null)
+            {
+                switch (action)
+                {
+                    case "tech.flighttracker.streamdeck.heading.activate":
+                        logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
+                        flightConnector.ApHdgSet((uint)currentStatus.Heading);
+                        break;
+                }
+            }
         }
 
         private async void FlightConnector_AircraftStatusUpdated(object sender, AircraftStatusUpdatedEventArgs e)
@@ -85,39 +107,52 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            var currentStatus = status;
-            if (currentStatus != null)
+            timerHasTick = false;
+            string action1 = args.Action;
+            action = action1;
+            timer.Start();
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
+        {
+            timer.Stop();
+            if (!timerHasTick)
             {
-                switch (action)
+                var currentStatus = status;
+                if (currentStatus != null)
                 {
-                    case "tech.flighttracker.streamdeck.master.activate":
-                        logger.LogInformation("Toggle AP Master. Current state: {state}.", currentStatus.IsAutopilotOn);
-                        flightConnector.ApToggle();
-                        break;
+                    switch (action)
+                    {
+                        case "tech.flighttracker.streamdeck.master.activate":
+                            logger.LogInformation("Toggle AP Master. Current state: {state}.", currentStatus.IsAutopilotOn);
+                            flightConnector.ApToggle();
+                            break;
 
-                    case "tech.flighttracker.streamdeck.heading.activate":
-                        logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
-                        flightConnector.ApHdgToggle();
-                        break;
+                        case "tech.flighttracker.streamdeck.heading.activate":
+                            logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
+                            flightConnector.ApHdgToggle();
+                            break;
 
-                    case "tech.flighttracker.streamdeck.nav.activate":
-                        logger.LogInformation("Toggle AP NAV. Current state: {state}.", currentStatus.IsApNavOn);
-                        flightConnector.ApNavToggle();
-                        break;
+                        case "tech.flighttracker.streamdeck.nav.activate":
+                            logger.LogInformation("Toggle AP NAV. Current state: {state}.", currentStatus.IsApNavOn);
+                            flightConnector.ApNavToggle();
+                            break;
 
-                    case "tech.flighttracker.streamdeck.approach.activate":
-                        logger.LogInformation("Toggle AP APR. Current state: {state}.", currentStatus.IsApAprOn);
-                        flightConnector.ApAprToggle();
-                        break;
+                        case "tech.flighttracker.streamdeck.approach.activate":
+                            logger.LogInformation("Toggle AP APR. Current state: {state}.", currentStatus.IsApAprOn);
+                            flightConnector.ApAprToggle();
+                            break;
 
-                    case "tech.flighttracker.streamdeck.altitude.activate":
-                        logger.LogInformation("Toggle AP ALT. Current state: {state}.", currentStatus.IsApAltOn);
-                        flightConnector.ApAltToggle();
-                        break;
+                        case "tech.flighttracker.streamdeck.altitude.activate":
+                            logger.LogInformation("Toggle AP ALT. Current state: {state}.", currentStatus.IsApAltOn);
+                            flightConnector.ApAltToggle();
+                            break;
 
+                    }
                 }
             }
-
+            timerHasTick = false;
             return Task.CompletedTask;
         }
 
