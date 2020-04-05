@@ -1,9 +1,11 @@
 ﻿using FlightStreamDeck.Core;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Enums;
 using SharpDeck.Events.Received;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
@@ -13,8 +15,9 @@ namespace FlightStreamDeck.Logics.Actions
     class NavComAction : StreamDeckAction
     {
         private const int HOLD_DURATION_MILLISECONDS = 1000;
-        
+
         private readonly RegistrationParameters registration;
+        private readonly ILogger<NavComAction> logger;
         private readonly IImageLogic imageLogic;
         private readonly IFlightConnector flightConnector;
         private readonly Timer timer;
@@ -27,15 +30,16 @@ namespace FlightStreamDeck.Logics.Actions
         private SET_EVENT? set;
         private string mask;
 
-        public NavComAction(IImageLogic imageLogic, IFlightConnector flightConnector)
+        public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector)
         {
             registration = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
 
+            this.logger = logger;
             this.imageLogic = imageLogic;
             this.flightConnector = flightConnector;
             timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
             timer.Elapsed += Timer_Elapsed;
-            
+
         }
 
         private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -46,29 +50,63 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 var set = this.set;
                 var mask = this.mask;
-                DeckLogic.NumpadType = type;
-                DeckLogic.NumpadValue = "1";
-                DeckLogic.NumpadTcs = new TaskCompletionSource<string>();
+                var min = type switch
+                {
+                    "NAV1" => "10800",
+                    "NAV2" => "10800",
+                    "COM1" => "11800",
+                    "COM2" => "11800",
+                    _ => throw new ArgumentException($"{type} is not supported for numpad")
+                };
+                DeckLogic.NumpadParams = new NumpadParams(
+                    type,
+                    min,
+                    type switch
+                    {
+                        "NAV1" => "11795",
+                        "NAV2" => "11795",
+                        "COM1" => "13697",
+                        "COM2" => "13697",
+                        _ => throw new ArgumentException($"{type} is not supported for numpad")
+                    }
+                );
+                DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
 
-                await StreamDeck.SwitchToProfileAsync(registration.PluginUUID, 
-                    device.Id, 
+                var toggle = this.toggle;
+
+                this.initializationTcs = new TaskCompletionSource<bool>();
+
+                await StreamDeck.SwitchToProfileAsync(registration.PluginUUID,
+                    device.Id,
                     device.Type == DeviceType.StreamDeckXL ? "Profiles/Numpad_XL" : "Profiles/Numpad");
 
-                var result = await DeckLogic.NumpadTcs.Task;
-                if (!string.IsNullOrEmpty(result))
+                await initializationTcs.Task;
+
+                var (value, swap) = await DeckLogic.NumpadTcs.Task;
+                if (!string.IsNullOrEmpty(value))
                 {
-                    result += "11800".Substring(result.Length);
-                    // NOTE: ignore first 1
-                    result = result[1..];
+                    value += min.Substring(value.Length);
+
+                    if (type == "NAV1" || type == "NAV2" || type == "COM1" || type == "COM2")
+                    {
+                        // NOTE: SimConnect ignore first 1
+                        value = value[1..];
+                    }
 
                     // BCD encode
                     uint data = 0;
-                    for (var i = 0; i < result.Length; i++)
+                    for (var i = 0; i < value.Length; i++)
                     {
-                        uint digit = (byte)result[i] - (uint)48;
+                        uint digit = (byte)value[i] - (uint)48;
                         data = data * 16 + digit;
                     }
                     flightConnector.Set(set.Value, data);
+
+                    if (toggle != null && swap)
+                    {
+                        await Task.Delay(500);
+                        flightConnector.Toggle(toggle.Value);
+                    }
                 }
             }
         }
@@ -81,6 +119,12 @@ namespace FlightStreamDeck.Logics.Actions
             await SetImageAsync(imageLogic.GetNavComImage(type));
 
             SwitchTo(type);
+
+            if (initializationTcs != null)
+            {
+                logger.LogDebug("Trigger Task completion for initialization");
+                initializationTcs.SetResult(true);
+            }
         }
 
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
@@ -108,8 +152,8 @@ namespace FlightStreamDeck.Logics.Actions
             if (timer.Enabled || device.Type == DeviceType.StreamDeckMini)
             {
                 timer.Stop();
-                // Transfer
 
+                // Transfer
                 if (toggle != null)
                 {
                     flightConnector.Toggle(toggle.Value);
@@ -126,6 +170,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         string lastValue1 = null;
         string lastValue2 = null;
+        private TaskCompletionSource<bool> initializationTcs;
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
@@ -149,13 +194,18 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void SwitchTo(string type)
         {
+            var existing = new List<TOGGLE_VALUE>();
             if (active != null)
             {
-                flightConnector.DeRegisterSimValue(active.Value);
+                existing.Add(active.Value);
             }
             if (standby != null)
-            { 
-                flightConnector.DeRegisterSimValue(standby.Value);
+            {
+                existing.Add(standby.Value);
+            }
+            if (existing.Count > 0)
+            {
+                flightConnector.DeRegisterSimValues(existing.ToArray());
             }
             switch (type)
             {
@@ -170,7 +220,7 @@ namespace FlightStreamDeck.Logics.Actions
                     active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2;
                     standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2;
                     toggle = TOGGLE_EVENT.NAV2_RADIO_SWAP;
-                    set = SET_EVENT.NAV2_STBY_SET; 
+                    set = SET_EVENT.NAV2_STBY_SET;
                     mask = "108.00";
                     break;
                 case "COM1":
@@ -196,13 +246,9 @@ namespace FlightStreamDeck.Logics.Actions
                     lastValue2 = null;
                     break;
             }
-            if (active != null)
+            if (type != null)
             {
-                flightConnector.RegisterSimValue(active.Value);
-            }
-            if (standby != null)
-            { 
-                flightConnector.RegisterSimValue(standby.Value);
+                flightConnector.RegisterSimValues(active.Value, standby.Value);
             }
             if (toggle != null)
             {

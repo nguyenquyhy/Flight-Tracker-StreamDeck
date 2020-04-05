@@ -15,29 +15,28 @@ namespace FlightStreamDeck.Logics.Actions
                 case "tech.flighttracker.streamdeck.number.enter":
                     if (DeckLogic.NumpadTcs != null)
                     {
-                        DeckLogic.NumpadTcs.SetResult(DeckLogic.NumpadValue);
+                        DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, false));
                     }
                     await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.cancel":
                     if (DeckLogic.NumpadTcs != null)
                     {
-                        DeckLogic.NumpadTcs.SetResult(null);
+                        DeckLogic.NumpadTcs.SetResult((null, false));
                     }
                     await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.transfer":
                     if (DeckLogic.NumpadTcs != null)
                     {
-                        DeckLogic.NumpadTcs.SetResult(DeckLogic.NumpadValue);
+                        DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, true));
                     }
-                    // TODO: signal swap
                     await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.backspace":
-                    if (DeckLogic.NumpadValue.Length > 1)
+                    if (DeckLogic.NumpadParams.Value.Length > 1)
                     {
-                        DeckLogic.NumpadValue = DeckLogic.NumpadValue[..^1];
+                        DeckLogic.NumpadParams.Value = DeckLogic.NumpadParams.Value[..^1];
                     }
                     break;
             }

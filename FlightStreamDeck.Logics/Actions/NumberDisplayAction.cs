@@ -20,17 +20,17 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (lastValue != DeckLogic.NumpadValue)
+            if (lastValue != DeckLogic.NumpadParams.Value)
             {
-                lastValue = DeckLogic.NumpadValue;
+                lastValue = DeckLogic.NumpadParams.Value;
 
-                var value = DeckLogic.NumpadValue;
+                var value = DeckLogic.NumpadParams.Value;
                 if (value.Length > 3)
                 {
                     value = value.Insert(3, ".");
                 }
 
-                await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadType, "", value));
+                await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, "", value));
             }
         }
 

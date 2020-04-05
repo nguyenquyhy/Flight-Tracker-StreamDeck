@@ -8,11 +8,25 @@ using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics
 {
+    public class NumpadParams
+    {
+        public NumpadParams(string type, string min, string max)
+        {
+            Type = type;
+            MinPattern = min;
+            MaxPattern = max;
+        }
+
+        public string Type { get; }
+        public string MinPattern { get; }
+        public string MaxPattern { get; }
+        public string Value { get; set; } = "";
+    }
+
     public class DeckLogic
     {
-        public static string NumpadType { get; set; }
-        public static string NumpadValue { get; set; }
-        public static TaskCompletionSource<string> NumpadTcs { get; set; }
+        public static NumpadParams NumpadParams { get; set; }
+        public static TaskCompletionSource<(string value, bool swap)> NumpadTcs { get; set; }
 
         private readonly ILoggerFactory loggerFactory;
         private readonly IServiceProvider serviceProvider;

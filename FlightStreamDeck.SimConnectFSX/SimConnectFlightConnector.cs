@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FlightSimulator.SimConnect;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace FlightStreamDeck.SimConnectFSX
         private List<SET_EVENT> setEvents = new List<SET_EVENT>();
 
         private List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
-        private List<TOGGLE_VALUE> genericValues = new List<TOGGLE_VALUE>();
+        private readonly HashSet<TOGGLE_VALUE> genericValues = new HashSet<TOGGLE_VALUE>();
         private EventValueLibrary eventLib = new EventValueLibrary();
 
         private readonly object lockLists = new object();
@@ -512,9 +513,10 @@ namespace FlightStreamDeck.SimConnectFSX
 
                             for (int i = 0; i < data.dwDefineCount; i++)
                             {
-                                int decimals = eventLib.GetDecimals(genericValues[i]);
+                                var genericValue = genericValues.ElementAt(i);
+                                int decimals = eventLib.GetDecimals(genericValue);
                                 double toggleValue = Math.Round(dataArray.Value.Get(i), decimals);
-                                result.Add(genericValues[i], toggleValue.ToString("F" + decimals.ToString()));
+                                result.Add(genericValue, toggleValue.ToString("F" + decimals.ToString()));
                             }
                         }
 
@@ -620,14 +622,12 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             lock (lockLists)
             {
-                if (genericValues.Contains(simValue))
-                {
-                    return;
-                }
-
                 bool isEmpty = genericValues.Count == 0;
-                genericValues.Add(simValue);
-                RegisterGenericValues(isEmpty);
+
+                if (genericValues.Add(simValue))
+                {
+                    RegisterGenericValues(isEmpty);
+                }
             }
         }
 
@@ -637,6 +637,36 @@ namespace FlightStreamDeck.SimConnectFSX
             {
                 logger.LogInformation("De-Registering {1}", simValue);
                 genericValues.Remove(simValue);
+                RegisterGenericValues(false);
+            }
+        }
+
+        public void RegisterSimValues(params TOGGLE_VALUE[] simValues)
+        {
+            lock (lockLists)
+            {
+                bool isEmpty = genericValues.Count == 0;
+                var changed = false;
+                foreach (var simValue in simValues)
+                {
+                    changed |= genericValues.Add(simValue);
+                }
+                if (changed)
+                {
+                    RegisterGenericValues(isEmpty);
+                }
+            }
+        }
+
+        public void DeRegisterSimValues(params TOGGLE_VALUE[] simValues)
+        {
+            lock (lockLists)
+            {
+                logger.LogInformation("De-Registering {values}", string.Join(", ", simValues));
+                foreach (var simValue in simValues)
+                {
+                    genericValues.Remove(simValue);
+                }
                 RegisterGenericValues(false);
             }
         }
