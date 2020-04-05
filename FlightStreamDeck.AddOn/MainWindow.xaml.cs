@@ -31,6 +31,7 @@ namespace FlightStreamDeck.AddOn
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            this.Hide();
             deckLogic.Initialize();
 
             // Initialize SimConnect
