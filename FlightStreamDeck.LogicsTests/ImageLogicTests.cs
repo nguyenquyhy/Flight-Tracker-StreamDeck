@@ -18,7 +18,7 @@ namespace FlightStreamDeck.Logics.Tests
 
             string result = images.GetHorizonImage(-10, 20, 359);
             
-            var path = @"result\horizon.png";
+            var path = @"Images\horizon.png";
 
             if (File.Exists(path))
             {
@@ -39,7 +39,7 @@ namespace FlightStreamDeck.Logics.Tests
 
             string result = images.GetGaugeImage("TRQ", 50, 0, 100);
 
-            var path = @"result\gauge.png";
+            var path = @"Images\gauge.png";
 
             if (File.Exists(path))
             {

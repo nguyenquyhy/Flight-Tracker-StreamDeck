@@ -121,6 +121,10 @@ namespace FlightStreamDeck.Logics.Actions
                 float newValue = 0;
                 float.TryParse(e.GenericValueStatus[displayValue.Value], out newValue);
                 isUpdated = currentValue != newValue;
+                if (displayValue.Value == TOGGLE_VALUE.ELEVATOR_TRIM_POSITION)
+                {
+                    newValue = newValue * -1;
+                }
                 currentValue = newValue;
             }
 

@@ -161,7 +161,7 @@ namespace FlightStreamDeck.Logics
 
         public string GetGaugeImage(string text, float value, float min, float max)
         {
-            var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
+            var font = SystemFonts.CreateFont("Arial", 20, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
             var pen = new Pen(Color.DarkRed, 5);
             var range = max - min;
@@ -192,7 +192,7 @@ namespace FlightStreamDeck.Logics
                 ctx.DrawLines(pen, needle);
 
                 var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 57));
+                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 57));
 
                 var valueText = value.ToString();
                 size = TextMeasurer.Measure(valueText, new RendererOptions(font));

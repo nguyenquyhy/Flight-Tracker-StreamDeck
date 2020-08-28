@@ -48,7 +48,7 @@ namespace FlightStreamDeck.AddOn
 
                 try
                 {
-                    await InitializeSimConnectAsync(simConnect);
+                    await InitializeSimConnectAsync(simConnect, true);
                 }
                 catch (BadImageFormatException ex)
                 {
@@ -79,7 +79,7 @@ namespace FlightStreamDeck.AddOn
             }
         }
 
-        private async Task InitializeSimConnectAsync(SimConnectFlightConnector simConnect)
+        private async Task InitializeSimConnectAsync(SimConnectFlightConnector simConnect, bool showConnect = false)
         {
             myNotifyIcon.Icon = new Icon("Images/button@2x.ico");
             while (true)
@@ -88,7 +88,7 @@ namespace FlightStreamDeck.AddOn
                 {
                     simConnect.Initialize(Handle);
                     myNotifyIcon.Icon = new Icon("Images/button_active@2x.ico");
-                    simConnect.Send("Connected to Stream Deck plugin");
+                    if (showConnect) simConnect.Send("Connected to Stream Deck plugin");
                     break;
                 }
                 catch (COMException)
