@@ -15,7 +15,7 @@ namespace FlightStreamDeck.Logics
     {
         string GetImage(string text, bool active, string value = null);
         string GetNumberImage(int number);
-        string GetNavComImage(string type, string value1 = null, string value2 = null);
+        string GetNavComImage(string type, string value1 = null, string value2 = null, bool showMainOnly = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
         public string GetGaugeImage(string text, float value, float min, float max);
     }
@@ -81,10 +81,10 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        public string GetNavComImage(string type, string value1 = null, string value2 = null)
+        public string GetNavComImage(string type, string value1 = null, string value2 = null, bool showMainOnly = false)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
-            var valueFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
+            var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 13, FontStyle.Regular);
 
             Image img = backGround;
             using var img2 = img.Clone(ctx =>
@@ -102,7 +102,7 @@ namespace FlightStreamDeck.Logics
                     var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
                     ctx.DrawText(value1, valueFont, Color.Yellow, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
                 }
-                if (!string.IsNullOrWhiteSpace(value2))
+                if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
                     var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
                     ctx.DrawText(value2, valueFont, Color.White, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));

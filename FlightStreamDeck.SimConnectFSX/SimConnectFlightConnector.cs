@@ -686,7 +686,7 @@ namespace FlightStreamDeck.SimConnectFSX
                 string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
                 logger.LogInformation("RegisterValue {1} {2}", simValue, value);
 
-                simconnect.AddToDataDefinition(
+                simconnect?.AddToDataDefinition(
                     DEFINITIONS.GenericData,
                     value,
                     eventLib.GetUnit(simValue),
@@ -696,7 +696,7 @@ namespace FlightStreamDeck.SimConnectFSX
                 );
             }
 
-            simconnect.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
+            simconnect?.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
         }
 
         public void Toggle(TOGGLE_EVENT toggleAction)

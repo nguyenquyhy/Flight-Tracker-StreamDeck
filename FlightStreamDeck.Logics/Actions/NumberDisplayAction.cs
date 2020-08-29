@@ -25,9 +25,11 @@ namespace FlightStreamDeck.Logics.Actions
                 lastValue = DeckLogic.NumpadParams.Value;
 
                 var value = DeckLogic.NumpadParams.Value;
-                if (value.Length > 3)
+                var decIndex = DeckLogic.NumpadParams.Mask.IndexOf(".");
+
+                if (value.Length > decIndex && decIndex >= 0)
                 {
-                    value = value.Insert(3, ".");
+                    value = value.Insert(decIndex, ".");
                 }
 
                 await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, "", value));
