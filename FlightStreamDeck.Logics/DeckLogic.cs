@@ -9,17 +9,19 @@ namespace FlightStreamDeck.Logics
 {
     public class NumpadParams
     {
-        public NumpadParams(string type, string min, string max)
+        public NumpadParams(string type, string min, string max, string mask)
         {
             Type = type;
             MinPattern = min;
             MaxPattern = max;
+            Mask = mask;
         }
 
         public string Type { get; }
         public string MinPattern { get; }
         public string MaxPattern { get; }
         public string Value { get; set; } = "";
+        public string Mask { get; set; } = "xxx.xx";
     }
 
     public class DeckLogic

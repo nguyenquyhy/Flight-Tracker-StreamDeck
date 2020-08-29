@@ -57,6 +57,7 @@ namespace FlightStreamDeck.Logics.Actions
                     "NAV2" => "10800",
                     "COM1" => "11800",
                     "COM2" => "11800",
+                    "XPDR" => "0000",
                     _ => throw new ArgumentException($"{type} is not supported for numpad")
                 };
                 DeckLogic.NumpadParams = new NumpadParams(
@@ -68,8 +69,10 @@ namespace FlightStreamDeck.Logics.Actions
                         "NAV2" => "11795",
                         "COM1" => "13697",
                         "COM2" => "13697",
+                        "XPDR" => "9999",
                         _ => throw new ArgumentException($"{type} is not supported for numpad")
-                    }
+                    },
+                    mask
                 );
                 DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
 
@@ -177,20 +180,24 @@ namespace FlightStreamDeck.Logics.Actions
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
             string value1 = null, value2 = null;
+            bool showMainOnly = false;
+
             if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
             {
+                showMainOnly = true;
                 value1 = e.GenericValueStatus[active.Value];
             }
             if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
             {
                 value2 = e.GenericValueStatus[standby.Value];
+                showMainOnly = active != null && active.Value == standby.Value;
             }
 
             if (lastValue1 != value1 || lastValue2 != value2)
             {
                 lastValue1 = value1;
                 lastValue2 = value2;
-                await SetImageAsync(imageLogic.GetNavComImage(type, value1, value2));
+                await SetImageAsync(imageLogic.GetNavComImage(type, value1, value2, showMainOnly));
             }
         }
 
@@ -238,6 +245,13 @@ namespace FlightStreamDeck.Logics.Actions
                     toggle = TOGGLE_EVENT.COM2_RADIO_SWAP;
                     set = SET_EVENT.COM2_STBY_RADIO_SET;
                     mask = "118.00";
+                    break;
+                case "XPDR":
+                    active = TOGGLE_VALUE.TRANSPONDER_CODE__1;
+                    standby = TOGGLE_VALUE.TRANSPONDER_CODE__1;
+                    toggle = null;
+                    set = SET_EVENT.XPNDR_SET;
+                    mask = "1200";
                     break;
                 default:
                     active = null;

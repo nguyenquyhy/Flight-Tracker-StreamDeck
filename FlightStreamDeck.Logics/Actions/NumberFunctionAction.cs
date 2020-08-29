@@ -48,7 +48,7 @@ namespace FlightStreamDeck.Logics.Actions
                     await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.backspace":
-                    if (DeckLogic.NumpadParams.Value.Length > 1)
+                    if (DeckLogic.NumpadParams.Value.Length > 0)
                     {
                         DeckLogic.NumpadParams.Value = DeckLogic.NumpadParams.Value[..^1];
                     }
