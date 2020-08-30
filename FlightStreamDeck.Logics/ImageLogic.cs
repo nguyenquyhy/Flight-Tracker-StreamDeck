@@ -15,7 +15,8 @@ namespace FlightStreamDeck.Logics
     {
         string GetImage(string text, bool active, string value = null);
         string GetNumberImage(int number);
-        string GetNavComImage(string type, string value1 = null, string value2 = null, bool showMainOnly = false);
+        string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, bool valid = false);
+        string GetNavComActionLabel(string label, bool error = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
         public string GetGaugeImage(string text, float value, float min, float max);
     }
@@ -64,7 +65,7 @@ namespace FlightStreamDeck.Logics
         /// <returns>Base64 image data</returns>
         public string GetNumberImage(int number)
         {
-            var font = SystemFonts.CreateFont("Arial", 20, FontStyle.Bold);
+            var font = SystemFonts.CreateFont("Arial", 36, FontStyle.Bold);
 
             var text = number.ToString();
             Image img = backGround;
@@ -81,7 +82,7 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        public string GetNavComImage(string type, string value1 = null, string value2 = null, bool showMainOnly = false)
+        public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, bool valid = false)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 13, FontStyle.Regular);
@@ -94,18 +95,47 @@ namespace FlightStreamDeck.Logics
                 if (type != null)
                 {
                     var size = TextMeasurer.Measure(type, new RendererOptions(font));
-                    ctx.DrawText(type, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    Color displayColor = dependant ? Color.White : Color.LightGray;
+                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
                 }
 
                 if (!string.IsNullOrWhiteSpace(value1))
                 {
                     var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
-                    ctx.DrawText(value1, valueFont, Color.Yellow, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
+                    Color displayColor = dependant ? Color.Yellow : Color.LightGray;
+                    ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
                 }
                 if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
                     var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
-                    ctx.DrawText(value2, valueFont, Color.White, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));
+                    Color displayColor = dependant ? Color.White : Color.LightGray;
+                    if (string.IsNullOrWhiteSpace(value1))
+                    {
+                        displayColor = valid ? Color.Green : Color.Red;
+                    }
+                    ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));
+                }
+            });
+            using var memoryStream = new MemoryStream();
+            img2.Save(memoryStream, new PngEncoder());
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            return "data:image/png;base64, " + base64;
+        }
+
+        public string GetNavComActionLabel(string label, bool error = false)
+        {
+            var font = SystemFonts.CreateFont("Arial", 20, FontStyle.Bold);
+
+            Image img = backGround;
+            using var img2 = img.Clone(ctx =>
+            {
+                var imgSize = ctx.GetCurrentSize();
+
+                if (label != null)
+                {
+                    var size = TextMeasurer.Measure(label, new RendererOptions(font));
+                    ctx.DrawText(label, font, error ? Color.Red : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 2));
                 }
             });
             using var memoryStream = new MemoryStream();

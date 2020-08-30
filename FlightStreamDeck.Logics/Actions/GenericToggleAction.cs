@@ -43,9 +43,9 @@ namespace FlightStreamDeck.Logics.Actions
         private void setValues(JObject settings)
         {
             string newHeader = settings.Value<string>("Header");
-            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.Value<string>("ToggleValue"));
-            TOGGLE_VALUE? newFeedbackValue = GetValueValue(settings.Value<string>("FeedbackValue"));
-            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.Value<string>("DisplayValue"));
+            TOGGLE_EVENT? newToggleEvent = Helpers.GetEventValue(settings.Value<string>("ToggleValue"));
+            TOGGLE_VALUE? newFeedbackValue = Helpers.GetValueValue(settings.Value<string>("FeedbackValue"));
+            TOGGLE_VALUE? newDisplayValue = Helpers.GetValueValue(settings.Value<string>("DisplayValue"));
 
             if (newFeedbackValue != feedbackValue || newDisplayValue != displayValue)
             {
@@ -58,38 +58,6 @@ namespace FlightStreamDeck.Logics.Actions
             displayValue = newDisplayValue;
 
             RegisterValues();
-        }
-
-        private TOGGLE_EVENT? GetEventValue(string value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            TOGGLE_EVENT result;
-            if (Enum.TryParse(value, true, out result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private TOGGLE_VALUE? GetValueValue(string value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            TOGGLE_VALUE result;
-            if (Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out result))
-            {
-                return result;
-            }
-
-            return null;
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)

@@ -4,25 +4,44 @@ using Microsoft.Extensions.Logging;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics
 {
     public class NumpadParams
     {
-        public NumpadParams(string type, string min, string max, string mask)
+        public NumpadParams(string type, string min, string max, string mask, string regex, bool dependant)
         {
             Type = type;
             MinPattern = min;
             MaxPattern = max;
             Mask = mask;
+            Regex = regex;
+            Dependant = dependant;
         }
 
         public string Type { get; }
         public string MinPattern { get; }
         public string MaxPattern { get; }
-        public string Value { get; set; } = "";
+        public string _Value { get; set; } = "";
         public string Mask { get; set; } = "xxx.xx";
+        public string Regex { get; set; } = string.Empty;
+        public bool Dependant { get; }
+
+        public string ValueUnpadded { get {
+                return _Value;
+            } 
+        }
+
+        public string Value { 
+            get {
+                return this._Value.PadRight(this.MinPattern.Length, '0');
+            }
+            set {
+                _Value = value;
+            }
+        }
     }
 
     public class DeckLogic

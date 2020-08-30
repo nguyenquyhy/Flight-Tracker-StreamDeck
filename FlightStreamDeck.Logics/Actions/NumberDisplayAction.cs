@@ -23,16 +23,9 @@ namespace FlightStreamDeck.Logics.Actions
             if (lastValue != DeckLogic.NumpadParams.Value)
             {
                 lastValue = DeckLogic.NumpadParams.Value;
+                string value = DeckLogic.NumpadParams.MaskedValue();
 
-                var value = DeckLogic.NumpadParams.Value;
-                var decIndex = DeckLogic.NumpadParams.Mask.IndexOf(".");
-
-                if (value.Length > decIndex && decIndex >= 0)
-                {
-                    value = value.Insert(decIndex, ".");
-                }
-
-                await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, "", value));
+                await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, DeckLogic.NumpadParams.Dependant, "", value, showMainOnly: false, valid: DeckLogic.NumpadParams.MinMaxRegexValid(false)));
             }
         }
 
