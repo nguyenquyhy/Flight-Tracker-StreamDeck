@@ -13,7 +13,7 @@ namespace FlightStreamDeck.Logics
     {
         string GetImage(string text, bool active, string value = null, string customActiveBackground = null, string customBackground = null);
         string GetNumberImage(int number);
-        string GetNavComImage(string type, string value1 = null, string value2 = null, bool showMainOnly = false);
+        string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
         public string GetGaugeImage(string text, float value, float min, float max);
     }
@@ -97,7 +97,7 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        public string GetNavComImage(string type, string value1 = null, string value2 = null, bool showMainOnly = false)
+        public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 13, FontStyle.Regular);
@@ -110,18 +110,21 @@ namespace FlightStreamDeck.Logics
                 if (!string.IsNullOrWhiteSpace(type))
                 {
                     var size = TextMeasurer.Measure(type, new RendererOptions(font));
-                    ctx.DrawText(type, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    Color displayColor = dependant ? Color.White : Color.LightGray;
+                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
                 }
 
                 if (!string.IsNullOrWhiteSpace(value1))
                 {
                     var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
-                    ctx.DrawText(value1, valueFont, Color.Yellow, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
+                    Color displayColor = dependant ? Color.Yellow : Color.LightGray;
+                    ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
                 }
                 if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
                     var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
-                    ctx.DrawText(value2, valueFont, Color.White, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));
+                    Color displayColor = dependant ? Color.White : Color.LightGray;
+                    ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));
                 }
             });
             using var memoryStream = new MemoryStream();

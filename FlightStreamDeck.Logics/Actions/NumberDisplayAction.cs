@@ -34,7 +34,7 @@ namespace FlightStreamDeck.Logics.Actions
                     value = value.Insert(decIndex, ".");
                 }
 
-                await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, "", value));
+                await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value));
             }
         }
 
