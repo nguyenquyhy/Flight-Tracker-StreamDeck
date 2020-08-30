@@ -37,9 +37,9 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? standby;
         private TOGGLE_EVENT? toggle;
         private SET_EVENT? set;
-        private TOGGLE_VALUE? dependantOnAvionics;
-        private TOGGLE_VALUE? dependantOnBatt;
-        private bool hideBasedOnDependantValue;
+        private TOGGLE_VALUE? avionicsValue;
+        private TOGGLE_VALUE? battMasterValue;
+        private bool dependantValueHide;
         private string mask;
         private bool dependant = false;
 
@@ -142,10 +142,10 @@ namespace FlightStreamDeck.Logics.Actions
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
             type = args.Payload.Settings.Value<string>("Type");
-            dependantOnAvionics = Helpers.GetValueValue(args.Payload.Settings.Value<string>("AvionicsValue"));
-            dependantOnBatt = Helpers.GetValueValue(args.Payload.Settings.Value<string>("BattMasterValue"));
-            hideBasedOnDependantValue = args.Payload.Settings.Value<string>("DependantValueHide")?.ToLower() == "yes";
-            await SetImageAsync(imageLogic.GetNavComImage(type, hideBasedOnDependantValue));
+            avionicsValue = Helpers.GetValueValue(args.Payload.Settings.Value<string>("AvionicsValue"));
+            battMasterValue = Helpers.GetValueValue(args.Payload.Settings.Value<string>("BattMasterValue"));
+            dependantValueHide = args.Payload.Settings.Value<string>("DependantValueHide")?.ToLower() == "yes";
+            await SetImageAsync(imageLogic.GetNavComImage(type, dependantValueHide));
 
             lastDependant = !lastDependant;
             lastValue1 = null;
@@ -197,9 +197,9 @@ namespace FlightStreamDeck.Logics.Actions
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
             type = args.Payload.Value<string>("Type");
-            dependantOnAvionics = Helpers.GetValueValue(args.Payload.Value<string>("AvionicsValue"));
-            dependantOnBatt = Helpers.GetValueValue(args.Payload.Value<string>("BattMasterValue"));
-            hideBasedOnDependantValue = args.Payload.Value<string>("DependantValueHide")?.ToLower() == "yes";
+            avionicsValue = Helpers.GetValueValue(args.Payload.Value<string>("AvionicsValue"));
+            battMasterValue = Helpers.GetValueValue(args.Payload.Value<string>("BattMasterValue"));
+            dependantValueHide = args.Payload.Value<string>("DependantValueHide")?.ToLower() == "yes";
             lastDependant = !lastDependant;
             lastValue1 = null;
             lastValue2 = null;
@@ -218,22 +218,22 @@ namespace FlightStreamDeck.Logics.Actions
             dependant = true;
             bool showMainOnly = false;
 
-            if (hideBasedOnDependantValue && dependantOnBatt != null && e.GenericValueStatus.ContainsKey(dependantOnBatt.Value))
+            if (dependantValueHide && battMasterValue != null && e.GenericValueStatus.ContainsKey(battMasterValue.Value))
             {
-                dependant = e.GenericValueStatus[dependantOnBatt.Value] != "0";
+                dependant = e.GenericValueStatus[battMasterValue.Value] != "0";
             }
-            if (hideBasedOnDependantValue && dependantOnAvionics != null && e.GenericValueStatus.ContainsKey(dependantOnAvionics.Value))
+            if (dependantValueHide && avionicsValue != null && e.GenericValueStatus.ContainsKey(avionicsValue.Value))
             {
-                dependant = dependant && e.GenericValueStatus[dependantOnAvionics.Value] != "0";
+                dependant = dependant && e.GenericValueStatus[avionicsValue.Value] != "0";
             }
             if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
             {
                 showMainOnly = true;
-                value1 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[active.Value] : string.Empty;
+                value1 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[active.Value] : string.Empty;
             }
             if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
             {
-                value2 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[standby.Value]: string.Empty;
+                value2 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[standby.Value]: string.Empty;
                 showMainOnly = active != null && active.Value == standby.Value;
             }
 
@@ -319,13 +319,13 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 flightConnector.RegisterSetEvent(set.Value);
             }
-            if (dependantOnAvionics != null)
+            if (avionicsValue != null)
             {
-                flightConnector.RegisterSimValues(dependantOnAvionics.Value);
+                flightConnector.RegisterSimValues(avionicsValue.Value);
             }
-            if (dependantOnBatt != null)
+            if (battMasterValue != null)
             {
-                flightConnector.RegisterSimValues(dependantOnBatt.Value);
+                flightConnector.RegisterSimValues(battMasterValue.Value);
             }
         }
     }
