@@ -29,6 +29,12 @@ namespace FlightStreamDeck.Logics
         public string Regex { get; set; } = string.Empty;
         public bool Dependant { get; }
 
+        public bool IsXPDR { 
+            get {
+                return Type == "XPDR";
+            }
+        }
+
         public string ValueUnpadded { get {
                 return _Value;
             } 

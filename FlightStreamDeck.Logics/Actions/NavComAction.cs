@@ -59,7 +59,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             timer.Stop();
 
-            if (type != null && set != null && mask != null && dependant && type != "XPDR")
+            if (type != null && set != null && mask != null && dependant)
             {
                 var set = this.set;
                 var mask = this.mask;

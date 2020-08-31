@@ -1,9 +1,7 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
-using SixLabors.ImageSharp.Formats.Bmp;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -44,11 +42,17 @@ namespace FlightStreamDeck.Logics.Actions
                     );
                     break;
                 case "tech.flighttracker.streamdeck.number.transfer":
+                    var buttonTextLocal = args.Action.Split(".")[^1].ToUpper() == "XFER" && DeckLogic.NumpadParams.IsXPDR ? "VFR" : buttonText[args.Action];
                     await handleErroredValueAction(
                         args,
                         () => { return DeckLogic.NumpadTcs != null; },
-                        async (ActionEventArgs<KeyPayload> args) => { await SetImageAsync(imageLogic.GetNavComActionLabel(buttonText[args.Action], true)); },
-                        async (ActionEventArgs<KeyPayload> args) => { await Task.Run(() => { DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, true)); }); }
+                        async (ActionEventArgs<KeyPayload> args) => { await SetImageAsync(imageLogic.GetNavComActionLabel(buttonTextLocal, true)); },
+                        async (ActionEventArgs<KeyPayload> args) => { 
+                            await Task.Run(() => {
+                                if (DeckLogic.NumpadParams.IsXPDR) DeckLogic.NumpadParams.Value = "1200";
+                                DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, !DeckLogic.NumpadParams.IsXPDR));
+                            }); 
+                        }
                     );
                     break;
                 case "tech.flighttracker.streamdeck.number.backspace":
@@ -67,7 +71,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            await SetImageAsync(imageLogic.GetNavComActionLabel(buttonText[args.Action]));
+            var buttonTextLocal = args.Action.Split(".")[^1].ToLower() == "transfer" && DeckLogic.NumpadParams.IsXPDR ? "VFR" : buttonText[args.Action];
+            await SetImageAsync(imageLogic.GetNavComActionLabel(buttonTextLocal));
         }
 
         private async Task handleErroredValueAction<T>(
