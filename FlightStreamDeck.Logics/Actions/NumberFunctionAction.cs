@@ -21,7 +21,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (DeckLogic.NumpadParams.Type == "XPDR")
             {
-                await SetTitleAsync(string.Empty);
+                await SetTitleAsync("VFR");
             }
         }
     }
@@ -50,14 +50,22 @@ namespace FlightStreamDeck.Logics.Actions
                     await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.transfer":
-                    if (DeckLogic.NumpadParams.Type != "XPDR")
+                    if (DeckLogic.NumpadParams.Type == "XPDR")
                     {
+                        DeckLogic.NumpadParams.Value = "1200";
+                        if (DeckLogic.NumpadTcs != null)
+                        {
+                            DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, false));
+                        }
+                    }
+                    else
+                    { 
                         if (DeckLogic.NumpadTcs != null)
                         {
                             DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, true));
                         }
-                        await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     }
+                    await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.backspace":
                     if (DeckLogic.NumpadParams.Value.Length > 0)
