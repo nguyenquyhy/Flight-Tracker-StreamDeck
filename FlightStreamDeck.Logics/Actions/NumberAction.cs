@@ -25,9 +25,9 @@ namespace FlightStreamDeck.Logics.Actions
             var tokens = args.Action.Split(".");
             var number = int.Parse(tokens[^1]);
 
-            if (DeckLogic.NumpadParams.Value.Length < DeckLogic.NumpadParams.MinPattern.Length)
+            if (DeckLogic.NumpadParams.ValueUnpadded.Length < DeckLogic.NumpadParams.MinPattern.Length)
             {
-                DeckLogic.NumpadParams.Value += number.ToString();
+                DeckLogic.NumpadParams.Value = $"{DeckLogic.NumpadParams.ValueUnpadded}{number}";
             }
 
             return Task.CompletedTask;
