@@ -196,6 +196,9 @@ namespace FlightStreamDeck.Logics
             var pen = new Pen(Color.DarkRed, 5);
             var range = max - min;
 
+            value = value < min ? min : value;
+            value = value > max ? max : value;
+
             if (range <= 0)
             {
                 range = 1;
@@ -226,7 +229,8 @@ namespace FlightStreamDeck.Logics
 
                 var valueText = value.ToString();
                 size = TextMeasurer.Measure(valueText, new RendererOptions(font));
-                ctx.DrawText(valueText, font, Color.White, new PointF(25, 30));
+                Color textColor = value >= max ? Color.Red : Color.White;
+                ctx.DrawText(valueText, font, textColor, new PointF(25, 30));
             });
 
             using var memoryStream = new MemoryStream();
