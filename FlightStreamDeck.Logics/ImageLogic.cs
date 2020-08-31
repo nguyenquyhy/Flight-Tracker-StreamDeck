@@ -174,7 +174,10 @@ namespace FlightStreamDeck.Logics
             using var img = gaugeImage.Clone(ctx =>
             {
                 double angleOffset = Math.PI * -1.25;
-                double angle = Math.PI * ((value - min) / range) + angleOffset;
+                var ratio = (value - min) / range;
+                if (ratio < 0) ratio = 0;
+                if (ratio > 1) ratio = 1;
+                double angle = Math.PI * ratio + angleOffset;
 
                 var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
                 var middlePoint = new PointF(
@@ -198,7 +201,8 @@ namespace FlightStreamDeck.Logics
                 }
 
                 var valueText = value.ToString();
-                ctx.DrawText(valueText, font, Color.White, new PointF(25, 30));
+                Color textColor = value > max ? Color.Red : Color.White;
+                ctx.DrawText(valueText, font, textColor, new PointF(25, 30));
             });
 
             using var memoryStream = new MemoryStream();
