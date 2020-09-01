@@ -16,13 +16,18 @@
                 <option value="NAV2">NAV2</option>
             </select>
         </div>
+        <div class="sdpi-item">
+            <details class="message info">
+                <summary>Hold the button to open the numpad</summary>
+            </details>
+        </div>
     </div>
     <script language="JavaScript" type="text/javascript">
         // this is our global websocket, used to communicate from/to Stream Deck software
         // and some info about our plugin, as sent by Stream Deck software
         var websocket = null,
-        uuid = null,
-        actionInfo = {};
+            uuid = null,
+            actionInfo = {};
 
         function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
             uuid = inUUID;
@@ -65,8 +70,8 @@
                     "event": "sendToPlugin",
                     "context": uuid,
                     "payload": payload
-                 };
-                 websocket.send(JSON.stringify(json));
+                };
+                websocket.send(JSON.stringify(json));
             }
         }
 
@@ -77,8 +82,8 @@
                     "event": "setSettings",
                     "context": uuid,
                     "payload": payload
-                 };
-                 websocket.send(JSON.stringify(json));
+                };
+                websocket.send(JSON.stringify(json));
             }
         }
     </script>
