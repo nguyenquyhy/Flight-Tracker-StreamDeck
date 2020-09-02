@@ -15,6 +15,15 @@ namespace FlightStreamDeck.Logics.Actions
     class NavComAction : StreamDeckAction
     {
         private const int HOLD_DURATION_MILLISECONDS = 1000;
+        private const string navRegex = @"(108[0-9]{2}|109[0-8][0-9]|1099[0-9]|11[0-6][0-9]{2}|117[0-8][0-9]|1179[0-5])";
+        private const string comRegex = @"(118[0-9]{2}|119[0-8][0-9]|1199[0-9]|12[0-9]{3}|13[0-5][0-9]{2}|136[0-8][0-9]|1369[0-7])";
+        private const string xpdrRegex = @"[0-7]{4}";
+        private const string minNavVal = "10800";
+        private const string maxNavVal = "11795";
+        private const string minComVal = "11800";
+        private const string maxComVal = "13697";
+        private const string minXpdrVal = "0000";
+        private const string maxXpdrVal = "7777";
 
         private readonly RegistrationParameters registration;
         private readonly ILogger<NavComAction> logger;
@@ -28,7 +37,11 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? standby;
         private TOGGLE_EVENT? toggle;
         private SET_EVENT? set;
+        private TOGGLE_VALUE? avionicsValue;
+        private TOGGLE_VALUE? battMasterValue;
+        private bool dependantValueHide;
         private string mask;
+        private bool dependant = false;
 
         public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector)
         {
@@ -46,16 +59,17 @@ namespace FlightStreamDeck.Logics.Actions
         {
             timer.Stop();
 
-            if (type != null && set != null && mask != null)
+            if (type != null && set != null && mask != null && dependant)
             {
                 var set = this.set;
                 var mask = this.mask;
                 var min = type switch
                 {
-                    "NAV1" => "10800",
-                    "NAV2" => "10800",
-                    "COM1" => "11800",
-                    "COM2" => "11800",
+                    "NAV1" => minNavVal,
+                    "NAV2" => minNavVal,
+                    "COM1" => minComVal,
+                    "COM2" => minComVal,
+                    "XPDR" => minXpdrVal,
                     _ => throw new ArgumentException($"{type} is not supported for numpad")
                 };
                 DeckLogic.NumpadParams = new NumpadParams(
@@ -63,12 +77,24 @@ namespace FlightStreamDeck.Logics.Actions
                     min,
                     type switch
                     {
-                        "NAV1" => "11795",
-                        "NAV2" => "11795",
-                        "COM1" => "13697",
-                        "COM2" => "13697",
+                        "NAV1" => maxNavVal,
+                        "NAV2" => maxNavVal,
+                        "COM1" => maxComVal,
+                        "COM2" => maxComVal,
+                        "XPDR" => maxXpdrVal,
                         _ => throw new ArgumentException($"{type} is not supported for numpad")
-                    }
+                    },
+                    mask,
+                    type switch
+                    {
+                        "NAV1" => navRegex,
+                        "NAV2" => navRegex,
+                        "COM1" => comRegex,
+                        "COM2" => comRegex,
+                        "XPDR" => xpdrRegex,
+                        _ => throw new ArgumentException($"{type} is not supported for numpad")
+                    },
+                    dependant
                 );
                 DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
 
@@ -116,8 +142,14 @@ namespace FlightStreamDeck.Logics.Actions
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
             type = args.Payload.Settings.Value<string>("Type");
-            await SetImageAsync(imageLogic.GetNavComImage(type));
+            avionicsValue = Helpers.GetValueValue(args.Payload.Settings.Value<string>("AvionicsValue"));
+            battMasterValue = Helpers.GetValueValue(args.Payload.Settings.Value<string>("BattMasterValue"));
+            dependantValueHide = args.Payload.Settings.Value<string>("DependantValueHide")?.ToLower() == "yes";
+            await SetImageAsync(imageLogic.GetNavComImage(type, dependantValueHide));
 
+            lastDependant = !lastDependant;
+            lastValue1 = null;
+            lastValue2 = null;
             SwitchTo(type);
 
             if (initializationTcs != null)
@@ -165,30 +197,52 @@ namespace FlightStreamDeck.Logics.Actions
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
             type = args.Payload.Value<string>("Type");
-            await SetImageAsync(imageLogic.GetNavComImage(type));
+            avionicsValue = Helpers.GetValueValue(args.Payload.Value<string>("AvionicsValue"));
+            battMasterValue = Helpers.GetValueValue(args.Payload.Value<string>("BattMasterValue"));
+            dependantValueHide = args.Payload.Value<string>("DependantValueHide")?.ToLower() == "yes";
+            lastDependant = !lastDependant;
+            lastValue1 = null;
+            lastValue2 = null;
+            SwitchTo(type);
+            await SetImageAsync(imageLogic.GetNavComImage(type, false));
         }
 
         string lastValue1 = null;
         string lastValue2 = null;
+        bool lastDependant = false;
         private TaskCompletionSource<bool> initializationTcs;
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
             string value1 = null, value2 = null;
+            dependant = true;
+            bool showMainOnly = false;
+
+            if (dependantValueHide && battMasterValue != null && e.GenericValueStatus.ContainsKey(battMasterValue.Value))
+            {
+                dependant = e.GenericValueStatus[battMasterValue.Value] != "0";
+            }
+            if (dependantValueHide && avionicsValue != null && e.GenericValueStatus.ContainsKey(avionicsValue.Value))
+            {
+                dependant = dependant && e.GenericValueStatus[avionicsValue.Value] != "0";
+            }
             if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
             {
-                value1 = e.GenericValueStatus[active.Value];
+                showMainOnly = true;
+                value1 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[active.Value] : string.Empty;
             }
             if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
             {
-                value2 = e.GenericValueStatus[standby.Value];
+                value2 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[standby.Value]: string.Empty;
+                showMainOnly = active != null && active.Value == standby.Value;
             }
 
-            if (lastValue1 != value1 || lastValue2 != value2)
+            if (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant)
             {
                 lastValue1 = value1;
                 lastValue2 = value2;
-                await SetImageAsync(imageLogic.GetNavComImage(type, value1, value2));
+                lastDependant = dependant;
+                await SetImageAsync(imageLogic.GetNavComImage(type, dependant, value1, value2, showMainOnly: showMainOnly));
             }
         }
 
@@ -237,6 +291,13 @@ namespace FlightStreamDeck.Logics.Actions
                     set = SET_EVENT.COM2_STBY_RADIO_SET;
                     mask = "118.00";
                     break;
+                case "XPDR":
+                    active = TOGGLE_VALUE.TRANSPONDER_CODE__1;
+                    standby = TOGGLE_VALUE.TRANSPONDER_CODE__1;
+                    toggle = null;
+                    set = SET_EVENT.XPNDR_SET;
+                    mask = "1200";
+                    break;
                 default:
                     active = null;
                     standby = null;
@@ -257,6 +318,14 @@ namespace FlightStreamDeck.Logics.Actions
             if (set != null)
             {
                 flightConnector.RegisterSetEvent(set.Value);
+            }
+            if (avionicsValue != null)
+            {
+                flightConnector.RegisterSimValues(avionicsValue.Value);
+            }
+            if (battMasterValue != null)
+            {
+                flightConnector.RegisterSimValues(battMasterValue.Value);
             }
         }
     }

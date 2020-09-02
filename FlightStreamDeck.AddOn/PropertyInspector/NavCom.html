@@ -14,6 +14,30 @@
                 <option value="COM2">COM2</option>
                 <option value="NAV1">NAV1</option>
                 <option value="NAV2">NAV2</option>
+                <option value="XPDR">XPDR</option>
+            </select>
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Dependant on BATT MASTER</div>
+            <select class="sdpi-item-value select" id="BattMasterValue" onchange="updateData()">
+                <option value="ALWAYS_ON">ALWAYS_ON</option>
+                <option value="ELECTRICAL_MASTER_BATTERY">ELECTRICAL_MASTER_BATTERY</option>
+            </select>
+            <!--<input class="sdpi-item-value" id="BattMasterValue" value="" placeholder="Empty for values to show always" onchange="updateData()" pattern="[A-Z0-9: ]">-->
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Dependant on AV MASTER</div>
+            <select class="sdpi-item-value select" id="AvionicsValue" onchange="updateData()">
+                <option value="ALWAYS_ON">ALWAYS_ON</option>
+                <option value="AVIONICS_MASTER_SWITCH">AVIONICS_MASTER_SWITCH</option>
+            </select>
+            <!--<input class="sdpi-item-value" id="AvionicsValue" value="" placeholder="Empty for values to show always" onchange="updateData()" pattern="[A-Z0-9: ]">-->
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Hide values when switches are toggled off?</div>
+            <select class="sdpi-item-value select" id="DependantValueHide" onchange="updateData()">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
             </select>
         </div>
     </div>
@@ -46,11 +70,18 @@
 
         function loadSettings(settings) {
             if (settings['Type']) { Type.value = settings['Type'] };
+            if (settings['BattMasterValue']) { BattMasterValue.value = settings['BattMasterValue'] };
+            if (settings['AvionicsValue']) { AvionicsValue.value = settings['AvionicsValue'] };
+            if (settings['DependantValueHide']) { DependantValueHide.value = settings['DependantValueHide'] };
         }
 
         function updateData() {
+            console.log('update data');
             const payload = {
                 "Type": Type.value,
+                "BattMasterValue": BattMasterValue.value,
+                "AvionicsValue": AvionicsValue.value,
+                "DependantValueHide": DependantValueHide.value,
             };
 
             sendValueToPlugin(payload);
