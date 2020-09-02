@@ -18,6 +18,7 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? feedbackValue = null;
         private TOGGLE_VALUE? displayValue = null;
+        private bool legacyDisplayImage = true;
 
         private string currentValue = "";
         private bool currentStatus = false;
@@ -46,6 +47,7 @@ namespace FlightStreamDeck.Logics.Actions
             TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.Value<string>("ToggleValue"));
             TOGGLE_VALUE? newFeedbackValue = GetValueValue(settings.Value<string>("FeedbackValue"));
             TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.Value<string>("DisplayValue"));
+            bool newLegacyDispalyImage = settings.Value<bool>("ImageDisplayTypeValue");
 
             if (newFeedbackValue != feedbackValue || newDisplayValue != displayValue)
             {
@@ -56,6 +58,7 @@ namespace FlightStreamDeck.Logics.Actions
             toggleEvent = newToggleEvent;
             feedbackValue = newFeedbackValue;
             displayValue = newDisplayValue;
+            legacyDisplayImage = newLegacyDispalyImage;
 
             RegisterValues();
         }
@@ -151,7 +154,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetImage(header, currentStatus, currentValue));
+            await SetImageAsync(imageLogic.GetImage(header, currentStatus, legacyDisplayImage, currentValue));
         }
     }
 }

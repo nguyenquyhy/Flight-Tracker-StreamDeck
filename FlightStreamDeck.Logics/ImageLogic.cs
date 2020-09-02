@@ -13,7 +13,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string value = null);
+        string GetImage(string text, bool active, bool newButtonStyle, string value = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, string value1 = null, string value2 = null);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
@@ -24,6 +24,8 @@ namespace FlightStreamDeck.Logics
     {
         readonly Image backGround = Image.Load("Images/button.png");
         readonly Image activeBackground = Image.Load("Images/button_active.png");
+        readonly Image toggleOff = Image.Load("Images/off.png");
+        readonly Image toggleOn = Image.Load("Images/on.png");
         readonly Image horizon = Image.Load("Images/horizon.png");
         readonly Image gaugeImage = Image.Load("Images/gauge.png");
 
@@ -35,13 +37,15 @@ namespace FlightStreamDeck.Logics
         /// 
         /// </summary>
         /// <returns>Base64 image data</returns>
-        public string GetImage(string text, bool active, string value = null)
+        public string GetImage(string text, bool active, bool legacyButtonStyle, string value = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
+            Image activeImg = legacyButtonStyle ? activeBackground : toggleOn;
+            Image inactiveImg = legacyButtonStyle ? backGround : toggleOff;
             bool hasValue = value != null && value.Length > 0;
 
-            Image img = active && !hasValue ? activeBackground : backGround;
+            Image img = active && !hasValue ? activeImg : inactiveImg;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();

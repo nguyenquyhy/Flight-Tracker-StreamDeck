@@ -8,22 +8,6 @@
 <body>
     <div class="sdpi-wrapper">
         <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Header</div>
-            <input class="sdpi-item-value" id="Header" value="" placeholder="YD" onchange="updateData()">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Toggle value</div>
-            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Feedback value</div>
-            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="AUTOPILOT YAW DAMPER" onchange="updateData()" pattern="[A-Z0-9: ]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" onchange="updateData()" pattern="[A-Z0-9: ]">
-        </div>
-        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Legacy display image</div>
             <select class="sdpi-item-value select" id="ImageDisplayTypeValue" onchange="updateData()">
                 <option value="true">Legacy</option>
@@ -35,8 +19,8 @@
         // this is our global websocket, used to communicate from/to Stream Deck software
         // and some info about our plugin, as sent by Stream Deck software
         var websocket = null,
-        uuid = null,
-        actionInfo = {};
+            uuid = null,
+            actionInfo = {};
 
         function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
             uuid = inUUID;
@@ -59,19 +43,11 @@
         }
 
         function loadSettings(settings) {
-            if (settings['Header']) { Header.value = settings['Header'] };
-            if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
-            if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
-            if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['ImageDisplayTypeValue']) { ImageDisplayTypeValue.value = settings['ImageDisplayTypeValue'] };
         }
 
         function updateData() {
             const payload = {
-                "Header": Header.value,
-                "ToggleValue": ToggleValue.value,
-                "FeedbackValue": FeedbackValue.value,
-                "DisplayValue": DisplayValue.value,
                 "ImageDisplayTypeValue": ImageDisplayTypeValue.value
             };
 
@@ -87,8 +63,8 @@
                     "event": "sendToPlugin",
                     "context": uuid,
                     "payload": payload
-                 };
-                 websocket.send(JSON.stringify(json));
+                };
+                websocket.send(JSON.stringify(json));
             }
         }
 
@@ -99,8 +75,8 @@
                     "event": "setSettings",
                     "context": uuid,
                     "payload": payload
-                 };
-                 websocket.send(JSON.stringify(json));
+                };
+                websocket.send(JSON.stringify(json));
             }
         }
     </script>
