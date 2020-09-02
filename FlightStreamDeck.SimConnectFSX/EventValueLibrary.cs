@@ -288,7 +288,7 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.GENERAL_ENG_PCT_MAX_RPM__1, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.GENERAL_ENG_PCT_MAX_RPM__2, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.TURB_ENG_PRIMARY_NOZZLE_PERCENT__1, new ValueEntry("Percent", 0) },
-            { TOGGLE_VALUE.TURB_ENG_PRIMARY_NOZZLE_PERCENT__2, new ValueEntry("Percent", 0) }
+            { TOGGLE_VALUE.TURB_ENG_PRIMARY_NOZZLE_PERCENT__2, new ValueEntry("Percent", 0) },
         };
 
         public EventValueLibrary()
