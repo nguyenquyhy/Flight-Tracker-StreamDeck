@@ -1,12 +1,10 @@
 ﻿using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using SixLabors.Shapes;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace FlightStreamDeck.Logics
@@ -158,7 +156,7 @@ namespace FlightStreamDeck.Logics
                 ctx.DrawImage(horizon, new Point(
                     (int)Math.Round((float)-size.Width / 2 + 52),
                     (int)Math.Round((float)-size.Height / 2 + 52 - (pitchInDegrees * 2))
-                    ), GraphicsOptions.Default);
+                    ), new GraphicsOptions());
                 ctx.Rotate(rollInDegrees);
             });
 
@@ -170,7 +168,7 @@ namespace FlightStreamDeck.Logics
                     ctx.DrawImage(shiftedRolledHorizon, new Point(
                         (int)Math.Round((float)-size.Width / 2 + HALF_WIDTH),
                         (int)Math.Round((float)-size.Height / 2 + HALF_WIDTH)
-                        ), GraphicsOptions.Default);
+                        ), new GraphicsOptions());
 
                     // Draw bug
                     PointF[] leftLine = { new PointF(6, 36), new PointF(26, 36) };
