@@ -40,11 +40,11 @@ namespace FlightStreamDeck.Logics
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
-            Image activeImg = legacyButtonStyle ? activeBackground : toggleOn;
-            Image inactiveImg = legacyButtonStyle ? backGround : toggleOff;
             bool hasValue = value != null && value.Length > 0;
+            Image activeImg = legacyButtonStyle ? activeBackground : toggleOn;
+            Image inactiveImg = legacyButtonStyle || hasValue ? backGround : toggleOff;
 
-            Image img = active && !hasValue ? backGround : activeImg;
+            Image img = active ? activeImg : inactiveImg;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();

@@ -45,20 +45,16 @@
       "Icon": "Images/toggleIcon",
       "Name": "NAV & COM",
       "States": [
-        {
-            "Icon": "Images/toggleIcon",
-            "Name": "NAV & COM",
-            "States": [
-                {
-                    "Image": "Images/button",
-                    "ShowTitle": false
-                }
-            ],
-            "SupportedInMultiActions": false,
-            "PropertyInspectorPath": "PropertyInspector/NavCom.html",
-            "Tooltip": "Nav & Com",
-            "UUID": "tech.flighttracker.streamdeck.generic.navcom"
-        },
+          {
+              "Image": "Images/button",
+              "ShowTitle": false
+          }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "PropertyInspector/NavCom.html",
+      "Tooltip": "Nav & Com",
+      "UUID": "tech.flighttracker.streamdeck.generic.navcom"
+      },
       {
         "Icon": "Images/toggleIcon",
         "Name": "AP Master",
