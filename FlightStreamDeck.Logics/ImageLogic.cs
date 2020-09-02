@@ -45,7 +45,7 @@ namespace FlightStreamDeck.Logics
             Image inactiveImg = legacyButtonStyle ? backGround : toggleOff;
             bool hasValue = value != null && value.Length > 0;
 
-            Image img = active && !hasValue ? activeImg : inactiveImg;
+            Image img = active && !hasValue ? backGround : activeImg;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
