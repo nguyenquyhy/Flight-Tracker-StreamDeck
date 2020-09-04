@@ -2,6 +2,7 @@
 using FlightStreamDeck.Logics;
 using Microsoft.Extensions.Logging;
 using Microsoft.FlightSimulator.SimConnect;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,6 +110,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_SET, "AP_ALT_VAR_SET_ENGLISH");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_INC, "AP_ALT_VAR_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_DEC, "AP_ALT_VAR_DEC");
+            simconnect.MapClientEventToSimEvent(EVENTS.ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET");
 
         }
 
@@ -180,6 +182,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApAltDec()
         {
             SendCommand(EVENTS.AP_ALT_DEC);
+        }
+
+        public void TrimSetValue(uint trimSet)
+        {
+            SendCommand(EVENTS.ELEV_TRIM_SET, trimSet);
         }
 
         private void SendCommand(EVENTS sendingEvent, uint data = 0)

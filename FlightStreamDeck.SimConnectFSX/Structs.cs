@@ -43,7 +43,8 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_HDG_DEC,
         AP_ALT_SET,
         AP_ALT_INC,
-        AP_ALT_DEC
+        AP_ALT_DEC,
+        ELEV_TRIM_SET
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

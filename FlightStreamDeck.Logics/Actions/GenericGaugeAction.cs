@@ -148,7 +148,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetGaugeImage(header, currentValue, min, max));
+            await SetImageAsync(imageLogic.GetGaugeImage($"{header}{(DeckLogic.arudinoConnected ? "*" : "")}", currentValue, min, max));
         }
     }
 }

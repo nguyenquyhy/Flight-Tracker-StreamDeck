@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,6 +21,7 @@ namespace FlightStreamDeck.AddOn
         private readonly IFlightConnector flightConnector;
         private readonly ILogger<MainWindow> logger;
         private IntPtr Handle;
+        private SerialPort arduinoPort = new SerialPort("COM3", 9600);
 
         public MainWindow(DeckLogic deckLogic, IFlightConnector flightConnector, ILogger<MainWindow> logger)
         {
@@ -43,8 +45,6 @@ namespace FlightStreamDeck.AddOn
                 Handle = new WindowInteropHelper(sender as Window).Handle; // Get handle of main WPF Window
                 var HandleSource = HwndSource.FromHwnd(Handle); // Get source of handle in order to add event handlers to it
                 HandleSource.AddHook(simConnect.HandleSimConnectEvents);
-
-                //var viewModel = ServiceProvider.GetService<MainViewModel>();
 
                 try
                 {
@@ -87,6 +87,7 @@ namespace FlightStreamDeck.AddOn
                 try
                 {
                     simConnect.Initialize(Handle);
+                    setupArduino();
                     myNotifyIcon.Icon = new Icon("Images/button_active@2x.ico");
                     if (showConnect) simConnect.Send("Connected to Stream Deck plugin");
                     break;
@@ -95,6 +96,41 @@ namespace FlightStreamDeck.AddOn
                 {
                     await Task.Delay(5000).ConfigureAwait(true);
                 }
+            }
+        }
+
+        private void setupArduino()
+        {
+            try
+            {
+                arduinoPortOpen();
+                DeckLogic.arudinoConnected = true;
+                arduinoPort.DataReceived += arduinoPort_DataReceived;
+            } catch (Exception) { }
+        }
+
+        public void arduinoPortOpen()
+        {
+            if (arduinoPort.IsOpen)
+            {
+                arduinoPort.Close();
+            }
+
+            arduinoPort.Open();
+        }
+
+        void arduinoPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                int potVal = int.Parse(arduinoPort.ReadLine());
+                Debug.WriteLine(potVal);
+                string value = potVal.ToString();
+                uint data = unchecked((uint)potVal);
+                flightConnector.TrimSetValue(data);
+            } catch (Exception ex)
+            {
+                logger.LogError(ex, "Failure in arduino message received...");
             }
         }
 
