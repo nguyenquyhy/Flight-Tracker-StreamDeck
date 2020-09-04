@@ -27,6 +27,13 @@
             <div class="sdpi-item-label">Maximum value</div>
             <input class="sdpi-item-value" id="MaxValue" value="" placeholder="100" onchange="updateData()" pattern="[0-9.-]">
         </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">show arduino connected indicator?</div>
+            <select class="sdpi-item-value select" id="ArduinoConnectedInd" onchange="updateData()">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+            </select>
+        </div>
     </div>
     <script language="JavaScript" type="text/javascript">
         // this is our global websocket, used to communicate from/to Stream Deck software
@@ -61,6 +68,7 @@
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['MinValue']) { MinValue.value = settings['MinValue'] };
             if (settings['MaxValue']) { MaxValue.value = settings['MaxValue'] };
+            if (settings['ArduinoConnectedInd']) { ArduinoConnectedInd.value = settings['ArduinoConnectedInd'] };
         }
 
         function updateData() {
@@ -69,7 +77,8 @@
                 "ToggleValue": ToggleValue.value,
                 "DisplayValue": DisplayValue.value,
                 "MinValue": MinValue.value,
-                "MaxValue": MaxValue.value
+                "MaxValue": MaxValue.value,
+                "ArduinoConnectedInd": ArduinoConnectedInd.value
             };
 
             sendValueToPlugin(payload);

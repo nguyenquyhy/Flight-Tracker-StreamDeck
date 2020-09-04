@@ -227,12 +227,12 @@ namespace FlightStreamDeck.Logics
                 ctx.DrawLines(pen, needle);
 
                 var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 57));
+                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 40));
 
                 var valueText = value.ToString();
                 size = TextMeasurer.Measure(valueText, new RendererOptions(font));
                 Color textColor = value >= max ? Color.Red : Color.White;
-                ctx.DrawText(valueText, font, textColor, new PointF(25, 30));
+                ctx.DrawText(valueText, font, textColor, new PointF(25, 20));
             });
 
             using var memoryStream = new MemoryStream();
