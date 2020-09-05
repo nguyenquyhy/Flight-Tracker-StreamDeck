@@ -11,7 +11,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, bool newButtonStyle, string value = null);
+        string GetImage(string text, bool active, bool legacyButtonStyle, string value = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, bool valid = false);
         string GetNavComActionLabel(string label, bool error = false);
@@ -44,7 +44,7 @@ namespace FlightStreamDeck.Logics
             Image activeImg = legacyButtonStyle ? activeBackground : toggleOn;
             Image inactiveImg = legacyButtonStyle || hasValue ? backGround : toggleOff;
 
-            Image img = active ? activeImg : inactiveImg;
+            Image img = active && !hasValue ? activeImg : inactiveImg;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();

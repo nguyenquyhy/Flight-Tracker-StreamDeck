@@ -174,23 +174,23 @@ namespace FlightStreamDeck.Logics.Actions
                 switch (action)
                 {
                     case "tech.flighttracker.streamdeck.master.activate":
-                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn, legacyDisplayImage));
+                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn, legacyButtonStyle: legacyDisplayImage));
                         break;
 
                     case "tech.flighttracker.streamdeck.heading.activate":
-                        await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, legacyDisplayImage, currentStatus.ApHeading.ToString()));
+                        await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, legacyButtonStyle: true, currentStatus.ApHeading.ToString()));
                         break;
 
                     case "tech.flighttracker.streamdeck.nav.activate":
-                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn, legacyDisplayImage));
+                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn, legacyButtonStyle: legacyDisplayImage));
                         break;
 
                     case "tech.flighttracker.streamdeck.approach.activate":
-                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, legacyDisplayImage));
+                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, legacyButtonStyle: legacyDisplayImage));
                         break;
 
                     case "tech.flighttracker.streamdeck.altitude.activate":
-                        await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, legacyDisplayImage, currentStatus.ApAltitude.ToString()));
+                        await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, legacyButtonStyle: true, currentStatus.ApAltitude.ToString()));
                         break;
                 }
             }
