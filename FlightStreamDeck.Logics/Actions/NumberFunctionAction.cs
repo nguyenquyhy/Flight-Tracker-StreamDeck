@@ -58,7 +58,7 @@ namespace FlightStreamDeck.Logics.Actions
                 case "tech.flighttracker.streamdeck.number.backspace":
                     await handleErroredValueAction(
                         args,
-                        () => { return DeckLogic.NumpadParams.ValueUnpadded.Length > 1; },
+                        () => { return DeckLogic.NumpadParams.ValueUnpadded.Length > 0; },
                         async (ActionEventArgs<KeyPayload> args) => { await SetImageAsync(imageLogic.GetNavComActionLabel(buttonText[args.Action], true)); },
                         async (ActionEventArgs<KeyPayload> args) => { await Task.Run(() => { DeckLogic.NumpadParams.Value = DeckLogic.NumpadParams.ValueUnpadded[..^1]; }); },
                         skipMinMaxCheck: true,

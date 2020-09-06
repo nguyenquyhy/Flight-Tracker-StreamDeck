@@ -229,11 +229,11 @@ namespace FlightStreamDeck.Logics.Actions
             if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
             {
                 showMainOnly = true;
-                value1 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[active.Value] : string.Empty;
+                value1 = (dependantValueHide && dependant) || !dependantValueHide ? ValPrep(e.GenericValueStatus[active.Value]) : string.Empty;
             }
             if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
             {
-                value2 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[standby.Value]: string.Empty;
+                value2 = (dependantValueHide && dependant) || !dependantValueHide ? ValPrep(e.GenericValueStatus[standby.Value]) : string.Empty;
                 showMainOnly = active != null && active.Value == standby.Value;
             }
 
@@ -244,6 +244,21 @@ namespace FlightStreamDeck.Logics.Actions
                 lastDependant = dependant;
                 await SetImageAsync(imageLogic.GetNavComImage(type, dependant, value1, value2, showMainOnly: showMainOnly));
             }
+        }
+
+        private string ValPrep(string value)
+        {
+            switch (type)
+            {
+                case "XPDR":
+                    if (value != null && value.Length != minXpdrVal.Length)
+                    {
+                        value = value.PadLeft(minXpdrVal.Length, minXpdrVal[0]);
+                    }
+                    break;
+            }
+
+            return value;
         }
 
         private void SwitchTo(string type)
