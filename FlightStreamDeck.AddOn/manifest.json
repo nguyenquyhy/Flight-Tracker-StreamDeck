@@ -422,7 +422,7 @@
   "Category": "Flight Tracker",
   "CategoryIcon": "Images/categoryIcon",
   "Description": "Interact with your flight simulator right from your Stream Deck",
-  "Name": "Flight Tracker",
+  "Name": "Flight Tracker fork RMROC451",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
   "Version": "0.1.1",
