@@ -16,7 +16,8 @@ namespace FlightStreamDeck.Logics.Actions
         private AircraftStatus status = null;
         private string action;
         private bool timerHasTick;
-        private bool legacyDisplayImage = true;
+        private string alternateOnImageLocation = null;
+        private string alternateOffImageLocation = null;
 
         public ApToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
@@ -102,9 +103,11 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void setValues(JObject settings)
         {
-            bool newLegacyDispalyImage = settings.Value<bool>("ImageDisplayTypeValue");
+            string newAltOnImage = settings.Value<string>("OverrideOnImageValue");
+            string newAltOffImage = settings.Value<string>("OverrideOffImageValue");
 
-            legacyDisplayImage = newLegacyDispalyImage;
+            alternateOnImageLocation = newAltOnImage;
+            alternateOffImageLocation = newAltOffImage;
         }
 
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
@@ -174,23 +177,23 @@ namespace FlightStreamDeck.Logics.Actions
                 switch (action)
                 {
                     case "tech.flighttracker.streamdeck.master.activate":
-                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn, legacyButtonStyle: legacyDisplayImage));
+                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn, alternateOnImageLocation, alternateOffImageLocation));
                         break;
 
                     case "tech.flighttracker.streamdeck.heading.activate":
-                        await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, legacyButtonStyle: true, currentStatus.ApHeading.ToString()));
+                        await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, alternateOnImageLocation, alternateOffImageLocation, currentStatus.ApHeading.ToString()));
                         break;
 
                     case "tech.flighttracker.streamdeck.nav.activate":
-                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn, legacyButtonStyle: legacyDisplayImage));
+                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn, alternateOnImageLocation, alternateOffImageLocation));
                         break;
 
                     case "tech.flighttracker.streamdeck.approach.activate":
-                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, legacyButtonStyle: legacyDisplayImage));
+                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, alternateOnImageLocation, alternateOffImageLocation));
                         break;
 
                     case "tech.flighttracker.streamdeck.altitude.activate":
-                        await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, legacyButtonStyle: true, currentStatus.ApAltitude.ToString()));
+                        await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, alternateOnImageLocation, alternateOffImageLocation, currentStatus.ApAltitude.ToString()));
                         break;
                 }
             }

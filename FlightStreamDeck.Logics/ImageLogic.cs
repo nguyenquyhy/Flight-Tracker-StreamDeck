@@ -11,7 +11,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, bool legacyButtonStyle, string value = null);
+        string GetImage(string text, bool active, string altOnImagePath, string altOffImagePath, string value = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, bool valid = false);
         string GetNavComActionLabel(string label, bool error = false);
@@ -23,8 +23,6 @@ namespace FlightStreamDeck.Logics
     {
         readonly Image backGround = Image.Load("Images/button.png");
         readonly Image activeBackground = Image.Load("Images/button_active.png");
-        readonly Image toggleOff = Image.Load("Images/off.png");
-        readonly Image toggleOn = Image.Load("Images/on.png");
         readonly Image horizon = Image.Load("Images/horizon.png");
         readonly Image gaugeImage = Image.Load("Images/gauge.png");
 
@@ -36,13 +34,17 @@ namespace FlightStreamDeck.Logics
         /// 
         /// </summary>
         /// <returns>Base64 image data</returns>
-        public string GetImage(string text, bool active, bool legacyButtonStyle, string value = null)
+        public string GetImage(string text, bool active, string altOnImagePath, string altOffImagePath, string value = null)
         {
+
+            Image altOnImage = tryLoadImage(altOnImagePath);
+            Image altOffImage = tryLoadImage(altOffImagePath);
+            Image gaugeImage = Image.Load("Images/gauge.png");
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
             bool hasValue = value != null && value.Length > 0;
-            Image activeImg = legacyButtonStyle ? activeBackground : toggleOn;
-            Image inactiveImg = legacyButtonStyle || hasValue ? backGround : toggleOff;
+            Image activeImg = altOnImage != null ? altOnImage : activeBackground;
+            Image inactiveImg = altOffImage != null && !hasValue ? altOffImage : backGround;
 
             Image img = active && !hasValue ? activeImg : inactiveImg;
             using var img2 = img.Clone(ctx =>
@@ -62,6 +64,31 @@ namespace FlightStreamDeck.Logics
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
             return "data:image/png;base64, " + base64;
+        }
+
+        private Image tryLoadImage(string imagePath)
+        {
+            Image output = null;
+
+            try
+            {
+                output = Image.Load($"Images/{imagePath.Replace(@"\", "/")}");
+                //resize if bigger than the button size allowed
+                if (output.Width > WIDTH || output.Height > WIDTH)
+                {
+                    if (output.Width > output.Height)
+                    {
+                        output.Mutate(x => x.Resize(0, WIDTH)); //passing zero maintains aspect ratio
+                    }
+                    else
+                    {
+                        output.Mutate(x => x.Resize(WIDTH, 0)); //passing zero maintains aspect ratio
+                    }
+                }
+            }
+            catch (Exception) { }
+
+            return output;
         }
 
         /// <returns>Base64 image data</returns>

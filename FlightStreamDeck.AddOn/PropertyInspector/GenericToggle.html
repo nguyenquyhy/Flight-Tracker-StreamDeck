@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>Property Inspector</title>
     <link rel="stylesheet" href="sdpi.css">
+    <script src="myscripts.js"></script>
 </head>
 <body>
     <div class="sdpi-wrapper">
@@ -23,12 +24,16 @@
             <div class="sdpi-item-label">Display value</div>
             <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" onchange="updateData()" pattern="[A-Z0-9: ]">
         </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Legacy display image</div>
-            <select class="sdpi-item-value select" id="ImageDisplayTypeValue" onchange="updateData()">
-                <option value="true">Legacy</option>
-                <option value="false">New</option>
-            </select>
+
+        <div class="sdpi-heading">Override Images</div>
+
+        <div class="sdpi-item" id="type">
+            <div class="sdpi-item-label">Override On Image</div>
+            <input class="sdpi-item-value" id="OverrideOnImageValue" value="" placeholder="button_active.png" onchange="updateData()">
+        </div>
+        <div class="sdpi-item" id="type">
+            <div class="sdpi-item-label">Override Off Image</div>
+            <input class="sdpi-item-value" id="OverrideOffImageValue" value="" placeholder="button.png" onchange="updateData()">
         </div>
     </div>
     <script language="JavaScript" type="text/javascript">
@@ -58,12 +63,35 @@
             }
         }
 
+        function prepareDOMElements(baseElement) {
+            baseElement = baseElement || document;
+            Array.from(baseElement.querySelectorAll('.fileSelector')).forEach(
+                (el, i) => {
+                    const elementsToClick = [
+                        'BUTTON'
+                    ].includes(el.tagName);
+                    const evt = elementsToClick ? 'onclick' : 'onchange';
+
+                    /** Just in case the found HTML element already has an input or change - event attached, 
+                     * we clone it, and call it in the callback, right before the freshly attached event
+                    */
+                    const cloneEvt = el[evt];
+                    el[evt] = function (e) {
+                        if (cloneEvt) cloneEvt();
+                        handleSdpiItemChange(e.target, i);
+                    };
+                }
+            );
+        }
+
         function loadSettings(settings) {
             if (settings['Header']) { Header.value = settings['Header'] };
             if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
             if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
-            if (settings['ImageDisplayTypeValue']) { ImageDisplayTypeValue.value = settings['ImageDisplayTypeValue'] };
+            if (settings['OverrideOnImageValue']) { OverrideOnImageValue.value = settings['OverrideOnImageValue']; };
+            if (settings['OverrideOffImageValue']) { OverrideOffImageValue.value = settings['OverrideOffImageValue']; };
+
         }
 
         function updateData() {
@@ -72,7 +100,8 @@
                 "ToggleValue": ToggleValue.value,
                 "FeedbackValue": FeedbackValue.value,
                 "DisplayValue": DisplayValue.value,
-                "ImageDisplayTypeValue": ImageDisplayTypeValue.value
+                "OverrideOnImageValue": OverrideOnImageValue.value,
+                "OverrideOffImageValue": OverrideOffImageValue.value
             };
 
             sendValueToPlugin(payload);
@@ -103,6 +132,95 @@
                  websocket.send(JSON.stringify(json));
             }
         }
+
+        function handleSdpiItemChange(e, idx) {
+            const selectedElements = [];
+            const isList = ['LI', 'OL', 'UL', 'DL', 'TD'].includes(e.tagName);
+            const sdpiItem = e.closest('.sdpi-item');
+            const sdpiItemGroup = e.closest('.sdpi-item-group');
+            let sdpiItemChildren = isList
+                ? sdpiItem.querySelectorAll(e.tagName === 'LI' ? 'li' : 'td')
+                : sdpiItem.querySelectorAll('.sdpi-item-child > input');
+
+            if (isList) {
+                const siv = e.closest('.sdpi-item-value');
+                if (!siv.classList.contains('multi-select')) {
+                    for (let x of sdpiItemChildren) x.classList.remove('selected');
+                }
+                if (!siv.classList.contains('no-select')) {
+                    e.classList.toggle('selected');
+                }
+            }
+
+            if (sdpiItemChildren.length && ['radio', 'checkbox'].includes(sdpiItemChildren[0].type)) {
+                e.setAttribute('_value', e.checked); //'_value' has priority over .value
+            }
+            if (sdpiItemGroup && !sdpiItemChildren.length) {
+                for (let x of ['input', 'meter', 'progress']) {
+                    sdpiItemChildren = sdpiItemGroup.querySelectorAll(x);
+                    if (sdpiItemChildren.length) break;
+                }
+            }
+
+            if (e.selectedIndex) {
+                idx = e.selectedIndex;
+            } else {
+                sdpiItemChildren.forEach((ec, i) => {
+                    if (ec.classList.contains('selected')) {
+                        selectedElements.push(ec.textContent);
+                    }
+                    if (ec === e) {
+                        idx = i;
+                        selectedElements.push(ec.value);
+                    }
+                });
+            }
+
+            var localpath = null;
+            const returnValue = {
+                key: e.id && e.id.charAt(0) !== '_' ? e.id : sdpiItem.id,
+                value: isList
+                    ? e.textContent
+                    : e.hasAttribute('_value')
+                        ? e.getAttribute('_value')
+                        : e.value
+                            ? e.type === 'file'
+                                ? decodeURIComponent(e.value.replace(/^C:\\fakepath\\/, ''))
+                                : e.value
+                            : e.getAttribute('value'),
+                group: sdpiItemGroup ? sdpiItemGroup.id : false,
+                index: idx,
+                selection: selectedElements,
+                checked: e.checked,
+                fileLoc: e.type === 'file'
+                    ? e.formAction.replace('file:///', '').replaceAll('/', '\\')
+                    : null
+            };
+
+            /** Just simulate the original file-selector:
+             * If there's an element of class '.sdpi-file-info'
+             * show the filename there
+             */
+            if (e.type === 'file') {
+                const info = sdpiItem.querySelector('.sdpi-file-info');
+                if (info) {
+                    const s = returnValue.value.split('/').pop();
+                    info.textContent = s.length > 28
+                        ? s.substr(0, 10)
+                        + '...'
+                        + s.substr(s.length - 10, s.length)
+                        : s;
+                }
+                const val = sdpiItem.querySelector('.sdpi-item-value');
+                if (val) {
+                    val.textContent = returnValue.fileLoc;
+                }
+            }
+
+            updateData();
+        }
+
+        prepareDOMElements(document);
     </script>
 </body>
 </html>
