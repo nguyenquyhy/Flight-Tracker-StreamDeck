@@ -52,6 +52,7 @@ namespace FlightStreamDeck.Logics
 
     public class DeckLogic
     {
+        public static bool arudinoConnected { get; set; }
         public static NumpadParams NumpadParams { get; set; }
         public static TaskCompletionSource<(string value, bool swap)> NumpadTcs { get; set; }
 

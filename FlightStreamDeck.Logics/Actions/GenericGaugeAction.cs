@@ -21,6 +21,7 @@ namespace FlightStreamDeck.Logics.Actions
         private float currentValue = 0;
         private float min = 0;
         private float max = 1;
+        private bool arduinoConnectedInd = false;
 
         public GenericGaugeAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
@@ -73,6 +74,7 @@ namespace FlightStreamDeck.Logics.Actions
             string newHeader = settings.Value<string>("Header");
             float newMin = settings.Value<float>("MinValue");
             float newMax = settings.Value<float>("MaxValue");
+            bool arduinoInd = settings.Value<bool>("ArduinoConnectedInd");
             TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.Value<string>("ToggleValue"));
             TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.Value<string>("DisplayValue"));
 
@@ -86,6 +88,7 @@ namespace FlightStreamDeck.Logics.Actions
             displayValue = newDisplayValue;
             min = newMin;
             max = newMax;
+            arduinoConnectedInd = arduinoInd;
 
             RegisterValues();
         }
@@ -148,7 +151,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetGaugeImage(header, currentValue, min, max));
+            await SetImageAsync(imageLogic.GetGaugeImage($"{header}{(arduinoConnectedInd && DeckLogic.arudinoConnected ? "*" : "")}", currentValue, min, max));
         }
     }
 }

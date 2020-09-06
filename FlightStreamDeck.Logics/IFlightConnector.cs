@@ -25,6 +25,7 @@ namespace FlightStreamDeck.Logics
         void ApAltSet(uint altitude);
         void ApAltInc();
         void ApAltDec();
+        void TrimSetValue(uint trimSet);
 
         void Toggle(TOGGLE_EVENT toggleAction);
         void Set(SET_EVENT setAction, uint data);

@@ -27,6 +27,7 @@
     <PackageReference Include="StreamDeckLib.Config" Version="0.4.480" />
     <PackageReference Include="System.IO" Version="4.3.0" />
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.IO.Ports" Version="4.7.0" />
     <PackageReference Include="System.Runtime.Handles" Version="4.3.0" />
     <PackageReference Include="System.Text.Encoding" Version="4.3.0" />
     <PackageReference Include="System.Threading.Tasks" Version="4.3.0" />
