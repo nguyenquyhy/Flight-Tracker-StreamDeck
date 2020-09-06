@@ -45,85 +45,85 @@
       "Icon": "Images/toggleIcon",
       "Name": "NAV & COM",
       "States": [
-          {
-              "Image": "Images/button",
-              "ShowTitle": false
-          }
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
       ],
       "SupportedInMultiActions": false,
       "PropertyInspectorPath": "PropertyInspector/NavCom.html",
       "Tooltip": "Nav & Com",
       "UUID": "tech.flighttracker.streamdeck.generic.navcom"
-      },
-      {
-        "Icon": "Images/toggleIcon",
-        "Name": "AP Master",
-        "States": [
-          {
-            "Image": "Images/button",
-            "ShowTitle": false
-          }
-        ],
-        "SupportedInMultiActions": false,
-        "PropertyInspectorPath": "PropertyInspector/AP.html",
-        "Tooltip": "Activate/Deactivate AP",
-        "UUID": "tech.flighttracker.streamdeck.master.activate"
-      },
+    },
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "AP Master",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "PropertyInspector/AP.html",
+      "Tooltip": "Activate/Deactivate AP",
+      "UUID": "tech.flighttracker.streamdeck.master.activate"
+    },
 
-      {
-        "Icon": "Images/toggleIcon",
-        "Name": "AP Heading",
-        "States": [
-          {
-            "Image": "Images/button",
-            "ShowTitle": false
-          }
-        ],
-        "SupportedInMultiActions": false,
-        "Tooltip": "Activate/Deactivate AP heading hold",
-        "UUID": "tech.flighttracker.streamdeck.heading.activate"
-      },
-      {
-        "Icon": "Images/toggleIcon",
-        "Name": "AP Nav",
-        "States": [
-          {
-            "Image": "Images/button",
-            "ShowTitle": false
-          }
-        ],
-        "SupportedInMultiActions": false,
-        "PropertyInspectorPath": "PropertyInspector/AP.html",
-        "Tooltip": "Activate/Deactivate AP Nav mode",
-        "UUID": "tech.flighttracker.streamdeck.nav.activate"
-      },
-      {
-        "Icon": "Images/toggleIcon",
-        "Name": "AP Approach",
-        "States": [
-          {
-            "Image": "Images/button",
-            "ShowTitle": false
-          }
-        ],
-        "SupportedInMultiActions": false,
-        "PropertyInspectorPath": "PropertyInspector/AP.html",
-        "Tooltip": "Activate/Deactivate AP Approach mode",
-        "UUID": "tech.flighttracker.streamdeck.approach.activate"
-      },
-      {
-        "Icon": "Images/toggleIcon",
-        "Name": "AP Altitude",
-        "States": [
-          {
-            "Image": "Images/button",
-            "ShowTitle": false
-          }
-        ],
-        "SupportedInMultiActions": false,
-        "Tooltip": "Activate/Deactivate AP altitude hold",
-        "UUID": "tech.flighttracker.streamdeck.altitude.activate"
-      },
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "AP Heading",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Activate/Deactivate AP heading hold",
+      "UUID": "tech.flighttracker.streamdeck.heading.activate"
+    },
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "AP Nav",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "PropertyInspector/AP.html",
+      "Tooltip": "Activate/Deactivate AP Nav mode",
+      "UUID": "tech.flighttracker.streamdeck.nav.activate"
+    },
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "AP Approach",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "PropertyInspector/AP.html",
+      "Tooltip": "Activate/Deactivate AP Approach mode",
+      "UUID": "tech.flighttracker.streamdeck.approach.activate"
+    },
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "AP Altitude",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Activate/Deactivate AP altitude hold",
+      "UUID": "tech.flighttracker.streamdeck.altitude.activate"
+    },
     {
       "Icon": "Images/plusIcon",
       "Name": "AP Heading Increase",
@@ -419,7 +419,7 @@
   "SDKVersion": 2,
   "Author": "Pieter van 't Hof,  Nguyen Quy Hy, and Ryan Mroczenski",
   "CodePath": "FlightStreamDeck.AddOn.exe",
-  "Category": "Flight Tracker",
+  "Category": "Flight Tracker fork RMROC451",
   "CategoryIcon": "Images/categoryIcon",
   "Description": "Interact with your flight simulator right from your Stream Deck",
   "Name": "Flight Tracker fork RMROC451",
