@@ -425,7 +425,7 @@
   "Name": "Flight Tracker fork RMROC451",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
-  "Version": "0.1.1",
+  "Version": "0.2.1",
   "OS": [
     {
       "Platform": "windows",

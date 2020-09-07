@@ -1,10 +1,12 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.display")]
     public class NumberDisplayAction : StreamDeckAction
     {
         private readonly Timer timer;
