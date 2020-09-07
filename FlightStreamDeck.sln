@@ -10,13 +10,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A33D2176-6EEB-4C53-8282-8130D42C0198}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		docs\USERGUIDE.md = docs\USERGUIDE.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightStreamDeck.SimConnectFSX", "FlightStreamDeck.SimConnectFSX\FlightStreamDeck.SimConnectFSX.csproj", "{3354971D-4772-4364-843F-A3CF91BC71B2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightStreamDeck.Core", "FlightStreamDeck.Core\FlightStreamDeck.Core.csproj", "{420BC793-FAC4-458A-8AB8-5E6674AF8D39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlightStreamDeck.LogicsTests", "FlightStreamDeck.LogicsTests\FlightStreamDeck.LogicsTests.csproj", "{2476F8A1-5018-414A-AF30-D75C7B189C25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightStreamDeck.LogicsTests", "FlightStreamDeck.LogicsTests\FlightStreamDeck.LogicsTests.csproj", "{2476F8A1-5018-414A-AF30-D75C7B189C25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

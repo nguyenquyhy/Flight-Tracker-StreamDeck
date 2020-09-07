@@ -53,7 +53,11 @@ This button is very similar to Generic Toggle Button except from it does not hav
 | AP Altitude | AP Altitude status | Toggle AP Altitude |
 | AP Heading/Altitude Increase/Decrease | Static +/- sign | Increase/Decrease by 1 | Increase/Decrease by 10
 
+All buttons with active/inactive states now allow you to choose custom button images for each state. 
+The image should be of size 72x72 pixel (or 144x144 for higher res screen) and should be in PNG format.
+
 ### Known Issues
 
 - If you spam the same buttons too quickly, SimConnect will get error and stop responding to any further command. The plugin will try to automatically reconnect. 
   - However, if you see the message "Connected to Flight Simulator" flashing constantly in the sim, the plugin might be in a infinitely retry loop. In this case, close Stream Deck software on your PC (which will kill the plugin), wait a couple of seconds for all the SimConnect connections to close, and re-open Stream Deck.
+- When you setup new generic buttons or COM/NAV button, the registration between the plugin and SimConnect might get messed up and the plugin stops receiving data. In this case, you'll need to restart Stream Deck software.

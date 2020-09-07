@@ -7,22 +7,6 @@
 </head>
 <body>
     <div class="sdpi-wrapper">
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Header</div>
-            <input class="sdpi-item-value" id="Header" value="" placeholder="YD">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Toggle value</div>
-            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Feedback value</div>
-            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="AUTOPILOT YAW DAMPER" pattern="[A-Z0-9: ]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" pattern="[A-Z0-9: ]">
-        </div>
         <div type="group" class="sdpi-item" id="messagegroup">
             <div class="sdpi-item-label">Custom ON/OFF images</div>
             <div class="sdpi-item-group">
@@ -50,10 +34,6 @@
     <script src="common.js"></script>
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
-            if (settings['Header']) { Header.value = settings['Header'] };
-            if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
-            if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
-            if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['ImageOn']) {
                 setFileLabel(on_image_file_selector, settings['ImageOn']);
             };

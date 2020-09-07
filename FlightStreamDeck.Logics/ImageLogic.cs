@@ -11,7 +11,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string value = null);
+        string GetImage(string text, bool active, string value = null, string customActiveBackground = null, string customBackground = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, string value1 = null, string value2 = null, bool showMainOnly = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
@@ -20,8 +20,8 @@ namespace FlightStreamDeck.Logics
 
     public class ImageLogic : IImageLogic
     {
-        readonly Image backGround = Image.Load("Images/button.png");
-        readonly Image activeBackground = Image.Load("Images/button_active.png");   
+        readonly Image defaultBackground = Image.Load("Images/button.png");
+        readonly Image defaultActiveBackground = Image.Load("Images/button_active.png");   
         readonly Image horizon = Image.Load("Images/horizon.png");
         readonly Image gaugeImage = Image.Load("Images/gauge.png");
 
@@ -32,13 +32,29 @@ namespace FlightStreamDeck.Logics
         /// 
         /// </summary>
         /// <returns>Base64 image data</returns>
-        public string GetImage(string text, bool active, string value = null)
+        public string GetImage(string text, bool active, string value = null, string customActiveBackground = null, string customBackground = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
             bool hasValue = value != null && value.Length > 0;
 
-            Image img = active && !hasValue ? activeBackground : backGround;
+            // Note: logic to choose with image to show
+            // 1. If user did not select custom images, the active image (with light) is used 
+            //    only when Feedback value is true AND Display value is empty.
+            // 2. If user select custom images (esp Active one), the custom Active image is used based on Feedback value 
+            //    ignoring Display value. 
+            Image img;
+            if (active)
+            {
+                img = !string.IsNullOrEmpty(customActiveBackground) && File.Exists(customActiveBackground) ?
+                    Image.Load(customActiveBackground) : (!hasValue ? defaultActiveBackground : defaultBackground);
+            }
+            else
+            {
+                img = !string.IsNullOrEmpty(customBackground) && File.Exists(customBackground) ?
+                    Image.Load(customBackground) : defaultBackground;
+            }
+
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
@@ -67,7 +83,7 @@ namespace FlightStreamDeck.Logics
             var font = SystemFonts.CreateFont("Arial", 20, FontStyle.Bold);
 
             var text = number.ToString();
-            Image img = backGround;
+            Image img = defaultBackground;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
@@ -86,7 +102,7 @@ namespace FlightStreamDeck.Logics
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 13, FontStyle.Regular);
 
-            Image img = backGround;
+            Image img = defaultBackground;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();

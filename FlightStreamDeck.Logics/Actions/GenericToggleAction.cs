@@ -9,14 +9,25 @@ using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    public class GenericToggleSettings
+    {
+        public string Header { get; set; }
+        public string ToggleValue { get; set; }
+        public string FeedbackValue { get; set; }
+        public string DisplayValue { get; set; }
+        public string ImageOn { get; set; }
+        public string ImageOff { get; set; }
+    }
+
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
-    public class GenericToggleAction : StreamDeckAction
+    public class GenericToggleAction : StreamDeckAction<GenericToggleSettings>
     {
         private readonly ILogger<ApToggleAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
 
-        private string header = "";
+        private GenericToggleSettings settings = null;
+
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? feedbackValue = null;
         private TOGGLE_VALUE? displayValue = null;
@@ -33,7 +44,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            setValues(args.Payload.Settings);
+            var settings = args.Payload.GetSettings<GenericToggleSettings>();
+            InitializeSettings(settings);
 
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
@@ -42,19 +54,19 @@ namespace FlightStreamDeck.Logics.Actions
             await UpdateImage();
         }
 
-        private void setValues(JObject settings)
+        private void InitializeSettings(GenericToggleSettings settings)
         {
-            string newHeader = settings.Value<string>("Header");
-            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.Value<string>("ToggleValue"));
-            TOGGLE_VALUE? newFeedbackValue = GetValueValue(settings.Value<string>("FeedbackValue"));
-            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.Value<string>("DisplayValue"));
+            this.settings = settings;
+
+            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.ToggleValue);
+            TOGGLE_VALUE? newFeedbackValue = GetValueValue(settings.FeedbackValue);
+            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.DisplayValue);
 
             if (newFeedbackValue != feedbackValue || newDisplayValue != displayValue)
             {
                 DeRegisterValues();
             }
 
-            header = newHeader;
             toggleEvent = newToggleEvent;
             feedbackValue = newFeedbackValue;
             displayValue = newDisplayValue;
@@ -69,8 +81,7 @@ namespace FlightStreamDeck.Logics.Actions
                 return null;
             }
 
-            TOGGLE_EVENT result;
-            if (Enum.TryParse(value, true, out result))
+            if (Enum.TryParse(value, true, out TOGGLE_EVENT result))
             {
                 return result;
             }
@@ -85,8 +96,7 @@ namespace FlightStreamDeck.Logics.Actions
                 return null;
             }
 
-            TOGGLE_VALUE result;
-            if (Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out result))
+            if (Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_VALUE result))
             {
                 return result;
             }
@@ -126,11 +136,10 @@ namespace FlightStreamDeck.Logics.Actions
             return Task.CompletedTask;
         }
 
-        protected override Task OnSendToPlugin(ActionEventArgs<JObject> args)
+        protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            setValues(args.Payload);
-            _= UpdateImage();
-            return Task.CompletedTask;
+            InitializeSettings(args.Payload.ToObject<GenericToggleSettings>());
+            await UpdateImage();
         }
 
         private void RegisterValues()
@@ -155,7 +164,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetImage(header, currentStatus, currentValue));
+            await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus, currentValue, settings.ImageOn, settings.ImageOff));
         }
     }
 }

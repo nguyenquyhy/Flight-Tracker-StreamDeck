@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
@@ -7,6 +8,12 @@ using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    public class ApToggleSettings
+    {
+        public string ImageOn { get; set; }
+        public string ImageOff { get; set; }
+    }
+
     #region Action Registration
 
     [StreamDeckAction("tech.flighttracker.streamdeck.master.activate")]
@@ -42,7 +49,7 @@ namespace FlightStreamDeck.Logics.Actions
 
     #endregion
 
-    public abstract class ApToggleAction : StreamDeckAction
+    public abstract class ApToggleAction : StreamDeckAction<ApToggleSettings>
     {
         private readonly ILogger logger;
         private readonly IFlightConnector flightConnector;
@@ -51,6 +58,7 @@ namespace FlightStreamDeck.Logics.Actions
         private AircraftStatus status = null;
         private string action;
         private bool timerHasTick;
+        private ApToggleSettings settings;
 
         public ApToggleAction(ILogger logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
@@ -128,6 +136,9 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
+            var settings = args.Payload.GetSettings<ApToggleSettings>();
+            InitializeSettings(settings);
+
             action = args.Action;
             status = null;
             this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
@@ -141,6 +152,12 @@ namespace FlightStreamDeck.Logics.Actions
             status = null;
 
             return Task.CompletedTask;
+        }
+
+        protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
+        {
+            InitializeSettings(args.Payload.ToObject<ApToggleSettings>());
+            await UpdateImage();
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -194,6 +211,11 @@ namespace FlightStreamDeck.Logics.Actions
             return Task.CompletedTask;
         }
 
+        private void InitializeSettings(ApToggleSettings settings)
+        {
+            this.settings = settings;
+        }
+
         private async Task UpdateImage()
         {
             var currentStatus = status;
@@ -202,23 +224,23 @@ namespace FlightStreamDeck.Logics.Actions
                 switch (action)
                 {
                     case "tech.flighttracker.streamdeck.master.activate":
-                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn));
+                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case "tech.flighttracker.streamdeck.heading.activate":
-                        await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString()));
+                        await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case "tech.flighttracker.streamdeck.nav.activate":
-                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn));
+                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case "tech.flighttracker.streamdeck.approach.activate":
-                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn));
+                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case "tech.flighttracker.streamdeck.altitude.activate":
-                        await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString()));
+                        await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
                 }
             }

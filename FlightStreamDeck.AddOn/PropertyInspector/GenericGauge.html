@@ -28,33 +28,8 @@
             <input class="sdpi-item-value" id="MaxValue" value="" placeholder="100" onchange="updateData()" pattern="[0-9.-]">
         </div>
     </div>
+    <script src="common.js"></script>
     <script language="JavaScript" type="text/javascript">
-        // this is our global websocket, used to communicate from/to Stream Deck software
-        // and some info about our plugin, as sent by Stream Deck software
-        var websocket = null,
-        uuid = null,
-        actionInfo = {};
-
-        function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
-            uuid = inUUID;
-            // please note: the incoming arguments are of type STRING, so
-            // in case of the inActionInfo, we must parse it into JSON first
-            actionInfo = JSON.parse(inActionInfo); // cache the info
-            loadSettings(actionInfo['payload']['settings'])
-            websocket = new WebSocket('ws://localhost:' + inPort);
-
-            // if connection was established, the websocket sends
-            // an 'onopen' event, where we need to register our PI
-            websocket.onopen = function () {
-                var json = {
-                    event: inRegisterEvent,
-                    uuid: inUUID
-                };
-                // register property inspector to Stream Deck
-                websocket.send(JSON.stringify(json));
-            }
-        }
-
         function loadSettings(settings) {
             if (settings['Header']) { Header.value = settings['Header'] };
             if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
@@ -75,30 +50,7 @@
             sendValueToPlugin(payload);
             setSettings(payload);
         }
-
-        // our method to pass values to the plugin
-        function sendValueToPlugin(payload) {
-            if (websocket) {
-                const json = {
-                    "action": actionInfo['action'],
-                    "event": "sendToPlugin",
-                    "context": uuid,
-                    "payload": payload
-                };
-                websocket.send(JSON.stringify(json));
-            }
-        }
-
-        function setSettings(payload) {
-            if (websocket) {
-                const json = {
-                    "event": "setSettings",
-                    "context": uuid,
-                    "payload": payload
-                 };
-                 websocket.send(JSON.stringify(json));
-            }
-        }
     </script>
+    <script src="init.js"></script>
 </body>
 </html>
