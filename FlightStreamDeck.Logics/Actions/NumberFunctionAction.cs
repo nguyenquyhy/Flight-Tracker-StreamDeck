@@ -15,7 +15,16 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.number.cancel")]
     public class NumberCancelAction : NumberFunctionAction { }
     [StreamDeckAction("tech.flighttracker.streamdeck.number.transfer")]
-    public class NumberTransferAction : NumberFunctionAction { }
+    public class NumberTransferAction : NumberFunctionAction
+    {
+        protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+        {
+            if (DeckLogic.NumpadParams.Type == "XPDR")
+            {
+                await SetTitleAsync(string.Empty);
+            }
+        }
+    }
 
     #endregion
 
@@ -41,11 +50,14 @@ namespace FlightStreamDeck.Logics.Actions
                     await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.transfer":
-                    if (DeckLogic.NumpadTcs != null)
+                    if (DeckLogic.NumpadParams.Type != "XPDR")
                     {
-                        DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, true));
+                        if (DeckLogic.NumpadTcs != null)
+                        {
+                            DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, true));
+                        }
+                        await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     }
-                    await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                     break;
                 case "tech.flighttracker.streamdeck.number.backspace":
                     if (DeckLogic.NumpadParams.Value.Length > 0)

@@ -24,9 +24,39 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.number.7")]
     public class Number7Action : NumberAction { public Number7Action(IImageLogic imageLogic) : base(imageLogic) { } }
     [StreamDeckAction("tech.flighttracker.streamdeck.number.8")]
-    public class Number8Action : NumberAction { public Number8Action(IImageLogic imageLogic) : base(imageLogic) { } }
+    public class Number8Action : NumberAction
+    {
+        public Number8Action(IImageLogic imageLogic) : base(imageLogic) { }
+
+        protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+        {
+            if (DeckLogic.NumpadParams.Type == "XPDR")
+            {
+                await SetImageAsync(null);
+            }
+            else
+            {
+                await base.OnWillAppear(args);
+            }
+        }
+    }
     [StreamDeckAction("tech.flighttracker.streamdeck.number.9")]
-    public class Number9Action : NumberAction { public Number9Action(IImageLogic imageLogic) : base(imageLogic) { } }
+    public class Number9Action : NumberAction
+    {
+        public Number9Action(IImageLogic imageLogic) : base(imageLogic) { }
+
+        protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+        {
+            if (DeckLogic.NumpadParams.Type == "XPDR")
+            {
+                await SetImageAsync(null);
+            }
+            else
+            {
+                await base.OnWillAppear(args);
+            }
+        }
+    }
 
     #endregion
 
@@ -50,6 +80,8 @@ namespace FlightStreamDeck.Logics.Actions
         {
             var tokens = args.Action.Split(".");
             var number = int.Parse(tokens[^1]);
+
+            if (DeckLogic.NumpadParams.Type == "XPDR" && number > 7) return Task.CompletedTask;
 
             if (DeckLogic.NumpadParams.Value.Length < DeckLogic.NumpadParams.MinPattern.Length)
             {
