@@ -24,6 +24,7 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly ILogger<ApToggleAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
+        private readonly EnumConverter enumConverter;
 
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? displayValue = null;
@@ -32,11 +33,13 @@ namespace FlightStreamDeck.Logics.Actions
 
         private GenericGaugeSettings settings;
 
-        public GenericGaugeAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public GenericGaugeAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
+            EnumConverter enumConverter)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
+            this.enumConverter = enumConverter;
         }
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -80,8 +83,8 @@ namespace FlightStreamDeck.Logics.Actions
         {
             this.settings = settings;
 
-            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.ToggleValue);
-            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.DisplayValue);
+            TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
+            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
 
             if (newDisplayValue != displayValue)
             {
@@ -92,29 +95,6 @@ namespace FlightStreamDeck.Logics.Actions
             displayValue = newDisplayValue;
 
             RegisterValues();
-        }
-
-        private TOGGLE_EVENT? GetEventValue(string value)
-        {
-            TOGGLE_EVENT result;
-            if (Enum.TryParse<TOGGLE_EVENT>(value, true, out result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private TOGGLE_VALUE? GetValueValue(string value)
-        {
-            if (value == null) return null;
-
-            if (Enum.TryParse<TOGGLE_VALUE>(value.Replace(":", "__").Replace(" ", "_"), true, out var result))
-            {
-                return result;
-            }
-
-            return null;
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)

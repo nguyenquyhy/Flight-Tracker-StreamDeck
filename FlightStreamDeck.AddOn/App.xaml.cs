@@ -1,4 +1,5 @@
-﻿using FlightStreamDeck.Logics;
+﻿using FlightStreamDeck.Core;
+using FlightStreamDeck.Logics;
 using FlightStreamDeck.SimConnectFSX;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
@@ -62,6 +63,8 @@ namespace FlightStreamDeck.AddOn
 
             services.AddTransient(typeof(MainWindow));
             services.AddSingleton<IImageLogic, ImageLogic>();
+            services.AddTransient<IEvaluator, SimpleEvaluator>();
+            services.AddTransient<EnumConverter>();
         }
     }
 }

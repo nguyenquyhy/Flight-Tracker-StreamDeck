@@ -4,7 +4,8 @@ using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -25,21 +26,27 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly ILogger<ApToggleAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
+        private readonly IEvaluator evaluator;
+        private readonly EnumConverter enumConverter;
 
         private GenericToggleSettings settings = null;
 
         private TOGGLE_EVENT? toggleEvent = null;
-        private TOGGLE_VALUE? feedbackValue = null;
+        private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
+        private IExpression expression;
         private TOGGLE_VALUE? displayValue = null;
 
         private string currentValue = "";
         private bool currentStatus = false;
 
-        public GenericToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public GenericToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
+            IEvaluator evaluator, EnumConverter enumConverter)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
+            this.evaluator = evaluator;
+            this.enumConverter = enumConverter;
         }
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -58,64 +65,31 @@ namespace FlightStreamDeck.Logics.Actions
         {
             this.settings = settings;
 
-            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.ToggleValue);
-            TOGGLE_VALUE? newFeedbackValue = GetValueValue(settings.FeedbackValue);
-            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.DisplayValue);
+            TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
+            (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
+            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
 
-            if (newFeedbackValue != feedbackValue || newDisplayValue != displayValue)
+            if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue)
             {
                 DeRegisterValues();
             }
 
             toggleEvent = newToggleEvent;
-            feedbackValue = newFeedbackValue;
+            feedbackVariables = newFeedbackVariables;
+            expression = newExpression;
             displayValue = newDisplayValue;
 
             RegisterValues();
-        }
-
-        private TOGGLE_EVENT? GetEventValue(string value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            if (Enum.TryParse(value, true, out TOGGLE_EVENT result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private TOGGLE_VALUE? GetValueValue(string value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            if (Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_VALUE result))
-            {
-                return result;
-            }
-
-            return null;
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
             if (StreamDeck == null) return;
 
-            bool isUpdated = false;
+            var newStatus = expression != null && evaluator.Evaluate(e.GenericValueStatus, expression);
+            var isUpdated = newStatus != currentStatus;
+            currentStatus = newStatus;
 
-            if (feedbackValue.HasValue && e.GenericValueStatus.ContainsKey(feedbackValue.Value))
-            {
-                bool newStatus = e.GenericValueStatus[feedbackValue.Value] != "0";
-                isUpdated = newStatus != currentStatus;
-                currentStatus = newStatus;
-            }
             if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
             {
                 string newValue = e.GenericValueStatus[displayValue.Value];
@@ -145,13 +119,13 @@ namespace FlightStreamDeck.Logics.Actions
         private void RegisterValues()
         {
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
-            if (feedbackValue.HasValue) flightConnector.RegisterSimValue(feedbackValue.Value);
+            foreach (var feedbackVariable in feedbackVariables) flightConnector.RegisterSimValue(feedbackVariable);
             if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
         }
 
         private void DeRegisterValues()
         {
-            if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
+            foreach (var feedbackVariable in feedbackVariables) flightConnector.DeRegisterSimValue(feedbackVariable);
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
             currentValue = null;
         }
@@ -164,7 +138,10 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus, currentValue, settings.ImageOn, settings.ImageOff));
+            if (settings != null)
+            {
+                await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus, currentValue, settings.ImageOn, settings.ImageOff));
+            }
         }
     }
 }
