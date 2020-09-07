@@ -1,15 +1,45 @@
 ﻿using Microsoft.Extensions.Logging;
 using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
-    public class ValueChangeAction : StreamDeckAction
+    #region Action Registration
+    
+    [StreamDeckAction("tech.flighttracker.streamdeck.heading.increase")]
+    public class HeadingIncreaseAction : ValueChangeAction
     {
-        private readonly ILogger<ValueChangeAction> logger;
+        public HeadingIncreaseAction(ILogger<HeadingIncreaseAction> logger, IFlightConnector flightConnector)
+            : base(logger, flightConnector) { }
+    }
+    [StreamDeckAction("tech.flighttracker.streamdeck.heading.decrease")]
+    public class HeadingDecreaseAction : ValueChangeAction
+    {
+        public HeadingDecreaseAction(ILogger<HeadingDecreaseAction> logger, IFlightConnector flightConnector)
+            : base(logger, flightConnector) { }
+    }
+    [StreamDeckAction("tech.flighttracker.streamdeck.altitude.increase")]
+    public class AltitudeIncreaseAction : ValueChangeAction
+    {
+        public AltitudeIncreaseAction(ILogger<AltitudeIncreaseAction> logger, IFlightConnector flightConnector)
+            : base(logger, flightConnector) { }
+    }
+    [StreamDeckAction("tech.flighttracker.streamdeck.altitude.decrease")]
+    public class AltitudeDecreaseAction : ValueChangeAction
+    {
+        public AltitudeDecreaseAction(ILogger<AltitudeDecreaseAction> logger, IFlightConnector flightConnector)
+            : base(logger, flightConnector) { }
+    }
+
+    #endregion
+
+    public abstract class ValueChangeAction : StreamDeckAction
+    {
+        private readonly ILogger logger;
         private readonly IFlightConnector flightConnector;
 
         private Timer timer;
@@ -18,7 +48,7 @@ namespace FlightStreamDeck.Logics.Actions
         private uint? originalValue = null;
         private AircraftStatus status;
 
-        public ValueChangeAction(ILogger<ValueChangeAction> logger, IFlightConnector flightConnector)
+        public ValueChangeAction(ILogger logger, IFlightConnector flightConnector)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;

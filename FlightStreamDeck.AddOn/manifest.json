@@ -417,7 +417,7 @@
     }
   ],
   "SDKVersion": 2,
-  "Author": "Pieter van 't Hof and Nguyen Quy Hy",
+  "Author": "Pieter van 't Hof and Nguyen Quy Hy and rmroc451",
   "CodePath": "FlightStreamDeck.AddOn.exe",
   "Category": "Flight Tracker",
   "CategoryIcon": "Images/categoryIcon",
@@ -425,7 +425,7 @@
   "Name": "Flight Tracker",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
-  "Version": "0.1",
+  "Version": "0.2",
   "OS": [
     {
       "Platform": "windows",

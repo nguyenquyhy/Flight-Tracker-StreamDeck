@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpDeck" Version="4.0.2" />
+    <PackageReference Include="SharpDeck" Version="5.0.2" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0010" />
   </ItemGroup>
 
