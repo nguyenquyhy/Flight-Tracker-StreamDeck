@@ -414,6 +414,12 @@
       "ReadOnly": true,
       "DeviceType": 3,
       "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "Profiles/MSFS_C172",
+      "ReadOnly": true,
+      "DeviceType": 0,
+      "DontAutoSwitchWhenInstalled": false
     }
   ],
   "SDKVersion": 2,
