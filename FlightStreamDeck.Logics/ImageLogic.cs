@@ -21,13 +21,12 @@ namespace FlightStreamDeck.Logics
     public class ImageLogic : IImageLogic
     {
         readonly Image backGround = Image.Load("Images/button.png");
-        readonly Image activeBackground = Image.Load("Images/button_active.png");
+        readonly Image activeBackground = Image.Load("Images/button_active.png");   
         readonly Image horizon = Image.Load("Images/horizon.png");
         readonly Image gaugeImage = Image.Load("Images/gauge.png");
 
-        private static int WIDTH = 72;
-        private static int HALF_WIDTH = 36;
-
+        private const int WIDTH = 72;
+        private const int HALF_WIDTH = 36;
 
         /// <summary>
         /// 
@@ -43,13 +42,16 @@ namespace FlightStreamDeck.Logics
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
-                var size = TextMeasurer.Measure(text, new RendererOptions(font));
-                ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
-
-                if (hasValue)
+                if (!string.IsNullOrWhiteSpace(text))
                 {
-                    size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
-                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
+                    var size = TextMeasurer.Measure(text, new RendererOptions(font));
+                    ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+
+                    if (hasValue)
+                    {
+                        size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
+                        ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
+                    }
                 }
             });
             using var memoryStream = new MemoryStream();
@@ -89,7 +91,7 @@ namespace FlightStreamDeck.Logics
             {
                 var imgSize = ctx.GetCurrentSize();
 
-                if (type != null)
+                if (!string.IsNullOrWhiteSpace(type))
                 {
                     var size = TextMeasurer.Measure(type, new RendererOptions(font));
                     ctx.DrawText(type, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
@@ -189,11 +191,13 @@ namespace FlightStreamDeck.Logics
 
                 ctx.DrawLines(pen, needle);
 
-                var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 57));
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 57));
+                }
 
                 var valueText = value.ToString();
-                size = TextMeasurer.Measure(valueText, new RendererOptions(font));
                 ctx.DrawText(valueText, font, Color.White, new PointF(25, 30));
             });
 
