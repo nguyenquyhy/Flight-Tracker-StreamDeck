@@ -186,6 +186,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 showMainOnly = true;
                 value1 = e.GenericValueStatus[active.Value];
+                if (type == "XPDR") value1 = value1.PadLeft(4, '0');
             }
             if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
             {
