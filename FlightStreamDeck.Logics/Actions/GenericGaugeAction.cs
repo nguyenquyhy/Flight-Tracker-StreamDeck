@@ -3,11 +3,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
     public class GenericGaugeAction : StreamDeckAction
     {
         private readonly ILogger<ApToggleAction> logger;
@@ -103,8 +105,9 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_VALUE? GetValueValue(string value)
         {
-            TOGGLE_VALUE result;
-            if (Enum.TryParse<TOGGLE_VALUE>(value.Replace(":", "__").Replace(" ", "_"), true, out result))
+            if (value == null) return null;
+
+            if (Enum.TryParse<TOGGLE_VALUE>(value.Replace(":", "__").Replace(" ", "_"), true, out var result))
             {
                 return result;
             }
@@ -114,9 +117,11 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
+            if (StreamDeck == null) return;
+
             bool isUpdated = false;
 
-            if (e.GenericValueStatus.ContainsKey(displayValue.Value))
+            if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
             {
                 float newValue = 0;
                 float.TryParse(e.GenericValueStatus[displayValue.Value], out newValue);

@@ -1,13 +1,13 @@
 ﻿using FlightStreamDeck.Core;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
-using System;
+using SharpDeck.Manifest;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    [StreamDeckAction("tech.flighttracker.streamdeck.artificial.horizon")]
     public class HorizonAction : StreamDeckAction
     {
         private readonly ILogger<ApToggleAction> logger;
