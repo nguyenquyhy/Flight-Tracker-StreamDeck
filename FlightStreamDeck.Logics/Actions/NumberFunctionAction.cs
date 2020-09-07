@@ -33,15 +33,10 @@ namespace FlightStreamDeck.Logics.Actions
     public class NumberFunctionAction : StreamDeckAction
     {
         private readonly IImageLogic imageLogic;
-        private Dictionary<string, string> buttonText = new Dictionary<string, string>();
 
         public NumberFunctionAction(IImageLogic imageLogic)
         {
             this.imageLogic = imageLogic;
-            buttonText.Add("tech.flighttracker.streamdeck.number.enter", "Enter");
-            buttonText.Add("tech.flighttracker.streamdeck.number.cancel", "Cancel");
-            buttonText.Add("tech.flighttracker.streamdeck.number.transfer", "Xfer");
-            buttonText.Add("tech.flighttracker.streamdeck.number.backspace", "Bksp");
         }
 
         protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -93,12 +88,6 @@ namespace FlightStreamDeck.Logics.Actions
 
         }
 
-        protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
-        {
-            var buttonTextLocal = args.Action.Split(".")[^1].ToLower() == "transfer" && DeckLogic.NumpadParams.IsXPDR ? "VFR" : buttonText[args.Action];
-            await SetImageAsync(imageLogic.GetNavComActionLabel(buttonTextLocal));
-        }
-
         private async Task handleErroredValueAction<T>(
             ActionEventArgs<T> args,
             Func<bool> validationCheck,
@@ -119,12 +108,6 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 //usually setting label to red
                 await notValidSub(args);
-
-                //set back to white after 2 seconds
-                await Task.Run(async () => {
-                    await Task.Delay(500);
-                    await SetImageAsync(imageLogic.GetNavComActionLabel(buttonText[args.Action], false));
-                });
             }
         }
     }

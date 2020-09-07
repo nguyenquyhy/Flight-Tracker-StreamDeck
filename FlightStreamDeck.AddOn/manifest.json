@@ -418,7 +418,7 @@
     {
       "Name": "Profiles/MSFS_C172",
       "ReadOnly": true,
-      "DeviceType": 3,
+      "DeviceType": 0,
       "DontAutoSwitchWhenInstalled": false
     }
   ],
