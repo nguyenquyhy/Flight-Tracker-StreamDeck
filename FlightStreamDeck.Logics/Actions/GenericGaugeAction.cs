@@ -9,20 +9,28 @@ using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    public class GenericGaugeSettings
+    {
+        public string Header { get; set; }
+        public float MinValue { get; set; }
+        public float MaxValue { get; set; }
+        public string ToggleValue { get; set; }
+        public string DisplayValue { get; set; }
+    }
+
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
-    public class GenericGaugeAction : StreamDeckAction
+    public class GenericGaugeAction : StreamDeckAction<GenericGaugeSettings>
     {
         private readonly ILogger<ApToggleAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
 
-        private string header = "";
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? displayValue = null;
 
         private float currentValue = 0;
-        private float min = 0;
-        private float max = 1;
+
+        private GenericGaugeSettings settings;
 
         public GenericGaugeAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
@@ -33,7 +41,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            setValues(args.Payload.Settings);
+            InitializeSettings(args.Payload.GetSettings<GenericGaugeSettings>());
 
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
@@ -55,39 +63,33 @@ namespace FlightStreamDeck.Logics.Actions
             return Task.CompletedTask;
         }
 
-        protected override Task OnSendToPlugin(ActionEventArgs<JObject> args)
+        protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
             try
             {
-                setValues(args.Payload);
+                InitializeSettings(args.Payload.ToObject<GenericGaugeSettings>());
+                await UpdateImage();
             }
             catch (Exception e)
             {
                 logger.LogError(e.Message);
             }
-
-            _= UpdateImage();
-            return Task.CompletedTask;
         }
 
-        private void setValues(JObject settings)
+        private void InitializeSettings(GenericGaugeSettings settings)
         {
-            string newHeader = settings.Value<string>("Header");
-            float newMin = settings.Value<float>("MinValue");
-            float newMax = settings.Value<float>("MaxValue");
-            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.Value<string>("ToggleValue"));
-            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.Value<string>("DisplayValue"));
+            this.settings = settings;
+
+            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.ToggleValue);
+            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.DisplayValue);
 
             if (newDisplayValue != displayValue)
             {
                 DeRegisterValues();
             }
 
-            header = newHeader;
             toggleEvent = newToggleEvent;
             displayValue = newDisplayValue;
-            min = newMin;
-            max = newMax;
 
             RegisterValues();
         }
@@ -123,8 +125,7 @@ namespace FlightStreamDeck.Logics.Actions
 
             if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
             {
-                float newValue = 0;
-                float.TryParse(e.GenericValueStatus[displayValue.Value], out newValue);
+                float.TryParse(e.GenericValueStatus[displayValue.Value], out float newValue);
                 isUpdated = currentValue != newValue;
                 currentValue = newValue;
             }
@@ -149,7 +150,10 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetGaugeImage(header, currentValue, min, max));
+            if (settings != null)
+            {
+                await SetImageAsync(imageLogic.GetGaugeImage(settings.Header, currentValue, settings.MinValue, settings.MaxValue));
+            }
         }
     }
 }
