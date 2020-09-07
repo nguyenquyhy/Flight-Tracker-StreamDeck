@@ -1,4 +1,5 @@
-﻿using SharpDeck;
+﻿using FlightStreamDeck.Logics;
+using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
@@ -24,6 +25,9 @@ namespace FlightStreamDeck.Logics.Actions
             if (DeckLogic.NumpadParams.Type == "XPDR")
             {
                 await SetTitleAsync("VFR");
+            } else
+            { 
+                await SetTitleAsync("Xfer");
             }
         }
     }
