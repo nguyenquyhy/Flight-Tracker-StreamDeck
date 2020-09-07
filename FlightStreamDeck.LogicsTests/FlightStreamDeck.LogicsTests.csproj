@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\FlightStreamDeck.AddOn\Images\button.png" Link="Images\button.png" />
+    <Content Include="..\FlightStreamDeck.AddOn\Images\button_active.png" Link="Images\button_active.png" />
+    <Content Include="..\FlightStreamDeck.AddOn\Images\gauge.png" Link="Images\gauge.png" />
+    <Content Include="..\FlightStreamDeck.AddOn\Images\horizon.png" Link="Images\horizon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
@@ -21,18 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\button.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\button_active.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\gauge.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\horizon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Folder Include="Images\" />
   </ItemGroup>
 
 </Project>

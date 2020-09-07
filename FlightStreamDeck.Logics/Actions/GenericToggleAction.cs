@@ -30,10 +30,15 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? feedbackValue = null;
+        private TOGGLE_VALUE? feedbackComparisonValue = null;
         private TOGGLE_VALUE? displayValue = null;
+        private string feedbackComparisonStringValue = null;
 
-        private string currentValue = "";
+        private string currentValue = string.Empty;
         private bool currentStatus = false;
+        private string currentFeedbackValue = string.Empty;
+        private string comparisonFeedbackValue = string.Empty;
+        private string feedbackComparisonOperator = string.Empty;
 
         public GenericToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
@@ -58,11 +63,21 @@ namespace FlightStreamDeck.Logics.Actions
         {
             this.settings = settings;
 
-            TOGGLE_EVENT? newToggleEvent = GetEventValue(settings.ToggleValue);
-            TOGGLE_VALUE? newFeedbackValue = GetValueValue(settings.FeedbackValue);
-            TOGGLE_VALUE? newDisplayValue = GetValueValue(settings.DisplayValue);
+            TOGGLE_EVENT? newToggleEvent = Helpers.GetEventValue(settings.ToggleValue);
+            TOGGLE_VALUE? newDisplayValue = Helpers.GetValueValue(settings.DisplayValue);
 
-            if (newFeedbackValue != feedbackValue || newDisplayValue != displayValue)
+            Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string> comparisonFeedbackValueTuple =
+                Helpers.GetValueValueComaprison(this.settings.FeedbackValue);
+            TOGGLE_VALUE? newFeedbackValue = comparisonFeedbackValueTuple.Item1;
+            TOGGLE_VALUE? newFeedbackComparisonValue = comparisonFeedbackValueTuple.Item2;
+            string newFeedbackComparisonStringValue = comparisonFeedbackValueTuple.Item3;
+            string newFeedbackComparisonOperator = comparisonFeedbackValueTuple.Item4;
+
+            if (
+                newFeedbackValue != feedbackValue ||
+                newDisplayValue != displayValue ||
+                newFeedbackComparisonValue != feedbackComparisonValue
+            )
             {
                 DeRegisterValues();
             }
@@ -70,38 +85,15 @@ namespace FlightStreamDeck.Logics.Actions
             toggleEvent = newToggleEvent;
             feedbackValue = newFeedbackValue;
             displayValue = newDisplayValue;
+            feedbackComparisonValue = newFeedbackComparisonValue;
+            feedbackComparisonStringValue = newFeedbackComparisonStringValue;
+            feedbackComparisonOperator = newFeedbackComparisonOperator;
+
+            //wipe stored local values so image updates accordingly
+            currentFeedbackValue = string.Empty;
+            comparisonFeedbackValue = string.Empty;
 
             RegisterValues();
-        }
-
-        private TOGGLE_EVENT? GetEventValue(string value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            if (Enum.TryParse(value, true, out TOGGLE_EVENT result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private TOGGLE_VALUE? GetValueValue(string value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            if (Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_VALUE result))
-            {
-                return result;
-            }
-
-            return null;
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
@@ -109,18 +101,35 @@ namespace FlightStreamDeck.Logics.Actions
             if (StreamDeck == null) return;
 
             bool isUpdated = false;
+            string newCurrentFeedbackValue = string.Empty;
 
             if (feedbackValue.HasValue && e.GenericValueStatus.ContainsKey(feedbackValue.Value))
             {
-                bool newStatus = e.GenericValueStatus[feedbackValue.Value] != "0";
-                isUpdated = newStatus != currentStatus;
-                currentStatus = newStatus;
+                newCurrentFeedbackValue = e.GenericValueStatus[feedbackValue.Value];
             }
             if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
             {
                 string newValue = e.GenericValueStatus[displayValue.Value];
                 isUpdated |= newValue != currentValue;
                 currentValue = newValue;
+            }
+            if (feedbackComparisonValue.HasValue && e.GenericValueStatus.ContainsKey(feedbackComparisonValue.Value))
+            {
+                comparisonFeedbackValue = e.GenericValueStatus[feedbackComparisonValue.Value];
+            }
+            if (newCurrentFeedbackValue != currentFeedbackValue && !string.IsNullOrEmpty(newCurrentFeedbackValue) && (!string.IsNullOrEmpty(comparisonFeedbackValue) || !string.IsNullOrEmpty(feedbackComparisonStringValue)))
+            {
+                currentFeedbackValue = newCurrentFeedbackValue;
+                bool newStatus = Helpers.CompareValues(currentFeedbackValue, !string.IsNullOrEmpty(comparisonFeedbackValue) ? comparisonFeedbackValue : feedbackComparisonStringValue, feedbackComparisonOperator);
+                isUpdated |= newStatus != currentStatus;
+                currentStatus = newStatus;
+            }
+            else if (!string.IsNullOrEmpty(currentFeedbackValue) && string.IsNullOrEmpty(comparisonFeedbackValue) && string.IsNullOrEmpty(feedbackComparisonStringValue))
+            {
+                bool newStatus = currentFeedbackValue != "0";
+                isUpdated |= newStatus != currentStatus;
+                currentStatus = newStatus;
+                currentFeedbackValue = newCurrentFeedbackValue;
             }
 
             if (isUpdated)
@@ -147,12 +156,14 @@ namespace FlightStreamDeck.Logics.Actions
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
             if (feedbackValue.HasValue) flightConnector.RegisterSimValue(feedbackValue.Value);
             if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+            if (feedbackComparisonValue.HasValue) flightConnector.RegisterSimValue(feedbackComparisonValue.Value);
         }
 
         private void DeRegisterValues()
         {
             if (feedbackValue.HasValue) flightConnector.DeRegisterSimValue(feedbackValue.Value);
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
+            if (feedbackComparisonValue.HasValue) flightConnector.DeRegisterSimValue(feedbackComparisonValue.Value);
             currentValue = null;
         }
 
