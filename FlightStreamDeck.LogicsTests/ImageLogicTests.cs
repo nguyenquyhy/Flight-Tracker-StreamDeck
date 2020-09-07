@@ -1,10 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FlightStreamDeck.Logics;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using SixLabors.ImageSharp;
 
 namespace FlightStreamDeck.Logics.Tests
 {
@@ -17,7 +13,7 @@ namespace FlightStreamDeck.Logics.Tests
             ImageLogic images = new ImageLogic();
 
             string result = images.GetHorizonImage(-10, 20, 359);
-            
+
             var path = @"Images\horizon.png";
 
             if (File.Exists(path))

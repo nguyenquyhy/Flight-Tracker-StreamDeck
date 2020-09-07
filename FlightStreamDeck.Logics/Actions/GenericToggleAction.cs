@@ -3,11 +3,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
     public class GenericToggleAction : StreamDeckAction
     {
         private readonly ILogger<ApToggleAction> logger;
@@ -18,7 +20,8 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? feedbackValue = null;
         private TOGGLE_VALUE? displayValue = null;
-        private bool legacyDisplayImage = true;
+        private string alternateOnImageLocation = null;
+        private string alternateOffImageLocation = null;
 
         private string currentValue = "";
         private bool currentStatus = false;
@@ -47,7 +50,8 @@ namespace FlightStreamDeck.Logics.Actions
             TOGGLE_EVENT? newToggleEvent = Helpers.GetEventValue(settings.Value<string>("ToggleValue"));
             TOGGLE_VALUE? newFeedbackValue = Helpers.GetValueValue(settings.Value<string>("FeedbackValue"));
             TOGGLE_VALUE? newDisplayValue = Helpers.GetValueValue(settings.Value<string>("DisplayValue"));
-            bool newLegacyDispalyImage = settings.Value<bool>("ImageDisplayTypeValue");
+            string newAltOnImage = settings.Value<string>("OverrideOnImageValue");
+            string newAltOffImage = settings.Value<string>("OverrideOffImageValue");
 
             if (newFeedbackValue != feedbackValue || newDisplayValue != displayValue)
             {
@@ -58,13 +62,16 @@ namespace FlightStreamDeck.Logics.Actions
             toggleEvent = newToggleEvent;
             feedbackValue = newFeedbackValue;
             displayValue = newDisplayValue;
-            legacyDisplayImage = newLegacyDispalyImage;
+            alternateOnImageLocation = newAltOnImage;
+            alternateOffImageLocation = newAltOffImage;
 
             RegisterValues();
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
+            if (StreamDeck == null) return;
+
             bool isUpdated = false;
 
             if (feedbackValue.HasValue && e.GenericValueStatus.ContainsKey(feedbackValue.Value))
@@ -122,7 +129,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetImage(header, currentStatus, legacyDisplayImage, currentValue));
+            await SetImageAsync(imageLogic.GetImage(header, currentStatus, alternateOnImageLocation, alternateOffImageLocation, currentValue));
         }
     }
 }

@@ -1,1 +1,1 @@
-XCOPY "." "%appdata%\Elgato\StreamDeck\Plugins\tech.flighttracker.streamdeck.sdPlugin\" /S /E /Y
+XCOPY "." "%appdata%\Elgato\StreamDeck\Plugins\tech.flighttracker.rmroc451.streamdeck.sdPlugin\" /S /E /Y

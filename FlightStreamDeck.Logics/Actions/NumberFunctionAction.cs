@@ -1,11 +1,35 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    #region Action Registration
+
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.enter")]
+    public class NumberEnterAction : NumberFunctionAction { public NumberEnterAction(IImageLogic imageLogic) : base(imageLogic) { } }
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.backspace")]
+    public class NumberBackspaceAction : NumberFunctionAction { public NumberBackspaceAction(IImageLogic imageLogic) : base(imageLogic) { } }
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.cancel")]
+    public class NumberCancelAction : NumberFunctionAction { public NumberCancelAction(IImageLogic imageLogic) : base(imageLogic) { } }
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.transfer")]
+    public class NumberTransferAction : NumberFunctionAction
+    {
+        public NumberTransferAction(IImageLogic imageLogic) : base(imageLogic) { }
+        protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+        {
+            if (DeckLogic.NumpadParams.Type == "XPDR")
+            {
+                await SetTitleAsync("VFR");
+            }
+        }
+    }
+
+    #endregion
+
     public class NumberFunctionAction : StreamDeckAction
     {
         private readonly IImageLogic imageLogic;
@@ -28,7 +52,7 @@ namespace FlightStreamDeck.Logics.Actions
                     await handleErroredValueAction(
                         args, 
                         () => { return DeckLogic.NumpadTcs != null; }, 
-                        async (ActionEventArgs<KeyPayload> args) => { await SetImageAsync(imageLogic.GetNavComActionLabel(buttonText[args.Action], true)); },
+                        async (ActionEventArgs<KeyPayload> args) => { await Task.Run(() => { }); },
                         async (ActionEventArgs<KeyPayload> args) => { await Task.Run(() => { DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, false)); }); }
                     );
                     break;
@@ -42,11 +66,11 @@ namespace FlightStreamDeck.Logics.Actions
                     );
                     break;
                 case "tech.flighttracker.streamdeck.number.transfer":
-                    var buttonTextLocal = args.Action.Split(".")[^1].ToUpper() == "XFER" && DeckLogic.NumpadParams.IsXPDR ? "VFR" : buttonText[args.Action];
+                    //var buttonTextLocal = args.Action.Split(".")[^1].ToUpper() == "XFER" && DeckLogic.NumpadParams.IsXPDR ? "VFR" : buttonText[args.Action];
                     await handleErroredValueAction(
                         args,
                         () => { return DeckLogic.NumpadTcs != null; },
-                        async (ActionEventArgs<KeyPayload> args) => { await SetImageAsync(imageLogic.GetNavComActionLabel(buttonTextLocal, true)); },
+                        async (ActionEventArgs<KeyPayload> args) => { await Task.Run(() => { }); },
                         async (ActionEventArgs<KeyPayload> args) => { 
                             await Task.Run(() => {
                                 if (DeckLogic.NumpadParams.IsXPDR) DeckLogic.NumpadParams.Value = "1200";
@@ -58,8 +82,8 @@ namespace FlightStreamDeck.Logics.Actions
                 case "tech.flighttracker.streamdeck.number.backspace":
                     await handleErroredValueAction(
                         args,
-                        () => { return DeckLogic.NumpadParams.ValueUnpadded.Length > 1; },
-                        async (ActionEventArgs<KeyPayload> args) => { await SetImageAsync(imageLogic.GetNavComActionLabel(buttonText[args.Action], true)); },
+                        () => { return DeckLogic.NumpadParams.ValueUnpadded.Length > 0; },
+                        async (ActionEventArgs<KeyPayload> args) => { await Task.Run(() => { }); },
                         async (ActionEventArgs<KeyPayload> args) => { await Task.Run(() => { DeckLogic.NumpadParams.Value = DeckLogic.NumpadParams.ValueUnpadded[..^1]; }); },
                         skipMinMaxCheck: true,
                         fireProfileSwitch: false
@@ -85,7 +109,7 @@ namespace FlightStreamDeck.Logics.Actions
         ) {
             bool valid = validationCheck();
             bool minMaxRegexValid = DeckLogic.NumpadParams.MinMaxRegexValid(skipMinMaxCheck);
-            var param = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]); 
+            var param = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]); 
 
             if (valid && minMaxRegexValid)
             {

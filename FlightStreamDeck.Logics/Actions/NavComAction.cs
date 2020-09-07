@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Enums;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,8 @@ using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
-    class NavComAction : StreamDeckAction
+    [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
+    public class NavComAction : StreamDeckAction
     {
         private const int HOLD_DURATION_MILLISECONDS = 1000;
         private const string navRegex = @"(108[0-9]{2}|109[0-8][0-9]|1099[0-9]|11[0-6][0-9]{2}|117[0-8][0-9]|1179[0-5])";
@@ -45,14 +47,13 @@ namespace FlightStreamDeck.Logics.Actions
 
         public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector)
         {
-            registration = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
+            registration = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]);
 
             this.logger = logger;
             this.imageLogic = imageLogic;
             this.flightConnector = flightConnector;
             timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
             timer.Elapsed += Timer_Elapsed;
-
         }
 
         private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -229,11 +230,11 @@ namespace FlightStreamDeck.Logics.Actions
             if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
             {
                 showMainOnly = true;
-                value1 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[active.Value] : string.Empty;
+                value1 = (dependantValueHide && dependant) || !dependantValueHide ? ValPrep(e.GenericValueStatus[active.Value]) : string.Empty;
             }
             if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
             {
-                value2 = (dependantValueHide && dependant) || !dependantValueHide ? e.GenericValueStatus[standby.Value]: string.Empty;
+                value2 = (dependantValueHide && dependant) || !dependantValueHide ? ValPrep(e.GenericValueStatus[standby.Value]) : string.Empty;
                 showMainOnly = active != null && active.Value == standby.Value;
             }
 
@@ -244,6 +245,21 @@ namespace FlightStreamDeck.Logics.Actions
                 lastDependant = dependant;
                 await SetImageAsync(imageLogic.GetNavComImage(type, dependant, value1, value2, showMainOnly: showMainOnly));
             }
+        }
+
+        private string ValPrep(string value)
+        {
+            switch (type)
+            {
+                case "XPDR":
+                    if (value != null && value.Length != minXpdrVal.Length)
+                    {
+                        value = value.PadLeft(minXpdrVal.Length, minXpdrVal[0]);
+                    }
+                    break;
+            }
+
+            return value;
         }
 
         private void SwitchTo(string type)

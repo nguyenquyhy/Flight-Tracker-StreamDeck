@@ -7,12 +7,15 @@
 </head>
 <body>
     <div class="sdpi-wrapper">
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Legacy display image</div>
-            <select class="sdpi-item-value select" id="ImageDisplayTypeValue" onchange="updateData()">
-                <option value="true">Legacy</option>
-                <option value="false">New</option>
-            </select>
+        <div class="sdpi-heading">Override Images</div>
+
+        <div class="sdpi-item" id="type">
+            <div class="sdpi-item-label">Override On Image</div>
+            <input class="sdpi-item-value" id="OverrideOnImageValue" value="" placeholder="button_active.png" onchange="updateData()">
+        </div>
+        <div class="sdpi-item" id="type">
+            <div class="sdpi-item-label">Override Off Image</div>
+            <input class="sdpi-item-value" id="OverrideOffImageValue" value="" placeholder="button.png" onchange="updateData()">
         </div>
     </div>
     <script language="JavaScript" type="text/javascript">
@@ -43,12 +46,14 @@
         }
 
         function loadSettings(settings) {
-            if (settings['ImageDisplayTypeValue']) { ImageDisplayTypeValue.value = settings['ImageDisplayTypeValue'] };
+            if (settings['OverrideOnImageValue']) { OverrideOnImageValue.value = settings['OverrideOnImageValue']; };
+            if (settings['OverrideOffImageValue']) { OverrideOffImageValue.value = settings['OverrideOffImageValue']; };
         }
 
         function updateData() {
             const payload = {
-                "ImageDisplayTypeValue": ImageDisplayTypeValue.value
+                "OverrideOnImageValue": OverrideOnImageValue.value,
+                "OverrideOffImageValue": OverrideOffImageValue.value
             };
 
             sendValueToPlugin(payload);

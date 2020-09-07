@@ -11,7 +11,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, bool legacyButtonStyle, string value = null);
+        string GetImage(string text, bool active, string altOnImagePath, string altOffImagePath, string value = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, bool valid = false);
         string GetNavComActionLabel(string label, bool error = false);
@@ -23,38 +23,42 @@ namespace FlightStreamDeck.Logics
     {
         readonly Image backGround = Image.Load("Images/button.png");
         readonly Image activeBackground = Image.Load("Images/button_active.png");
-        readonly Image toggleOff = Image.Load("Images/off.png");
-        readonly Image toggleOn = Image.Load("Images/on.png");
         readonly Image horizon = Image.Load("Images/horizon.png");
         readonly Image gaugeImage = Image.Load("Images/gauge.png");
 
-        private static int WIDTH = 72;
-        private static int HALF_WIDTH = 36;
-
+        private const int WIDTH = 72;
+        private const int HALF_WIDTH = 36;
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns>Base64 image data</returns>
-        public string GetImage(string text, bool active, bool legacyButtonStyle, string value = null)
+        public string GetImage(string text, bool active, string altOnImagePath, string altOffImagePath, string value = null)
         {
+
+            Image altOnImage = tryLoadImage(altOnImagePath);
+            Image altOffImage = tryLoadImage(altOffImagePath);
+            Image gaugeImage = Image.Load("Images/gauge.png");
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
             bool hasValue = value != null && value.Length > 0;
-            Image activeImg = legacyButtonStyle ? activeBackground : toggleOn;
-            Image inactiveImg = legacyButtonStyle || hasValue ? backGround : toggleOff;
+            Image activeImg = altOnImage != null ? altOnImage : activeBackground;
+            Image inactiveImg = altOffImage != null && !hasValue ? altOffImage : backGround;
 
             Image img = active && !hasValue ? activeImg : inactiveImg;
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
-                var size = TextMeasurer.Measure(text, new RendererOptions(font));
-                ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
-
-                if (hasValue)
+                if (!string.IsNullOrWhiteSpace(text))
                 {
-                    size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
-                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
+                    var size = TextMeasurer.Measure(text, new RendererOptions(font));
+                    ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+
+                    if (hasValue)
+                    {
+                        size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
+                        ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
+                    }
                 }
             });
             using var memoryStream = new MemoryStream();
@@ -62,6 +66,31 @@ namespace FlightStreamDeck.Logics
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
             return "data:image/png;base64, " + base64;
+        }
+
+        private Image tryLoadImage(string imagePath)
+        {
+            Image output = null;
+
+            try
+            {
+                output = Image.Load($"Images/{imagePath.Replace(@"\", "/")}");
+                //resize if bigger than the button size allowed
+                if (output.Width > WIDTH || output.Height > WIDTH)
+                {
+                    if (output.Width > output.Height)
+                    {
+                        output.Mutate(x => x.Resize(0, WIDTH)); //passing zero maintains aspect ratio
+                    }
+                    else
+                    {
+                        output.Mutate(x => x.Resize(WIDTH, 0)); //passing zero maintains aspect ratio
+                    }
+                }
+            }
+            catch (Exception) { }
+
+            return output;
         }
 
         /// <returns>Base64 image data</returns>
@@ -94,7 +123,7 @@ namespace FlightStreamDeck.Logics
             {
                 var imgSize = ctx.GetCurrentSize();
 
-                if (type != null)
+                if (!string.IsNullOrWhiteSpace(type))
                 {
                     var size = TextMeasurer.Measure(type, new RendererOptions(font));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
@@ -209,7 +238,10 @@ namespace FlightStreamDeck.Logics
             using var img = gaugeImage.Clone(ctx =>
             {
                 double angleOffset = Math.PI * -1.25;
-                double angle = Math.PI * ((value - min) / range) + angleOffset;
+                var ratio = (value - min) / range;
+                if (ratio < 0) ratio = 0;
+                if (ratio > 1) ratio = 1;
+                double angle = Math.PI * ratio + angleOffset;
 
                 var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
                 var middlePoint = new PointF(
@@ -226,13 +258,15 @@ namespace FlightStreamDeck.Logics
 
                 ctx.DrawLines(pen, needle);
 
-                var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 40));
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 57));
+                }
 
                 var valueText = value.ToString();
-                size = TextMeasurer.Measure(valueText, new RendererOptions(font));
-                Color textColor = value >= max ? Color.Red : Color.White;
-                ctx.DrawText(valueText, font, textColor, new PointF(25, 20));
+                Color textColor = value > max ? Color.Red : Color.White;
+                ctx.DrawText(valueText, font, textColor, new PointF(25, 30));
             });
 
             using var memoryStream = new MemoryStream();

@@ -13,7 +13,7 @@ If you just want to use the plugin with your Stream Deck, take a look at [User G
 
 #### Manual Installation
 
-Copy the output to `%appdata%\Elgato\StreamDeck\Plugins\tech.flighttracker.streamdeck.sdPlugin` and restart Stream Deck software. You can find a deploy.bat file that does the same thing.
+Copy the output to `%appdata%\Elgato\StreamDeck\Plugins\tech.flighttracker.rmroc451.streamdeck.sdPlugin` and restart Stream Deck software. You can find a deploy.bat file that does the same thing.
 
 ### TODO
 
