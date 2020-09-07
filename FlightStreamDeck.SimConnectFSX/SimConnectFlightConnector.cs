@@ -37,6 +37,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
         private SimConnect simconnect = null;
         private CancellationTokenSource cts = null;
+        private bool IsAutopilotOn = false;
 
         public SimConnectFlightConnector(ILogger<SimConnectFlightConnector> logger)
         {
@@ -186,7 +187,10 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void TrimSetValue(uint trimSet)
         {
-            SendCommand(EVENTS.ELEV_TRIM_SET, trimSet);
+            if (!IsAutopilotOn)
+            {
+                SendCommand(EVENTS.ELEV_TRIM_SET, trimSet);
+            }
         }
 
         private void SendCommand(EVENTS sendingEvent, uint data = 0)
@@ -458,6 +462,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
                         if (flightStatus.HasValue)
                         {
+                            IsAutopilotOn = flightStatus.Value.IsAutopilotOn == 1;
                             logger.LogDebug("Get Aircraft status");
                             AircraftStatusUpdated?.Invoke(this, new AircraftStatusUpdatedEventArgs(
                                 new AircraftStatus
