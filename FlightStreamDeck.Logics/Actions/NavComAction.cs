@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Enums;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,8 @@ using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
-    class NavComAction : StreamDeckAction
+    [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
+    public class NavComAction : StreamDeckAction
     {
         private const int HOLD_DURATION_MILLISECONDS = 1000;
 
@@ -32,14 +34,13 @@ namespace FlightStreamDeck.Logics.Actions
 
         public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector)
         {
-            registration = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
+            registration = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]);
 
             this.logger = logger;
             this.imageLogic = imageLogic;
             this.flightConnector = flightConnector;
             timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
             timer.Elapsed += Timer_Elapsed;
-
         }
 
         private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -165,6 +166,7 @@ namespace FlightStreamDeck.Logics.Actions
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
             type = args.Payload.Value<string>("Type");
+            SwitchTo(type);
             await SetImageAsync(imageLogic.GetNavComImage(type));
         }
 

@@ -3,11 +3,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
     public class GenericToggleAction : StreamDeckAction
     {
         private readonly ILogger<ApToggleAction> logger;

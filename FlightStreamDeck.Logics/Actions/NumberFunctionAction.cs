@@ -1,15 +1,29 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    #region Action Registration
+
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.enter")]
+    public class NumberEnterAction : NumberFunctionAction { }
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.backspace")]
+    public class NumberBackspaceAction : NumberFunctionAction { }
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.cancel")]
+    public class NumberCancelAction : NumberFunctionAction { }
+    [StreamDeckAction("tech.flighttracker.streamdeck.number.transfer")]
+    public class NumberTransferAction : NumberFunctionAction { }
+
+    #endregion
+
     public class NumberFunctionAction : StreamDeckAction
     {
         protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            var param = RegistrationParameters.Parse(Environment.GetCommandLineArgs()[1..]);
+            var param = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]);
             switch (args.Action)
             {
                 case "tech.flighttracker.streamdeck.number.enter":

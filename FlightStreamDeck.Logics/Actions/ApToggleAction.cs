@@ -1,14 +1,50 @@
 ﻿using Microsoft.Extensions.Logging;
 using SharpDeck;
 using SharpDeck.Events.Received;
+using SharpDeck.Manifest;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
-    public class ApToggleAction : StreamDeckAction
+    #region Action Registration
+
+    [StreamDeckAction("tech.flighttracker.streamdeck.master.activate")]
+    public class ApMasterToggleAction : ApToggleAction
     {
-        private readonly ILogger<ApToggleAction> logger;
+        public ApMasterToggleAction(ILogger<ApMasterToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+            : base(logger, flightConnector, imageLogic) { }
+    }
+    [StreamDeckAction("tech.flighttracker.streamdeck.heading.activate")]
+    public class ApHeadingToggleAction : ApToggleAction
+    {
+        public ApHeadingToggleAction(ILogger<ApHeadingToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+            : base(logger, flightConnector, imageLogic) { }
+    }
+    [StreamDeckAction("tech.flighttracker.streamdeck.nav.activate")]
+    public class ApNavToggleAction : ApToggleAction
+    {
+        public ApNavToggleAction(ILogger<ApNavToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+            : base(logger, flightConnector, imageLogic) { }
+    }
+    [StreamDeckAction("tech.flighttracker.streamdeck.approach.activate")]
+    public class ApAprToggleAction : ApToggleAction
+    {
+        public ApAprToggleAction(ILogger<ApAprToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+            : base(logger, flightConnector, imageLogic) { }
+    }
+    [StreamDeckAction("tech.flighttracker.streamdeck.altitude.activate")]
+    public class ApAltToggleAction : ApToggleAction
+    {
+        public ApAltToggleAction(ILogger<ApAltToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+            : base(logger, flightConnector, imageLogic) { }
+    }
+
+    #endregion
+
+    public abstract class ApToggleAction : StreamDeckAction
+    {
+        private readonly ILogger logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly Timer timer;
@@ -16,7 +52,7 @@ namespace FlightStreamDeck.Logics.Actions
         private string action;
         private bool timerHasTick;
 
-        public ApToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public ApToggleAction(ILogger logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
