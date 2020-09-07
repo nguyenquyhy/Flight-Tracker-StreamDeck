@@ -81,6 +81,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async void FlightConnector_AircraftStatusUpdated(object sender, AircraftStatusUpdatedEventArgs e)
         {
+            if (StreamDeck == null) return;
+
             var lastStatus = status;
             status = e.AircraftStatus;
 

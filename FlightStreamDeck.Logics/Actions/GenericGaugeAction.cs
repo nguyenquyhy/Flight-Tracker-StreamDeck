@@ -117,6 +117,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
+            if (StreamDeck == null) return;
+
             bool isUpdated = false;
 
             if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
