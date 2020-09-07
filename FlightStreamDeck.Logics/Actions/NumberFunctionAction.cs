@@ -23,6 +23,10 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 await SetTitleAsync("VFR");
             }
+            else
+            {
+                await SetTitleAsync("Xfer");
+            }
         }
     }
 
