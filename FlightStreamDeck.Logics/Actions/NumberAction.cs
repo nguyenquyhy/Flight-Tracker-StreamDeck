@@ -30,7 +30,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            if (DeckLogic.NumpadParams.Type == "XPDR")
+            if (DeckLogic.NumpadParams?.Type == "XPDR")
             {
                 await SetImageAsync(null);
             }
@@ -47,7 +47,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            if (DeckLogic.NumpadParams.Type == "XPDR")
+            if (DeckLogic.NumpadParams?.Type == "XPDR")
             {
                 await SetImageAsync(null);
             }
@@ -78,14 +78,17 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            var tokens = args.Action.Split(".");
-            var number = int.Parse(tokens[^1]);
-
-            if (DeckLogic.NumpadParams.Type == "XPDR" && number > 7) return Task.CompletedTask;
-
-            if (DeckLogic.NumpadParams.Value.Length < DeckLogic.NumpadParams.MinPattern.Length)
+            if (DeckLogic.NumpadParams != null)
             {
-                DeckLogic.NumpadParams.Value += number.ToString();
+                var tokens = args.Action.Split(".");
+                var number = int.Parse(tokens[^1]);
+
+                if (DeckLogic.NumpadParams.Type == "XPDR" && number > 7) return Task.CompletedTask;
+
+                if (DeckLogic.NumpadParams.Value.Length < DeckLogic.NumpadParams.MinPattern.Length)
+                {
+                    DeckLogic.NumpadParams.Value += number.ToString();
+                }
             }
 
             return Task.CompletedTask;

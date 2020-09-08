@@ -1,6 +1,7 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
+using System;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -38,11 +39,18 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        protected override Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+        protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            lastValue = null;
-            timer.Start();
-            return Task.CompletedTask;
+            if (DeckLogic.NumpadParams == null)
+            {
+                // User open the profile on their own
+                await ShowAlertAsync();
+            }
+            else
+            {
+                lastValue = null;
+                timer.Start();
+            }
         }
 
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
