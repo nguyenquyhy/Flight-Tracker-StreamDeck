@@ -24,7 +24,11 @@ namespace FlightStreamDeck.AddOn
 
         protected override void OnStartup(StartupEventArgs e)
         {
+#if DEBUG
             AppCenter.Start("9343b8d4-4141-40c9-9758-5c7e2fb3a1a0", typeof(Analytics), typeof(Crashes));
+#else
+            AppCenter.Start("0d85baad-aa1e-4694-ae3b-c6fed2056656",typeof(Analytics), typeof(Crashes));
+#endif
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
