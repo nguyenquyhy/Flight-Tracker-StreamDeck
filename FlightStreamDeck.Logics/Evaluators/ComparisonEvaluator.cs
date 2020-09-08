@@ -101,13 +101,17 @@ namespace FlightStreamDeck.Logics
 
         public Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string> GetValueValueComparison(string value)
         {
-            Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string> output =
-                new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
+            if (string.IsNullOrEmpty(value)) return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
 
             TOGGLE_VALUE? result = enumConverter.GetVariableEnum(value);
 
-            if (result == null && !string.IsNullOrEmpty(value))
+            if (result != null)
             {
+                // Old behavior
+                return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(result, null, "0", "!=");
+            }
+            else
+            { 
                 IEnumerable<string> comparisonAttempt = AllowedComparisons.Where((string allowedComp) => value.Contains(allowedComp));
 
                 if (comparisonAttempt.Count() >= 1)
@@ -122,8 +126,7 @@ namespace FlightStreamDeck.Logics
                         (leftSideEnum != null && !string.IsNullOrEmpty(rightSideString))
                     )
                     {
-                        output =
-                            new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(
+                        return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(
                                 leftSideEnum,
                                 rightSideEnum,
                                 rightSideString,
@@ -131,9 +134,9 @@ namespace FlightStreamDeck.Logics
                         );
                     }
                 }
-            }
 
-            return output;
+               return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
+            }
         }
 
         public bool CompareValues(string currentValue, string comparisonValue, string operatorValue)
