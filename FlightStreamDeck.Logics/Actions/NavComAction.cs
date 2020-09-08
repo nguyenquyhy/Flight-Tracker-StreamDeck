@@ -162,26 +162,32 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
-            if (device.Type != DeviceType.StreamDeckMini)
+            if (lastDependant)
             {
-                this.device = device;
-                timer.Start();
+                var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
+                if (device.Type != DeviceType.StreamDeckMini)
+                {
+                    this.device = device;
+                    timer.Start();
+                }
             }
             return Task.CompletedTask;
         }
 
         protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
         {
-            var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
-            if (timer.Enabled || device.Type == DeviceType.StreamDeckMini)
+            if (lastDependant)
             {
-                timer.Stop();
-
-                // Transfer
-                if (toggle != null)
+                var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
+                if (timer.Enabled || device.Type == DeviceType.StreamDeckMini)
                 {
-                    flightConnector.Toggle(toggle.Value);
+                    timer.Stop();
+
+                    // Transfer
+                    if (toggle != null)
+                    {
+                        flightConnector.Toggle(toggle.Value);
+                    }
                 }
             }
             return Task.CompletedTask;
