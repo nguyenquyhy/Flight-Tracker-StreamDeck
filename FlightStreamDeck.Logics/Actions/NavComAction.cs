@@ -13,8 +13,16 @@ using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    public class NavComSettings
+    {
+        public string Type { get; set; }
+        public string AvionicsValue { get; set; }
+        public string BattMasterValue { get; set; }
+        public string DependantValueHide { get; set; }
+    }
+
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
-    public class NavComAction : StreamDeckAction
+    public class NavComAction : StreamDeckAction<NavComSettings>
     {
         private const int HOLD_DURATION_MILLISECONDS = 1000;
         private const string minNavVal = "10800";
@@ -33,14 +41,17 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly Timer timer;
 
         private IdentifiableDeviceInfo device;
-        private string type;
+        
+        private NavComSettings settings;
+
+        private TOGGLE_VALUE? dependantOnAvionics;
+        private TOGGLE_VALUE? dependantOnBatt;
+        private bool hideBasedOnDependantValue;
+
         private TOGGLE_VALUE? active;
         private TOGGLE_VALUE? standby;
         private TOGGLE_EVENT? toggle;
         private SET_EVENT? set;
-        private TOGGLE_VALUE? dependantOnAvionics;
-        private TOGGLE_VALUE? dependantOnBatt;
-        private bool hideBasedOnDependantValue;
         private string mask;
 
         public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector, EnumConverter enumConverter)
@@ -59,30 +70,30 @@ namespace FlightStreamDeck.Logics.Actions
         {
             timer.Stop();
 
-            if (type != null && set != null && mask != null && lastDependant)
+            if (settings?.Type != null && set != null && mask != null && lastDependant)
             {
                 var set = this.set;
                 var mask = this.mask;
-                var min = type switch
+                var min = settings.Type switch
                 {
                     "NAV1" => minNavVal,
                     "NAV2" => minNavVal,
                     "COM1" => minComVal,
                     "COM2" => minComVal,
                     "XPDR" => minXpdrVal,
-                    _ => throw new ArgumentException($"{type} is not supported for numpad")
+                    _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
                 };
                 DeckLogic.NumpadParams = new NumpadParams(
-                    type,
+                    settings.Type,
                     min,
-                    type switch
+                    settings.Type switch
                     {
                         "NAV1" => maxNavVal,
                         "NAV2" => maxNavVal,
                         "COM1" => maxComVal,
                         "COM2" => maxComVal,
                         "XPDR" => maxXpdrVal,
-                        _ => throw new ArgumentException($"{type} is not supported for numpad")
+                        _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
                     },
                     mask
                 );
@@ -103,7 +114,7 @@ namespace FlightStreamDeck.Logics.Actions
                 {
                     value += min.Substring(value.Length);
 
-                    if (type == "NAV1" || type == "NAV2" || type == "COM1" || type == "COM2")
+                    if (settings.Type == "NAV1" || settings.Type == "NAV2" || settings.Type == "COM1" || settings.Type == "COM2")
                     {
                         // NOTE: SimConnect ignore first 1
                         value = value[1..];
@@ -131,16 +142,10 @@ namespace FlightStreamDeck.Logics.Actions
         {
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
-            type = args.Payload.Settings.Value<string>("Type");
-            dependantOnAvionics = enumConverter.GetVariableEnum(args.Payload.Settings.Value<string>("AvionicsValue"));
-            dependantOnBatt = enumConverter.GetVariableEnum(args.Payload.Settings.Value<string>("BattMasterValue"));
-            hideBasedOnDependantValue = args.Payload.Settings.Value<string>("DependantValueHide")?.ToLower() == "yes";
-            await SetImageAsync(imageLogic.GetNavComImage(type, hideBasedOnDependantValue));
+            var settings = args.Payload.GetSettings<NavComSettings>();
+            InitializeSettings(settings);
 
-            lastDependant = !lastDependant;
-            lastValue1 = null;
-            lastValue2 = null;
-            SwitchTo(type);
+            await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
 
             if (initializationTcs != null)
             {
@@ -186,15 +191,24 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            type = args.Payload.Value<string>("Type");
-            dependantOnAvionics = enumConverter.GetVariableEnum(args.Payload.Value<string>("AvionicsValue"));
-            dependantOnBatt = enumConverter.GetVariableEnum(args.Payload.Value<string>("BattMasterValue"));
-            hideBasedOnDependantValue = args.Payload.Value<string>("DependantValueHide")?.ToLower() == "yes";
+            var settings = args.Payload.ToObject<NavComSettings>();
+            InitializeSettings(settings);
+
+            await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
+        }
+
+        private void InitializeSettings(NavComSettings settings)
+        {
+            this.settings = settings;
+            dependantOnAvionics = enumConverter.GetVariableEnum(settings.AvionicsValue);
+            dependantOnBatt = enumConverter.GetVariableEnum(settings.BattMasterValue);
+            hideBasedOnDependantValue = "yes".Equals(settings.DependantValueHide, StringComparison.InvariantCultureIgnoreCase);
+
             lastDependant = !lastDependant;
             lastValue1 = null;
             lastValue2 = null;
-            SwitchTo(type);
-            await SetImageAsync(imageLogic.GetNavComImage(type, false));
+
+            SwitchTo(settings.Type);
         }
 
         string lastValue1 = null;
@@ -205,36 +219,41 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
-            string value1 = null, value2 = null;
-            bool dependant = true;
-            bool showMainOnly = false;
+            var settings = this.settings;
 
-            if (hideBasedOnDependantValue && dependantOnBatt != null && e.GenericValueStatus.ContainsKey(dependantOnBatt.Value))
+            if (settings != null)
             {
-                dependant = e.GenericValueStatus[dependantOnBatt.Value] != "0";
-            }
-            if (hideBasedOnDependantValue && dependantOnAvionics != null && e.GenericValueStatus.ContainsKey(dependantOnAvionics.Value))
-            {
-                dependant = dependant && e.GenericValueStatus[dependantOnAvionics.Value] != "0";
-            }
-            if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
-            {
-                showMainOnly = true;
-                value1 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[active.Value] : string.Empty;
-                if (type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
-            }
-            if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
-            {
-                value2 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[standby.Value]: string.Empty;
-                showMainOnly = active != null && active.Value == standby.Value;
-            }
+                string value1 = null, value2 = null;
+                bool dependant = true;
+                bool showMainOnly = false;
 
-            if (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant)
-            {
-                lastValue1 = value1;
-                lastValue2 = value2;
-                lastDependant = dependant;
-                await SetImageAsync(imageLogic.GetNavComImage(type, dependant, value1, value2, showMainOnly: showMainOnly));
+                if (hideBasedOnDependantValue && dependantOnBatt != null && e.GenericValueStatus.ContainsKey(dependantOnBatt.Value))
+                {
+                    dependant = e.GenericValueStatus[dependantOnBatt.Value] != "0";
+                }
+                if (hideBasedOnDependantValue && dependantOnAvionics != null && e.GenericValueStatus.ContainsKey(dependantOnAvionics.Value))
+                {
+                    dependant = dependant && e.GenericValueStatus[dependantOnAvionics.Value] != "0";
+                }
+                if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
+                {
+                    showMainOnly = true;
+                    value1 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[active.Value] : string.Empty;
+                    if (settings.Type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
+                }
+                if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
+                {
+                    value2 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[standby.Value] : string.Empty;
+                    showMainOnly = active != null && active.Value == standby.Value;
+                }
+
+                if (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant)
+                {
+                    lastValue1 = value1;
+                    lastValue2 = value2;
+                    lastDependant = dependant;
+                    await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly));
+                }
             }
         }
 
