@@ -18,7 +18,6 @@ namespace FlightStreamDeck.Logics.Actions
         public string Type { get; set; }
         public string AvionicsValue { get; set; }
         public string BattMasterValue { get; set; }
-        public string DependantValueHide { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
@@ -46,7 +45,6 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_VALUE? dependantOnAvionics;
         private TOGGLE_VALUE? dependantOnBatt;
-        private bool hideBasedOnDependantValue;
 
         private TOGGLE_VALUE? active;
         private TOGGLE_VALUE? standby;
@@ -202,7 +200,6 @@ namespace FlightStreamDeck.Logics.Actions
             this.settings = settings;
             dependantOnAvionics = enumConverter.GetVariableEnum(settings.AvionicsValue);
             dependantOnBatt = enumConverter.GetVariableEnum(settings.BattMasterValue);
-            hideBasedOnDependantValue = "yes".Equals(settings.DependantValueHide, StringComparison.InvariantCultureIgnoreCase);
 
             lastDependant = !lastDependant;
             lastValue1 = null;
@@ -227,23 +224,24 @@ namespace FlightStreamDeck.Logics.Actions
                 bool dependant = true;
                 bool showMainOnly = false;
 
-                if (hideBasedOnDependantValue && dependantOnBatt != null && e.GenericValueStatus.ContainsKey(dependantOnBatt.Value))
+                if (dependantOnBatt != null && e.GenericValueStatus.ContainsKey(dependantOnBatt.Value))
                 {
                     dependant = e.GenericValueStatus[dependantOnBatt.Value] != "0";
                 }
-                if (hideBasedOnDependantValue && dependantOnAvionics != null && e.GenericValueStatus.ContainsKey(dependantOnAvionics.Value))
+                if (dependantOnAvionics != null && e.GenericValueStatus.ContainsKey(dependantOnAvionics.Value))
                 {
                     dependant = dependant && e.GenericValueStatus[dependantOnAvionics.Value] != "0";
                 }
+
                 if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
                 {
                     showMainOnly = true;
-                    value1 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[active.Value] : string.Empty;
+                    value1 = dependant ? e.GenericValueStatus[active.Value] : string.Empty;
                     if (settings.Type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
                 }
                 if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
                 {
-                    value2 = (hideBasedOnDependantValue && dependant) || !hideBasedOnDependantValue ? e.GenericValueStatus[standby.Value] : string.Empty;
+                    value2 = dependant ? e.GenericValueStatus[standby.Value] : string.Empty;
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 

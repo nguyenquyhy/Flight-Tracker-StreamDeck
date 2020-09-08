@@ -22,28 +22,24 @@
                 <summary>Hold the button to open the numpad</summary>
             </details>
         </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Dependant on BATT MASTER</div>
-            <select class="sdpi-item-value select" id="BattMasterValue" onchange="updateData()">
-                <option value="ALWAYS_ON">ALWAYS_ON</option>
-                <option value="ELECTRICAL_MASTER_BATTERY">ELECTRICAL_MASTER_BATTERY</option>
-            </select>
-            <!--<input class="sdpi-item-value" id="BattMasterValue" value="" placeholder="Empty for values to show always" onchange="updateData()" pattern="[A-Z0-9: ]">-->
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Dependant on AV MASTER</div>
-            <select class="sdpi-item-value select" id="AvionicsValue" onchange="updateData()">
-                <option value="ALWAYS_ON">ALWAYS_ON</option>
-                <option value="AVIONICS_MASTER_SWITCH">AVIONICS_MASTER_SWITCH</option>
-            </select>
-            <!--<input class="sdpi-item-value" id="AvionicsValue" value="" placeholder="Empty for values to show always" onchange="updateData()" pattern="[A-Z0-9: ]">-->
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Hide values when switches are toggled off?</div>
-            <select class="sdpi-item-value select" id="DependantValueHide" onchange="updateData()">
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-            </select>
+        <div type="group" class="sdpi-item" id="messagegroup">
+            <div class="sdpi-item-label">Dependencies</div>
+            <div class="sdpi-item-group">
+                <div class="sdpi-item" type="field">
+                    <div class="sdpi-item-label">BATT MASTER</div>
+                    <select class="sdpi-item-value select" id="BattMasterValue" onchange="updateData()">
+                        <option value="">Ignore</option>
+                        <option value="ELECTRICAL_MASTER_BATTERY">Must be ON</option>
+                    </select>
+                </div>
+                <div class="sdpi-item" type="field">
+                    <div class="sdpi-item-label">AV MASTER</div>
+                    <select class="sdpi-item-value select" id="AvionicsValue" onchange="updateData()">
+                        <option value="">Ignore</option>
+                        <option value="AVIONICS_MASTER_SWITCH">Must be ON</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
     <script src="common.js"></script>
@@ -52,7 +48,6 @@
             if (settings['Type']) { Type.value = settings['Type'] };
             if (settings['BattMasterValue']) { BattMasterValue.value = settings['BattMasterValue'] };
             if (settings['AvionicsValue']) { AvionicsValue.value = settings['AvionicsValue'] };
-            if (settings['DependantValueHide']) { DependantValueHide.value = settings['DependantValueHide'] };
         }
 
         function updateData() {
@@ -61,7 +56,6 @@
                 "Type": Type.value,
                 "BattMasterValue": BattMasterValue.value,
                 "AvionicsValue": AvionicsValue.value,
-                "DependantValueHide": DependantValueHide.value,
             };
 
             sendValueToPlugin(payload);
