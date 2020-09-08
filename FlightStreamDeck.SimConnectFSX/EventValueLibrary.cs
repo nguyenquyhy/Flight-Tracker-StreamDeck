@@ -151,6 +151,7 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.GPS_TARGET_ALTITUDE, new ValueEntry("Meters", 2) },
             { TOGGLE_VALUE.ELEVATOR_TRIM_POSITION, new ValueEntry("Radians", 2) },
             { TOGGLE_VALUE.ELEVATOR_TRIM_PCT, new ValueEntry("Percent", 0) },
+            { TOGGLE_VALUE.SPOILERS_HANDLE_POSITION, new ValueEntry("Position", 2) },
             { TOGGLE_VALUE.FLAPS_HANDLE_PERCENT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.TRAILING_EDGE_FLAPS_LEFT_PERCENT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.TRAILING_EDGE_FLAPS_RIGHT_PERCENT, new ValueEntry("Percent", 0) },
