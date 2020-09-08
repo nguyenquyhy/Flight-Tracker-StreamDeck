@@ -787,6 +787,7 @@
         AP_ALT_VAR_DEC,
         AP_VS_VAR_INC,
         AP_VS_VAR_DEC,
+        AP_VS_HOLD,
         AP_SPD_VAR_INC,
         AP_SPD_VAR_DEC,
         AP_PANEL_MACH_HOLD,
