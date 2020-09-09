@@ -43,7 +43,8 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_HDG_DEC,
         AP_ALT_SET,
         AP_ALT_INC,
-        AP_ALT_DEC
+        AP_ALT_DEC,
+        AVIONICS_TOGGLE
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
@@ -96,6 +97,7 @@ namespace FlightStreamDeck.SimConnectFSX
         public int Transponder;
         public int Com1;
         public int Com2;
+        public int AvMasterOn;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

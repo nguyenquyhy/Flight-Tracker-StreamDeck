@@ -46,6 +46,12 @@ namespace FlightStreamDeck.Logics.Actions
         public ApAltToggleAction(ILogger<ApAltToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
             : base(logger, flightConnector, imageLogic) { }
     }
+    [StreamDeckAction("tech.flighttracker.streamdeck.avionics.activate")]
+    public class AvMasterToggleAction : ApToggleAction
+    {
+        public AvMasterToggleAction(ILogger<ApAltToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+            : base(logger, flightConnector, imageLogic) { }
+    }
 
     #endregion
 
@@ -131,6 +137,13 @@ namespace FlightStreamDeck.Logics.Actions
                         await UpdateImage();
                     }
                     break;
+                case "tech.flighttracker.streamdeck.avionics.activate":
+                    if (e.AircraftStatus.IsAvMasterOn != lastStatus?.IsAvMasterOn)
+                    {
+                        logger.LogInformation("Received AV Master update: {state}", e.AircraftStatus.IsAvMasterOn);
+                        await UpdateImage();
+                    }
+                    break;
             }
         }
 
@@ -204,6 +217,13 @@ namespace FlightStreamDeck.Logics.Actions
                             flightConnector.ApAltToggle();
                             break;
 
+                        case "tech.flighttracker.streamdeck.avionics.activate":
+                            logger.LogInformation("Toggle AV Master. Current state: {state}.", currentStatus.IsAvMasterOn);
+                            uint off = 0;
+                            uint on = 1;
+                            flightConnector.AvMasterToggle(currentStatus.IsAvMasterOn ? off : on);
+                            break;
+
                     }
                 }
             }
@@ -241,6 +261,10 @@ namespace FlightStreamDeck.Logics.Actions
 
                     case "tech.flighttracker.streamdeck.altitude.activate":
                         await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        break;
+
+                    case "tech.flighttracker.streamdeck.avionics.activate":
+                        await SetImageAsync(imageLogic.GetImage("", currentStatus.IsAvMasterOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
                 }
             }

@@ -58,16 +58,17 @@ namespace FlightStreamDeck.Logics
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
+                FontRectangle size;
                 if (!string.IsNullOrWhiteSpace(text))
                 {
-                    var size = TextMeasurer.Measure(text, new RendererOptions(font));
+                    size = TextMeasurer.Measure(text, new RendererOptions(font));
                     ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                }
 
-                    if (hasValue)
-                    {
-                        size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
-                        ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
-                    }
+                if (hasValue)
+                {
+                    size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
+                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
                 }
             });
             using var memoryStream = new MemoryStream();

@@ -25,6 +25,7 @@ namespace FlightStreamDeck.Logics
         void ApAltSet(uint altitude);
         void ApAltInc();
         void ApAltDec();
+        void AvMasterToggle(uint state);
 
         void Toggle(TOGGLE_EVENT toggleAction);
         void Set(SET_EVENT setAction, uint data);
@@ -104,5 +105,6 @@ namespace FlightStreamDeck.Logics
         public string Transponder { get; set; }
         public int FreqencyCom1 { get; set; }
         public int FreqencyCom2 { get; set; }
+        public bool IsAvMasterOn { get; set; }
     }
 }

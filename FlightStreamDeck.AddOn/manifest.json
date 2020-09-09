@@ -69,7 +69,20 @@
       "Tooltip": "Activate/Deactivate AP",
       "UUID": "tech.flighttracker.streamdeck.master.activate"
     },
-
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "AV Master",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
+      "Tooltip": "Activate/Deactivate Avionics",
+      "UUID": "tech.flighttracker.streamdeck.avionics.activate"
+    },
     {
       "Icon": "Images/toggleIcon",
       "Name": "AP Heading",
