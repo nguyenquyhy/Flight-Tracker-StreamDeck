@@ -109,6 +109,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_SET, "AP_ALT_VAR_SET_ENGLISH");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_INC, "AP_ALT_VAR_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_DEC, "AP_ALT_VAR_DEC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
 
         }
 
@@ -180,6 +181,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApAltDec()
         {
             SendCommand(EVENTS.AP_ALT_DEC);
+        }
+
+        public void AvMasterToggle(uint state)
+        {
+            SendCommand(EVENTS.AVIONICS_TOGGLE, state);
         }
 
         private void SendCommand(EVENTS sendingEvent, uint data = 0)
@@ -434,6 +440,12 @@ namespace FlightStreamDeck.SimConnectFSX
                 SIMCONNECT_DATATYPE.INT32,
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AVIONICS MASTER SWITCH",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
 
             // IMPORTANT: register it with the simconnect managed wrapper marshaller
             // if you skip this step, you will only receive a uint in the .dwData field.
@@ -482,6 +494,7 @@ namespace FlightStreamDeck.SimConnectFSX
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,
                                     FreqencyCom2 = flightStatus.Value.Com2,
+                                    IsAvMasterOn = flightStatus.Value.AvMasterOn == 1
                                 }));
                         }
                         else
