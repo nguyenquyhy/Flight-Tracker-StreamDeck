@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace FlightStreamDeck.Logics
 {
@@ -191,28 +192,74 @@ namespace FlightStreamDeck.Logics
                 range = 1;
             }
 
-            using var img = gaugeImage.Clone(ctx =>
+            bool legacyGauge = !text.StartsWith("^");
+
+            using var img = (legacyGauge ? gaugeImage : defaultBackground).Clone(ctx =>
             {
-                double angleOffset = Math.PI * -1.25;
-                var ratio = (value - min) / range;
-                if (ratio < 0) ratio = 0;
-                if (ratio > 1) ratio = 1;
-                double angle = Math.PI * ratio + angleOffset;
+                if (!text.StartsWith("^"))
+                {
+                    double angleOffset = Math.PI * -1.25;
+                    var ratio = (value - min) / range;
+                    if (ratio < 0) ratio = 0;
+                    if (ratio > 1) ratio = 1;
+                    double angle = Math.PI * ratio + angleOffset;
 
-                var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
-                var middlePoint = new PointF(
-                    (float)((HALF_WIDTH - 16) * Math.Cos(angle)),
-                    (float)((HALF_WIDTH - 16) * Math.Sin(angle))
-                    );
+                    var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
+                    var middlePoint = new PointF(
+                        (float)((HALF_WIDTH - 16) * Math.Cos(angle)),
+                        (float)((HALF_WIDTH - 16) * Math.Sin(angle))
+                        );
 
-                var endPoint = new PointF(
-                    (float)(HALF_WIDTH * Math.Cos(angle)),
-                    (float)(HALF_WIDTH * Math.Sin(angle))
-                    );
+                    var endPoint = new PointF(
+                        (float)(HALF_WIDTH * Math.Cos(angle)),
+                        (float)(HALF_WIDTH * Math.Sin(angle))
+                        );
 
-                PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
+                    PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
 
-                ctx.DrawLines(pen, needle);
+                    ctx.DrawLines(pen, needle);
+                }
+                else
+                {
+                    //////////////////////////////////////////////////
+                    ///WIP, NOT RELEASE READY, JUST EXPERIMENTING
+                    ///set a current gauge to X|y0,y1,y2,y3
+                    ///x : height of bar
+                    ///y0-3 : correspond to width of current button percent to be that color of the bar
+                    ///
+                    /// example : 10|12,24,74
+                    /// roughly a C172 G1000 fuel gauge, needs more work, but its almost there
+                    /// 
+                    /// need to do indicator needle(s)
+                    /// allow 1 or 2 inputs to drive needles
+                    /// 
+                    /// six labors doesn't really allow custom arcs to be drawn, 
+                    /// might have to try to revert to system.drawing implementation if we need that. IDK
+                    //////////////////////////////////////////////////
+                    ctx.Draw(new Pen(Color.Black, 100), new RectangleF(0, 0, WIDTH, WIDTH));
+                    string[] splitFirst = text.Substring(1).Split("|");
+                    float.TryParse(splitFirst[0], out float height);
+                    string[] splitGauge = splitFirst[1].Split(",");
+
+                    //0 = critical : Red
+                    //1 = warning : Yellow
+                    //2 = nominal : Green
+                    //3 = superb : No Color
+                    Color[] colors = { Color.Red, Color.Yellow, Color.Green };
+                    PointF? stepWidth = null, previousWidth = new PointF(0, HALF_WIDTH);
+                    int colorSentinel = 0;
+
+                    splitGauge.ToList().ForEach(pct => {
+                        if (float.TryParse(pct, out float critFloatWidth) && colors.Length > colorSentinel)
+                        {
+                            stepWidth = new PointF(((PointF)previousWidth).X + ((critFloatWidth / 100) * WIDTH), HALF_WIDTH);
+                            PointF[] critical = { (PointF)previousWidth, (PointF)stepWidth };
+                            ctx.DrawLines(new Pen(colors[colorSentinel], height), critical);
+                            previousWidth = stepWidth;
+                        }
+                        colorSentinel += 1;
+                    });
+                }
 
                 if (!string.IsNullOrWhiteSpace(text))
                 {
