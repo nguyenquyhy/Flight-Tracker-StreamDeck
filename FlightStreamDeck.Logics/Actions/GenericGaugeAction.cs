@@ -132,7 +132,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                await SetImageAsync(imageLogic.GetGaugeImage(settings.Header, currentValue, settings.MinValue, settings.MaxValue));
+                await SetImageAsync(imageLogic.GetGenericGaugeImage(settings.Header, currentValue, settings.MinValue, settings.MaxValue));
             }
         }
     }
