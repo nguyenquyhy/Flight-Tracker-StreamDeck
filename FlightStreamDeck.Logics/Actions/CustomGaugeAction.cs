@@ -24,6 +24,19 @@ namespace FlightStreamDeck.Logics.Actions
         public string ChartSplitValue { get; set; }
         public int ChartThicknessValue { get; set; }
         public int ChartChevronSizeValue { get; set; }
+
+        internal bool EmptyPayload { get =>
+                string.IsNullOrEmpty(HeaderTop) &&
+                string.IsNullOrEmpty(HeaderBottom) &&
+                string.IsNullOrEmpty(ToggleValue) &&
+                string.IsNullOrEmpty(DisplayValueTop) &&
+                string.IsNullOrEmpty(DisplayValueBottom) &&
+                string.IsNullOrEmpty(ChartSplitValue) &&
+                MinValue == 0 &&
+                MaxValue == 0 &&
+                ChartThicknessValue == 0 &&
+                ChartChevronSizeValue == 0 && !DisplayHorizontalValue;
+        }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.custom.gauge")]
@@ -41,7 +54,18 @@ namespace FlightStreamDeck.Logics.Actions
         private float currentValueTop = 0;
         private float currentValueBottom = 0;
 
-        private CustomGaugeSettings settings;
+        public CustomGaugeSettings settings = new CustomGaugeSettings() { 
+            DisplayHorizontalValue = true,
+            ChartSplitValue = "12:red,24:yellow,64:green",
+            ChartThicknessValue = 13,
+            ChartChevronSizeValue = 3,
+            HeaderTop = "L",
+            DisplayValueTop = "FUEL LEFT QUANTITY",
+            HeaderBottom = "R",
+            DisplayValueBottom = "FUEL RIGHT QUANTITY",
+            MinValue = 0,
+            MaxValue = 30,
+        };
 
         public CustomGaugeAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
             EnumConverter enumConverter)
@@ -54,7 +78,10 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            InitializeSettings(args.Payload.GetSettings<CustomGaugeSettings>());
+            var settings = args.Payload.GetSettings<CustomGaugeSettings>();
+
+            if (settings.EmptyPayload) settings = this.settings;
+            InitializeSettings(settings);
 
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 

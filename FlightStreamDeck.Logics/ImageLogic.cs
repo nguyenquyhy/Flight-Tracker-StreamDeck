@@ -367,11 +367,27 @@ namespace FlightStreamDeck.Logics
                 int colorSentinel = 0;
 
                 splitGauge?.ToList().ForEach(pct => {
-                    if (float.TryParse(pct, out float critFloatWidth) && colors.Length > colorSentinel)
+                    string[] split = pct.Split(':');
+                    if (float.TryParse(split[0], out float critFloatWidth) && colors.Length > colorSentinel)
                     {
                         stepWidth = new PointF(((PointF)previousWidth).X + ((critFloatWidth / 100) * img_width), HALF_WIDTH);
                         PointF[] critical = { (PointF)previousWidth, (PointF)stepWidth };
-                        ctx.DrawLines(new Pen(colors[colorSentinel], chartWidth), critical);
+                        Color? color = null;
+                        if (split.Length > 1 && split[1] != string.Empty)
+                        {
+                            try
+                            {
+                                System.Drawing.Color temp = System.Drawing.Color.FromName(split[1]);
+                                color = Color.FromRgb(temp.R, temp.G, temp.B);
+                            } finally
+                            {}
+                        } else if (colors.Length > colorSentinel)
+                        {
+                            color = colors[colorSentinel];
+                        }
+
+                        if (color != null) ctx.DrawLines(new Pen((Color)color, chartWidth), critical);
+
                         previousWidth = stepWidth;
                     }
                     colorSentinel += 1;
@@ -379,53 +395,11 @@ namespace FlightStreamDeck.Logics
 
                 //topValue
                 var ratio = (valueTop - min) / range;
-                pen = new Pen(Color.White, chevronSize + 1);
-
-                var arrowStartX = (ratio * img_width) + width_margin;
-                var arrowStartY = (HALF_WIDTH - (chartWidth / 2));
-                var arrowAddY = arrowStartY - (chevronSize * 2);
-
-
-                var startPoint = new PointF(arrowStartX, arrowStartY);
-                var right = new PointF(arrowStartX + chevronSize, arrowAddY);
-                var left = new PointF(arrowStartX - chevronSize, arrowAddY);
-
-                PointF[] needle = { startPoint, right, left, startPoint };
-
-                var valueText = valueTop.ToString();
-                Color textColor = valueTop > max ? Color.Red : Color.White;
-                font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
-
-                var size = TextMeasurer.Measure(valueText, new RendererOptions(font));
-                var valuePoint = new PointF(startPoint.X - size.Width / 2, arrowAddY - 5 - size.Height);
-                ctx.DrawText(valueText, font, textColor, valuePoint);
-
-                ctx.DrawPolygon(pen, needle);
+                setupValue(true, textTop, valueTop, ratio, img_width, chevronSize, width_margin, chartWidth, max, ctx);
 
                 //bottomValue
                 ratio = (valueBottom - min) / range;
-                pen = new Pen(Color.White, chevronSize + 1);
-
-                arrowStartX = (ratio * img_width) + width_margin;
-                arrowStartY = (HALF_WIDTH + (chartWidth / 2));
-                arrowAddY = arrowStartY + (chevronSize * 2);
-
-
-                startPoint = new PointF(arrowStartX, arrowStartY);
-                right = new PointF(arrowStartX + chevronSize, arrowAddY);
-                left = new PointF(arrowStartX - chevronSize, arrowAddY);
-
-                PointF[] needle2 = { startPoint, right, left, startPoint };
-
-                valueText = valueBottom.ToString();
-                textColor = valueTop > max ? Color.Red : Color.White;
-                font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
-
-                size = TextMeasurer.Measure(valueText, new RendererOptions(font));
-                valuePoint = new PointF(startPoint.X - size.Width / 2, arrowAddY+5);
-                ctx.DrawText(valueText, font, textColor, valuePoint);
-
-                ctx.DrawPolygon(pen, needle2);
+                setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, max, ctx);
 
                 if (!horizontal) ctx.Rotate(-90);
             });
@@ -437,6 +411,40 @@ namespace FlightStreamDeck.Logics
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
             return "data:image/png;base64, " + base64;
+        }
+
+        private void setupValue(bool top, string labelText, float value, float ratio, int img_width, float chevronSize, 
+            float width_margin, float chart_width, float max, IImageProcessingContext ctx
+        )
+        {
+            var pen = new Pen(Color.White, chevronSize + 1);
+
+            var arrowStartX = (ratio * img_width) + width_margin;
+            var arrowStartY = (HALF_WIDTH - ((chart_width / 2) * (top ? 1 : -1)));
+            var arrowAddY = arrowStartY - ((chevronSize * 2) * (top ? 1 : -1));
+
+            var startPoint = new PointF(arrowStartX, arrowStartY);
+            var right = new PointF(arrowStartX + chevronSize, arrowAddY);
+            var left = new PointF(arrowStartX - chevronSize, arrowAddY);
+
+            PointF[] needle = { startPoint, right, left, startPoint };
+
+            var valueText = value.ToString();
+            Color textColor = value > max ? Color.Red : Color.White;
+            var font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
+
+            var size = TextMeasurer.Measure(valueText, new RendererOptions(font));
+            float adjustY = top ? Math.Abs(-5 - size.Height) : 5;
+            arrowAddY = top ? arrowAddY - adjustY : arrowAddY + adjustY;
+            var valuePoint = new PointF(startPoint.X - size.Width / 2, arrowAddY);
+            ctx.DrawText(valueText, font, textColor, valuePoint);
+
+            ctx.DrawPolygon(pen, needle);
+            var text = labelText != string.Empty ? labelText[0].ToString() : string.Empty;
+            size = TextMeasurer.Measure(text, new RendererOptions(SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular)));
+            startPoint.Y -= top ? size.Height : 0;
+            startPoint.X -= size.Width / 2;
+            ctx.DrawText(text, SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular), Color.Black, startPoint);
         }
     }
 }
