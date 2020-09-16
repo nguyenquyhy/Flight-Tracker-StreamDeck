@@ -18,7 +18,7 @@ namespace FlightStreamDeck.Logics
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
         public string GetGenericGaugeImage(string text, float value, float min, float max);
         public string GetCustomGaugeImage(string textTop, string textBottom,
-            float valueTop, float valueBottom,
+            string valueTop, string valueBottom,
             float min, float max,
             bool horizontal, string[] chartSplits,
             int chartWidth, float chevronSize);
@@ -187,8 +187,8 @@ namespace FlightStreamDeck.Logics
 
         public string GetGenericGaugeImage(string text, float value, float min, float max)
         {
-            var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
-            var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
+            var font = SystemFonts.CreateFont("Arial", 22, FontStyle.Regular);
+            var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
             var pen = new Pen(Color.DarkRed, 5);
             var range = max - min;
 
@@ -227,12 +227,12 @@ namespace FlightStreamDeck.Logics
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                        ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 57));
+                        ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 46));
                     }
 
                     var valueText = value.ToString();
                     Color textColor = value > max ? Color.Red : Color.White;
-                    ctx.DrawText(valueText, font, textColor, new PointF(25, 30));
+                    ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
                 }
                 else
                 {
@@ -320,7 +320,7 @@ namespace FlightStreamDeck.Logics
 
 
         public string GetCustomGaugeImage(string textTop, string textBottom, 
-            float valueTop, float valueBottom, 
+            string valueTop, string valueBottom, 
             float min, float max, 
             bool horizontal, string[] splitGauge, 
             int chartWidth, float chevronSize)
@@ -394,11 +394,13 @@ namespace FlightStreamDeck.Logics
                 });
 
                 //topValue
-                var ratio = (valueTop - min) / range;
+                float.TryParse(valueTop, out float floatValueTop);
+                var ratio = (floatValueTop - min) / range;
                 setupValue(true, textTop, valueTop, ratio, img_width, chevronSize, width_margin, chartWidth, max, ctx);
 
                 //bottomValue
-                ratio = (valueBottom - min) / range;
+                float.TryParse(valueBottom, out float floatValueBottom);
+                ratio = (floatValueBottom - min) / range;
                 setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, max, ctx);
 
                 if (!horizontal) ctx.Rotate(-90);
@@ -413,7 +415,7 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        private void setupValue(bool top, string labelText, float value, float ratio, int img_width, float chevronSize, 
+        private void setupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, 
             float width_margin, float chart_width, float max, IImageProcessingContext ctx
         )
         {
@@ -430,7 +432,8 @@ namespace FlightStreamDeck.Logics
             PointF[] needle = { startPoint, right, left, startPoint };
 
             var valueText = value.ToString();
-            Color textColor = value > max ? Color.Red : Color.White;
+            float.TryParse(value, out float floatValue);
+            Color textColor = floatValue > max ? Color.Red : Color.White;
             var font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
 
             var size = TextMeasurer.Measure(valueText, new RendererOptions(font));

@@ -51,8 +51,8 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? displayValueTop = null;
         private TOGGLE_VALUE? displayValueBottom = null;
 
-        private float currentValueTop = 0;
-        private float currentValueBottom = 0;
+        private string currentValueTop = "0";
+        private string currentValueBottom = "0";
 
         public CustomGaugeSettings settings = new CustomGaugeSettings() { 
             DisplayHorizontalValue = true,
@@ -144,13 +144,13 @@ namespace FlightStreamDeck.Logics.Actions
 
             if (displayValueTop.HasValue && e.GenericValueStatus.ContainsKey(displayValueTop.Value))
             {
-                float.TryParse(e.GenericValueStatus[displayValueTop.Value], out float newValue);
+                string newValue = e.GenericValueStatus[displayValueTop.Value];
                 isUpdated |= currentValueTop != newValue;
                 currentValueTop = newValue;
             }
             if (displayValueBottom.HasValue && e.GenericValueStatus.ContainsKey(displayValueBottom.Value))
             {
-                float.TryParse(e.GenericValueStatus[displayValueBottom.Value], out float newValue);
+                string newValue = e.GenericValueStatus[displayValueBottom.Value];
                 isUpdated |= currentValueBottom != newValue;
                 currentValueBottom = newValue;
             }
@@ -172,8 +172,8 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (displayValueTop.HasValue) flightConnector.DeRegisterSimValue(displayValueTop.Value);
             if (displayValueBottom.HasValue) flightConnector.DeRegisterSimValue(displayValueBottom.Value);
-            currentValueTop = 0;
-            currentValueBottom = 0;
+            currentValueTop = "0";
+            currentValueBottom = "0";
         }
 
         private async Task UpdateImage()
