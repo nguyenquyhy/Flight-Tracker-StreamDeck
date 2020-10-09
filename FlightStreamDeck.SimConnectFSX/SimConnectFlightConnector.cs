@@ -20,11 +20,11 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public event EventHandler Closed;
 
-        private List<SET_EVENT> setEvents = new List<SET_EVENT>();
-
-        private List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
+        private readonly List<SET_EVENT> setEvents = new List<SET_EVENT>();
+        private readonly List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
         private readonly HashSet<TOGGLE_VALUE> genericValues = new HashSet<TOGGLE_VALUE>();
-        private EventValueLibrary eventLib = new EventValueLibrary();
+
+        private readonly EventValueLibrary eventLib = new EventValueLibrary();
 
         private readonly object lockLists = new object();
 
@@ -79,6 +79,11 @@ namespace FlightStreamDeck.SimConnectFSX
         // Set up the SimConnect event handlers
         public void Initialize(IntPtr Handle)
         {
+            if (simconnect != null)
+            {
+                logger.LogWarning("Initialization is already done. Cancelled this request.");
+                return;
+            }
             simconnect = new SimConnect("Flight Tracker Stream Deck", Handle, WM_USER_SIMCONNECT, null, 0);
 
             // listen to connect and quit msgs
@@ -91,6 +96,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.OnRecvSimobjectDataBytype += Simconnect_OnRecvSimobjectDataBytypeAsync;
             RegisterFlightStatusDefinition();
             RegisterGenericValues(true);
+            RegisterGenericEvents();
 
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
 
@@ -228,6 +234,7 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             try
             {
+                logger.LogDebug("Trying to cancel request loop");
                 cts?.Cancel();
                 cts = null;
             }
@@ -237,12 +244,9 @@ namespace FlightStreamDeck.SimConnectFSX
             }
             try
             {
-                if (simconnect != null)
-                {
-                    // Dispose serves the same purpose as SimConnect_Close()
-                    simconnect.Dispose();
-                    simconnect = null;
-                }
+                // Dispose serves the same purpose as SimConnect_Close()
+                simconnect?.Dispose();
+                simconnect = null;
             }
             catch (Exception ex)
             {
@@ -463,7 +467,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
                         if (flightStatus.HasValue)
                         {
-                            logger.LogDebug("Get Aircraft status");
+                            logger.LogTrace("Get Aircraft status");
                             AircraftStatusUpdated?.Invoke(this, new AircraftStatusUpdatedEventArgs(
                                 new AircraftStatus
                                 {
@@ -582,8 +586,8 @@ namespace FlightStreamDeck.SimConnectFSX
         void Simconnect_OnRecvQuit(SimConnect sender, SIMCONNECT_RECV data)
         {
             logger.LogInformation("Flight Simulator has exited");
-            Closed?.Invoke(this, new EventArgs());
             CloseConnection();
+            Closed?.Invoke(this, new EventArgs());
         }
 
         void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
@@ -692,7 +696,7 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        public void RegisterGenericValues(bool wasEmpty)
+        private void RegisterGenericValues(bool wasEmpty)
         {
             if (simconnect == null) return;
 
@@ -718,6 +722,23 @@ namespace FlightStreamDeck.SimConnectFSX
             }
 
             simconnect.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
+        }
+
+        private void RegisterGenericEvents()
+        {
+            if (simconnect == null) return;
+
+            foreach (var toggleAction in genericEvents)
+            {
+                logger.LogInformation("RegisterEvent {1}", toggleAction);
+                simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
+            }
+
+            foreach (var action in setEvents)
+            {
+                logger.LogInformation("RegisterEvent {action} {simConnectAction}", action, action.ToString());
+                simconnect.MapClientEventToSimEvent(action, action.ToString());
+            }
         }
 
         public void Toggle(TOGGLE_EVENT toggleAction)
