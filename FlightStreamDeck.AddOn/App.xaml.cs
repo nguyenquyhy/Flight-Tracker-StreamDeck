@@ -50,8 +50,10 @@ namespace FlightStreamDeck.AddOn
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Debug()
-                .MinimumLevel.Information()
-                .WriteTo.File("flightstreamdeck.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 3)
+                .WriteTo.Logger(config => config
+                    .MinimumLevel.Information()
+                    .WriteTo.File("flightstreamdeck.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 3)
+                )
                 .CreateLogger();
 
             //services.AddOptions<AppSettings>().Bind(Configuration).ValidateDataAnnotations();
