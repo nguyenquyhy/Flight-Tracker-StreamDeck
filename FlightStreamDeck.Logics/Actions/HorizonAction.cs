@@ -10,7 +10,7 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.artificial.horizon")]
     public class HorizonAction : StreamDeckAction
     {
-        private readonly ILogger<ApToggleAction> logger;
+        private readonly ILogger<HorizonAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
 
@@ -26,7 +26,7 @@ namespace FlightStreamDeck.Logics.Actions
         private float currentBankValue = 0.0f;
         private float currentPitchValue = 0.0f;
 
-        public HorizonAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public HorizonAction(ILogger<HorizonAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;

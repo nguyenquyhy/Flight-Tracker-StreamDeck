@@ -23,7 +23,7 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
     public class GenericToggleAction : StreamDeckAction<GenericToggleSettings>
     {
-        private readonly ILogger<ApToggleAction> logger;
+        private readonly ILogger<GenericToggleAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly IEvaluator evaluator;
@@ -39,7 +39,7 @@ namespace FlightStreamDeck.Logics.Actions
         private string currentValue = "";
         private bool currentStatus = false;
 
-        public GenericToggleAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
+        public GenericToggleAction(ILogger<GenericToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
             IEvaluator evaluator, EnumConverter enumConverter)
         {
             this.logger = logger;
