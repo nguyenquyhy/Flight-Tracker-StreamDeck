@@ -57,7 +57,7 @@
     },
     {
       "Icon": "Images/toggleIcon",
-      "Name": "AV Master",
+      "Name": "Preset Toggle Buttons",
       "States": [
         {
           "Image": "Images/button",
@@ -65,79 +65,9 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate Avionics",
-      "UUID": "tech.flighttracker.streamdeck.avionics.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Master",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP",
-      "UUID": "tech.flighttracker.streamdeck.master.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Heading",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP heading hold",
-      "UUID": "tech.flighttracker.streamdeck.heading.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Nav",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP Nav mode",
-      "UUID": "tech.flighttracker.streamdeck.nav.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Approach",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP Approach mode",
-      "UUID": "tech.flighttracker.streamdeck.approach.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Altitude",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP altitude hold",
-      "UUID": "tech.flighttracker.streamdeck.altitude.activate"
+      "PropertyInspectorPath": "PropertyInspector/PresetToggle.html",
+      "Tooltip": "Activate/Deactivate different functions",
+      "UUID": "tech.flighttracker.streamdeck.preset.toggle"
     },
 
     {
