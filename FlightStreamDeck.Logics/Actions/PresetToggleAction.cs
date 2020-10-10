@@ -22,6 +22,7 @@ namespace FlightStreamDeck.Logics.Actions
         public const string Heading = "Heading";
         public const string Nav = "Nav";
         public const string Altitude = "Altitude";
+        public const string VerticalSpeed = "VerticalSpeed";
         public const string Approach = "Approach";
     }
 
@@ -107,6 +108,13 @@ namespace FlightStreamDeck.Logics.Actions
                         await UpdateImage();
                     }
                     break;
+                case PresetFunction.VerticalSpeed:
+                    if (e.AircraftStatus.ApVs != lastStatus?.ApVs || e.AircraftStatus.IsApVsOn != lastStatus?.IsApVsOn)
+                    {
+                        logger.LogInformation("Received VS update: {IsApVsOn} {ApVerticalSpeed}", e.AircraftStatus.IsApVsOn, e.AircraftStatus.ApVs);
+                        await UpdateImage();
+                    }
+                    break;
                 case PresetFunction.Approach:
                     if (e.AircraftStatus.IsApAprOn != lastStatus?.IsApAprOn)
                     {
@@ -186,6 +194,11 @@ namespace FlightStreamDeck.Logics.Actions
                             flightConnector.ApAltToggle();
                             break;
 
+                        case PresetFunction.VerticalSpeed:
+                            logger.LogInformation("Toggle AP VS. Current state: {state}.", currentStatus.IsApVsOn);
+                            flightConnector.ApVsToggle();
+                            break;
+
                         case PresetFunction.Approach:
                             logger.LogInformation("Toggle AP APR. Current state: {state}.", currentStatus.IsApAprOn);
                             flightConnector.ApAprToggle();
@@ -228,6 +241,10 @@ namespace FlightStreamDeck.Logics.Actions
 
                     case PresetFunction.Altitude:
                         await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        break;
+
+                    case PresetFunction.VerticalSpeed:
+                        await SetImageAsync(imageLogic.GetImage("VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case PresetFunction.Approach:

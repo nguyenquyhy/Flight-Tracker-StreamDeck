@@ -30,6 +30,7 @@ namespace FlightStreamDeck.Logics.Actions
     {
         public const string Heading = "Heading";
         public const string Altitude = "Altitude";
+        public const string VerticalSpeed = "VerticalSpeed";
     }
 
     public class ValueChangeSettings
@@ -76,8 +77,8 @@ namespace FlightStreamDeck.Logics.Actions
             }
             
             var change = actions[^1];
-            var increment = change == "increase" ? 1 : -1;
-            if (!isUp) increment *= 10;
+            var sign = change == "increase" ? 1 : -1;
+            var increment = isUp ? 1 : 10;
 
             var buttonType = settings?.Type;
             if (string.IsNullOrWhiteSpace(buttonType))
@@ -89,21 +90,26 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 ValueChangeFunction.Heading => (uint)status.ApHeading,
                 ValueChangeFunction.Altitude => (uint)status.ApAltitude,
+                ValueChangeFunction.VerticalSpeed => (uint)status.ApVs,
                 _ => throw new NotImplementedException($"Value type: {buttonType}")
             };
 
             switch (buttonType)
             {
                 case ValueChangeFunction.Heading:
-                    originalValue = (uint)(originalValue + 360 + increment) % 360;
+                    originalValue = (uint)(originalValue + 360 + sign * increment) % 360;
                     flightConnector.ApHdgSet(originalValue.Value);
                     break;
 
                 case ValueChangeFunction.Altitude:
-                    originalValue = (uint)(originalValue + 100 * increment);
+                    originalValue = (uint)(originalValue + 100 * sign * increment);
                     flightConnector.ApAltSet(originalValue.Value);
                     break;
 
+                case ValueChangeFunction.VerticalSpeed:
+                    originalValue = (uint)(originalValue + 100 * sign);
+                    flightConnector.ApVsSet(originalValue.Value);
+                    break;
             }
         }
 

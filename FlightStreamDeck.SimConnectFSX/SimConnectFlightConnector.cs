@@ -107,6 +107,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_NAV_TOGGLE, "AP_NAV1_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_APR_TOGGLE, "AP_APR_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_TOGGLE, "AP_PANEL_ALTITUDE_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_TOGGLE, "AP_VS_HOLD");
 
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
@@ -115,6 +116,11 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_SET, "AP_ALT_VAR_SET_ENGLISH");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_INC, "AP_ALT_VAR_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_DEC, "AP_ALT_VAR_DEC");
+
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_SET, "AP_VS_VAR_SET_ENGLISH");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_INC, "AP_VS_VAR_INC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_DEC, "AP_VS_VAR_DEC");
+
             simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
 
         }
@@ -159,6 +165,11 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AP_ALT_TOGGLE);
         }
 
+        public void ApVsToggle()
+        {
+            SendCommand(EVENTS.AP_VS_TOGGLE);
+        }
+
         public void ApHdgSet(uint heading)
         {
             SendCommand(EVENTS.AP_HDG_SET, heading);
@@ -187,6 +198,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApAltDec()
         {
             SendCommand(EVENTS.AP_ALT_DEC);
+        }
+
+        public void ApVsSet(uint speed)
+        {
+            SendCommand(EVENTS.AP_VS_SET, speed);
         }
 
         public void AvMasterToggle(uint state)
@@ -424,6 +440,19 @@ namespace FlightStreamDeck.SimConnectFSX
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
 
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT VERTICAL HOLD",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT VERTICAL HOLD VAR",
+                "Feet per minute",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
             #endregion
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
@@ -495,6 +524,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsApAprOn = flightStatus.Value.IsApAprOn == 1,
                                     IsApAltOn = flightStatus.Value.IsApAltOn == 1,
                                     ApAltitude = flightStatus.Value.ApAlt,
+                                    IsApVsOn = flightStatus.Value.IsApVsOn == 1,
+                                    ApVs = flightStatus.Value.ApVs,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,
                                     FreqencyCom2 = flightStatus.Value.Com2,
