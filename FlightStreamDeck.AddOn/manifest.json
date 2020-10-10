@@ -72,7 +72,7 @@
 
     {
       "Icon": "Images/plusIcon",
-      "Name": "AP Heading Increase",
+      "Name": "Increase value",
       "States": [
         {
           "Image": "Images/plus",
@@ -80,12 +80,13 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Increase AP heading",
-      "UUID": "tech.flighttracker.streamdeck.heading.increase"
+      "PropertyInspectorPath": "PropertyInspector/PresetChange.html",
+      "Tooltip": "Increase value of a preset function",
+      "UUID": "tech.flighttracker.streamdeck.preset.increase"
     },
     {
       "Icon": "Images/minusIcon",
-      "Name": "AP Heading Decrease",
+      "Name": "Decrease value",
       "States": [
         {
           "Image": "Images/minus",
@@ -93,34 +94,9 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Decrease AP heading",
-      "UUID": "tech.flighttracker.streamdeck.heading.decrease"
-    },
-    {
-      "Icon": "Images/plusIcon",
-      "Name": "AP Altitude Increase",
-      "States": [
-        {
-          "Image": "Images/plus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Increase AP altitude",
-      "UUID": "tech.flighttracker.streamdeck.altitude.increase"
-    },
-    {
-      "Icon": "Images/minusIcon",
-      "Name": "AP Altitude Decrease",
-      "States": [
-        {
-          "Image": "Images/minus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Decrease AP altitude",
-      "UUID": "tech.flighttracker.streamdeck.altitude.decrease"
+      "PropertyInspectorPath": "PropertyInspector/PresetChange.html",
+      "Tooltip": "Decrease value of a preset function",
+      "UUID": "tech.flighttracker.streamdeck.preset.decrease"
     },
 
     {
