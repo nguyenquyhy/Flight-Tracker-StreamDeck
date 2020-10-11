@@ -8,65 +8,36 @@ using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
-    public class ApToggleSettings
+    public class PresetToggleSettings
     {
+        public string Type { get; set; }
         public string ImageOn { get; set; }
         public string ImageOff { get; set; }
     }
 
-    #region Action Registration
-
-    [StreamDeckAction("tech.flighttracker.streamdeck.master.activate")]
-    public class ApMasterToggleAction : ApToggleAction
+    public class PresetFunction
     {
-        public ApMasterToggleAction(ILogger<ApMasterToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
-            : base(logger, flightConnector, imageLogic) { }
-    }
-    [StreamDeckAction("tech.flighttracker.streamdeck.heading.activate")]
-    public class ApHeadingToggleAction : ApToggleAction
-    {
-        public ApHeadingToggleAction(ILogger<ApHeadingToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
-            : base(logger, flightConnector, imageLogic) { }
-    }
-    [StreamDeckAction("tech.flighttracker.streamdeck.nav.activate")]
-    public class ApNavToggleAction : ApToggleAction
-    {
-        public ApNavToggleAction(ILogger<ApNavToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
-            : base(logger, flightConnector, imageLogic) { }
-    }
-    [StreamDeckAction("tech.flighttracker.streamdeck.approach.activate")]
-    public class ApAprToggleAction : ApToggleAction
-    {
-        public ApAprToggleAction(ILogger<ApAprToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
-            : base(logger, flightConnector, imageLogic) { }
-    }
-    [StreamDeckAction("tech.flighttracker.streamdeck.altitude.activate")]
-    public class ApAltToggleAction : ApToggleAction
-    {
-        public ApAltToggleAction(ILogger<ApAltToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
-            : base(logger, flightConnector, imageLogic) { }
-    }
-    [StreamDeckAction("tech.flighttracker.streamdeck.avionics.activate")]
-    public class AvMasterToggleAction : ApToggleAction
-    {
-        public AvMasterToggleAction(ILogger<ApAltToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
-            : base(logger, flightConnector, imageLogic) { }
+        public const string Avionics = "Avionics";
+        public const string ApMaster = "ApMaster";
+        public const string Heading = "Heading";
+        public const string Nav = "Nav";
+        public const string Altitude = "Altitude";
+        public const string VerticalSpeed = "VerticalSpeed";
+        public const string Approach = "Approach";
     }
 
-    #endregion
-
-    public abstract class ApToggleAction : StreamDeckAction<ApToggleSettings>
+    [StreamDeckAction("tech.flighttracker.streamdeck.preset.toggle")]
+    public class PresetToggleAction : StreamDeckAction<PresetToggleSettings>
     {
         private readonly ILogger logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly Timer timer;
         private AircraftStatus status = null;
-        private string action;
         private bool timerHasTick;
-        private ApToggleSettings settings;
+        private PresetToggleSettings settings;
 
-        public ApToggleAction(ILogger logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+        public PresetToggleAction(ILogger<PresetToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
@@ -83,9 +54,9 @@ namespace FlightStreamDeck.Logics.Actions
             var currentStatus = status;
             if (currentStatus != null)
             {
-                switch (action)
+                switch (settings?.Type)
                 {
-                    case "tech.flighttracker.streamdeck.heading.activate":
+                    case PresetFunction.Heading:
                         logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
                         flightConnector.ApHdgSet((uint)currentStatus.Heading);
                         break;
@@ -100,47 +71,54 @@ namespace FlightStreamDeck.Logics.Actions
             var lastStatus = status;
             status = e.AircraftStatus;
 
-            switch (action)
+            switch (settings?.Type)
             {
-                case "tech.flighttracker.streamdeck.master.activate":
+                case PresetFunction.Avionics:
+                    if (e.AircraftStatus.IsAvMasterOn != lastStatus?.IsAvMasterOn)
+                    {
+                        logger.LogInformation("Received AV Master update: {state}", e.AircraftStatus.IsAvMasterOn);
+                        await UpdateImage();
+                    }
+                    break;
+                case PresetFunction.ApMaster:
                     if (e.AircraftStatus.IsAutopilotOn != lastStatus?.IsAutopilotOn)
                     {
                         logger.LogInformation("Received AP update: {state}", e.AircraftStatus.IsAutopilotOn);
                         await UpdateImage();
                     }
                     break;
-                case "tech.flighttracker.streamdeck.heading.activate":
+                case PresetFunction.Heading:
                     if (e.AircraftStatus.ApHeading != lastStatus?.ApHeading || e.AircraftStatus.IsApHdgOn != lastStatus?.IsApHdgOn)
                     {
                         logger.LogInformation("Received HDG update: {IsApHdgOn} {ApHeading}", e.AircraftStatus.IsApHdgOn, e.AircraftStatus.ApHeading);
                         await UpdateImage();
                     }
                     break;
-                case "tech.flighttracker.streamdeck.nav.activate":
+                case PresetFunction.Nav:
                     if (e.AircraftStatus.IsApNavOn != lastStatus?.IsApNavOn)
                     {
                         logger.LogInformation("Received NAV update: {IsApNavOn}", e.AircraftStatus.IsApNavOn);
                         await UpdateImage();
                     }
                     break;
-                case "tech.flighttracker.streamdeck.approach.activate":
+                case PresetFunction.Altitude:
+                    if (e.AircraftStatus.ApAltitude != lastStatus?.ApAltitude || e.AircraftStatus.IsApAltOn != lastStatus?.IsApAltOn)
+                    {
+                        logger.LogInformation("Received ALT update: {IsApAltOn} {ApAltitude}", e.AircraftStatus.IsApAltOn, e.AircraftStatus.ApAltitude);
+                        await UpdateImage();
+                    }
+                    break;
+                case PresetFunction.VerticalSpeed:
+                    if (e.AircraftStatus.ApVs != lastStatus?.ApVs || e.AircraftStatus.IsApVsOn != lastStatus?.IsApVsOn)
+                    {
+                        logger.LogInformation("Received VS update: {IsApVsOn} {ApVerticalSpeed}", e.AircraftStatus.IsApVsOn, e.AircraftStatus.ApVs);
+                        await UpdateImage();
+                    }
+                    break;
+                case PresetFunction.Approach:
                     if (e.AircraftStatus.IsApAprOn != lastStatus?.IsApAprOn)
                     {
                         logger.LogInformation("Received APR update: {IsApAprOn}", e.AircraftStatus.IsApAprOn);
-                        await UpdateImage();
-                    }
-                    break;
-                case "tech.flighttracker.streamdeck.altitude.activate":
-                    if (e.AircraftStatus.ApAltitude != lastStatus?.ApAltitude || e.AircraftStatus.IsApAltOn != lastStatus?.IsApAltOn)
-                    {
-                        logger.LogInformation("Received ALT update: {IsApHdgOn} {ApHeading}", e.AircraftStatus.IsApAltOn, e.AircraftStatus.ApAltitude);
-                        await UpdateImage();
-                    }
-                    break;
-                case "tech.flighttracker.streamdeck.avionics.activate":
-                    if (e.AircraftStatus.IsAvMasterOn != lastStatus?.IsAvMasterOn)
-                    {
-                        logger.LogInformation("Received AV Master update: {state}", e.AircraftStatus.IsAvMasterOn);
                         await UpdateImage();
                     }
                     break;
@@ -149,10 +127,9 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            var settings = args.Payload.GetSettings<ApToggleSettings>();
+            var settings = args.Payload.GetSettings<PresetToggleSettings>();
             InitializeSettings(settings);
 
-            action = args.Action;
             status = null;
             this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
 
@@ -169,15 +146,13 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            InitializeSettings(args.Payload.ToObject<ApToggleSettings>());
+            InitializeSettings(args.Payload.ToObject<PresetToggleSettings>());
             await UpdateImage();
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
             timerHasTick = false;
-            string action1 = args.Action;
-            action = action1;
             timer.Start();
             return Task.CompletedTask;
         }
@@ -190,38 +165,43 @@ namespace FlightStreamDeck.Logics.Actions
                 var currentStatus = status;
                 if (currentStatus != null)
                 {
-                    switch (action)
+                    switch (settings?.Type)
                     {
-                        case "tech.flighttracker.streamdeck.master.activate":
-                            logger.LogInformation("Toggle AP Master. Current state: {state}.", currentStatus.IsAutopilotOn);
-                            flightConnector.ApToggle();
-                            break;
-
-                        case "tech.flighttracker.streamdeck.heading.activate":
-                            logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
-                            flightConnector.ApHdgToggle();
-                            break;
-
-                        case "tech.flighttracker.streamdeck.nav.activate":
-                            logger.LogInformation("Toggle AP NAV. Current state: {state}.", currentStatus.IsApNavOn);
-                            flightConnector.ApNavToggle();
-                            break;
-
-                        case "tech.flighttracker.streamdeck.approach.activate":
-                            logger.LogInformation("Toggle AP APR. Current state: {state}.", currentStatus.IsApAprOn);
-                            flightConnector.ApAprToggle();
-                            break;
-
-                        case "tech.flighttracker.streamdeck.altitude.activate":
-                            logger.LogInformation("Toggle AP ALT. Current state: {state}.", currentStatus.IsApAltOn);
-                            flightConnector.ApAltToggle();
-                            break;
-
-                        case "tech.flighttracker.streamdeck.avionics.activate":
+                        case PresetFunction.Avionics:
                             logger.LogInformation("Toggle AV Master. Current state: {state}.", currentStatus.IsAvMasterOn);
                             uint off = 0;
                             uint on = 1;
                             flightConnector.AvMasterToggle(currentStatus.IsAvMasterOn ? off : on);
+                            break;
+
+                        case PresetFunction.ApMaster:
+                            logger.LogInformation("Toggle AP Master. Current state: {state}.", currentStatus.IsAutopilotOn);
+                            flightConnector.ApToggle();
+                            break;
+
+                        case PresetFunction.Heading:
+                            logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
+                            flightConnector.ApHdgToggle();
+                            break;
+
+                        case PresetFunction.Nav:
+                            logger.LogInformation("Toggle AP NAV. Current state: {state}.", currentStatus.IsApNavOn);
+                            flightConnector.ApNavToggle();
+                            break;
+
+                        case PresetFunction.Altitude:
+                            logger.LogInformation("Toggle AP ALT. Current state: {state}.", currentStatus.IsApAltOn);
+                            flightConnector.ApAltToggle();
+                            break;
+
+                        case PresetFunction.VerticalSpeed:
+                            logger.LogInformation("Toggle AP VS. Current state: {state}.", currentStatus.IsApVsOn);
+                            flightConnector.ApVsToggle();
+                            break;
+
+                        case PresetFunction.Approach:
+                            logger.LogInformation("Toggle AP APR. Current state: {state}.", currentStatus.IsApAprOn);
+                            flightConnector.ApAprToggle();
                             break;
 
                     }
@@ -231,7 +211,7 @@ namespace FlightStreamDeck.Logics.Actions
             return Task.CompletedTask;
         }
 
-        private void InitializeSettings(ApToggleSettings settings)
+        private void InitializeSettings(PresetToggleSettings settings)
         {
             this.settings = settings;
         }
@@ -241,30 +221,34 @@ namespace FlightStreamDeck.Logics.Actions
             var currentStatus = status;
             if (currentStatus != null)
             {
-                switch (action)
+                switch (settings.Type)
                 {
-                    case "tech.flighttracker.streamdeck.master.activate":
+                    case PresetFunction.Avionics:
+                        await SetImageAsync(imageLogic.GetImage("", currentStatus.IsAvMasterOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        break;
+
+                    case PresetFunction.ApMaster:
                         await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
-                    case "tech.flighttracker.streamdeck.heading.activate":
+                    case PresetFunction.Heading:
                         await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
-                    case "tech.flighttracker.streamdeck.nav.activate":
+                    case PresetFunction.Nav:
                         await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
-                    case "tech.flighttracker.streamdeck.approach.activate":
-                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
-                        break;
-
-                    case "tech.flighttracker.streamdeck.altitude.activate":
+                    case PresetFunction.Altitude:
                         await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
-                    case "tech.flighttracker.streamdeck.avionics.activate":
-                        await SetImageAsync(imageLogic.GetImage("", currentStatus.IsAvMasterOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                    case PresetFunction.VerticalSpeed:
+                        await SetImageAsync(imageLogic.GetImage("VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        break;
+
+                    case PresetFunction.Approach:
+                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
                 }
             }

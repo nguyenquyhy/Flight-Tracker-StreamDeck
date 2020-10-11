@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Property Inspector</title>
+    <link rel="stylesheet" href="sdpi.css">
+</head>
+<body>
+    <div class="sdpi-wrapper">
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Function</div>
+            <select class="sdpi-item-value select" id="Type">
+                <option>Select a function</option>
+                <option value="Heading">Heading</option>
+                <option value="Altitude">Altitude</option>
+                <option value="VerticalSpeed">Vertical Speed</option>
+            </select>
+        </div>
+    </div>
+    <script src="common.js"></script>
+    <script language="JavaScript" type="text/javascript">
+        function loadSettings(settings) {
+            if (settings['Type']) {
+                Type.value = settings['Type']; 
+            };
+        }
+
+        function handleItemChanged(control, value) {
+            settings[value.key] = value.value;
+
+            sendValueToPlugin(settings);
+            setSettings(settings);
+        }
+    </script>
+    <script src="init.js"></script>
+</body>
+</html>

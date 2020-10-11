@@ -57,7 +57,7 @@
     },
     {
       "Icon": "Images/toggleIcon",
-      "Name": "AV Master",
+      "Name": "Preset Toggle Buttons",
       "States": [
         {
           "Image": "Images/button",
@@ -65,84 +65,14 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate Avionics",
-      "UUID": "tech.flighttracker.streamdeck.avionics.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Master",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP",
-      "UUID": "tech.flighttracker.streamdeck.master.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Heading",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP heading hold",
-      "UUID": "tech.flighttracker.streamdeck.heading.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Nav",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP Nav mode",
-      "UUID": "tech.flighttracker.streamdeck.nav.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Approach",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP Approach mode",
-      "UUID": "tech.flighttracker.streamdeck.approach.activate"
-    },
-    {
-      "Icon": "Images/toggleIcon",
-      "Name": "AP Altitude",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/ApToggle.html",
-      "Tooltip": "Activate/Deactivate AP altitude hold",
-      "UUID": "tech.flighttracker.streamdeck.altitude.activate"
+      "PropertyInspectorPath": "PropertyInspector/PresetToggle.html",
+      "Tooltip": "Activate/Deactivate different functions",
+      "UUID": "tech.flighttracker.streamdeck.preset.toggle"
     },
 
     {
       "Icon": "Images/plusIcon",
-      "Name": "AP Heading Increase",
+      "Name": "Increase value",
       "States": [
         {
           "Image": "Images/plus",
@@ -150,12 +80,13 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Increase AP heading",
-      "UUID": "tech.flighttracker.streamdeck.heading.increase"
+      "PropertyInspectorPath": "PropertyInspector/PresetChange.html",
+      "Tooltip": "Increase value of a preset function",
+      "UUID": "tech.flighttracker.streamdeck.preset.increase"
     },
     {
       "Icon": "Images/minusIcon",
-      "Name": "AP Heading Decrease",
+      "Name": "Decrease value",
       "States": [
         {
           "Image": "Images/minus",
@@ -163,34 +94,9 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Decrease AP heading",
-      "UUID": "tech.flighttracker.streamdeck.heading.decrease"
-    },
-    {
-      "Icon": "Images/plusIcon",
-      "Name": "AP Altitude Increase",
-      "States": [
-        {
-          "Image": "Images/plus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Increase AP altitude",
-      "UUID": "tech.flighttracker.streamdeck.altitude.increase"
-    },
-    {
-      "Icon": "Images/minusIcon",
-      "Name": "AP Altitude Decrease",
-      "States": [
-        {
-          "Image": "Images/minus",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Decrease AP altitude",
-      "UUID": "tech.flighttracker.streamdeck.altitude.decrease"
+      "PropertyInspectorPath": "PropertyInspector/PresetChange.html",
+      "Tooltip": "Decrease value of a preset function",
+      "UUID": "tech.flighttracker.streamdeck.preset.decrease"
     },
 
     {
@@ -441,7 +347,7 @@
   "Name": "Flight Tracker",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
-  "Version": "0.6",
+  "Version": "0.8",
   "OS": [
     {
       "Platform": "windows",

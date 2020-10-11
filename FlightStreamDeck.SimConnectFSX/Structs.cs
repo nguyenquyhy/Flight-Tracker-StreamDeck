@@ -38,12 +38,16 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_NAV_TOGGLE,
         AP_APR_TOGGLE,
         AP_ALT_TOGGLE,
+        AP_VS_TOGGLE,
         AP_HDG_SET,
         AP_HDG_INC,
         AP_HDG_DEC,
         AP_ALT_SET,
         AP_ALT_INC,
         AP_ALT_DEC,
+        AP_VS_SET,
+        AP_VS_INC,
+        AP_VS_DEC,
         AVIONICS_TOGGLE
     }
 
@@ -93,6 +97,8 @@ namespace FlightStreamDeck.SimConnectFSX
         public int IsApAprOn;
         public int IsApAltOn;
         public int ApAlt;
+        public int IsApVsOn;
+        public int ApVs;
 
         public int Transponder;
         public int Com1;
