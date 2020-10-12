@@ -1,8 +1,6 @@
 ﻿using FlightStreamDeck.Logics;
 using FlightStreamDeck.SimConnectFSX;
 using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Retry;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -83,26 +81,21 @@ namespace FlightStreamDeck.AddOn
 
         private async Task InitializeSimConnectAsync(SimConnectFlightConnector simConnect)
         {
-            AsyncRetryPolicy _retryPolicy = Policy
-                .Handle<COMException>()
-                .WaitAndRetryAsync(3, retryAttempt =>
+            myNotifyIcon.Icon = new Icon("Images/button@2x.ico");
+            while (true)
+            {
+                try
                 {
-                    TimeSpan timeToWait = TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
-                    return timeToWait;
-                }, (Exception ex, TimeSpan ts) => {
-                    logger.LogError(ex, $"Waiting {ts.TotalSeconds} seconds before retrying...");
-                }
-            );
-
-            await _retryPolicy
-                .ExecuteAsync(() =>
-                {
-                    myNotifyIcon.Icon = new Icon("Images/button@2x.ico");
                     simConnect.Initialize(Handle);
                     myNotifyIcon.Icon = new Icon("Images/button_active@2x.ico");
                     simConnect.Send("Connected to Stream Deck plugin");
-                    return Task.FromResult<object>(null);
-                });
+                    break;
+                }
+                catch (COMException)
+                {
+                    await Task.Delay(5000).ConfigureAwait(true);
+                }
+            }
         }
 
         private async void SimConnect_Closed(object sender, EventArgs e)

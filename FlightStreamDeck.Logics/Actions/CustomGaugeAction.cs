@@ -42,7 +42,7 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.custom.gauge")]
     public class CustomGaugeAction : StreamDeckAction<CustomGaugeSettings>
     {
-        private readonly ILogger<ApToggleAction> logger;
+        private readonly ILogger<CustomGaugeSettings> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly EnumConverter enumConverter;
@@ -67,7 +67,7 @@ namespace FlightStreamDeck.Logics.Actions
             MaxValue = 30,
         };
 
-        public CustomGaugeAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
+        public CustomGaugeAction(ILogger<CustomGaugeSettings> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
             EnumConverter enumConverter)
         {
             this.logger = logger;
