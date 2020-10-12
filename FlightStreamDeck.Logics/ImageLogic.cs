@@ -199,114 +199,38 @@ namespace FlightStreamDeck.Logics
 
             bool barGauge = text.StartsWith("^") || text.StartsWith("*");
 
-            using var img = (!barGauge ? gaugeImage : defaultBackground).Clone(ctx =>
+            using var img = gaugeImage.Clone(ctx =>
             {
-                if (!barGauge)
+                double angleOffset = Math.PI * -1.25;
+                var ratio = (value - min) / range;
+                if (ratio < 0) ratio = 0;
+                if (ratio > 1) ratio = 1;
+                double angle = Math.PI * ratio + angleOffset;
+
+                var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
+                var middlePoint = new PointF(
+                    (float)((HALF_WIDTH - 16) * Math.Cos(angle)),
+                    (float)((HALF_WIDTH - 16) * Math.Sin(angle))
+                    );
+
+                var endPoint = new PointF(
+                    (float)(HALF_WIDTH * Math.Cos(angle)),
+                    (float)(HALF_WIDTH * Math.Sin(angle))
+                    );
+
+                PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
+
+                ctx.DrawLines(pen, needle);
+
+                if (!string.IsNullOrWhiteSpace(text))
                 {
-                    double angleOffset = Math.PI * -1.25;
-                    var ratio = (value - min) / range;
-                    if (ratio < 0) ratio = 0;
-                    if (ratio > 1) ratio = 1;
-                    double angle = Math.PI * ratio + angleOffset;
-
-                    var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
-                    var middlePoint = new PointF(
-                        (float)((HALF_WIDTH - 16) * Math.Cos(angle)),
-                        (float)((HALF_WIDTH - 16) * Math.Sin(angle))
-                        );
-
-                    var endPoint = new PointF(
-                        (float)(HALF_WIDTH * Math.Cos(angle)),
-                        (float)(HALF_WIDTH * Math.Sin(angle))
-                        );
-
-                    PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
-
-                    ctx.DrawLines(pen, needle);
-
-                    if (!string.IsNullOrWhiteSpace(text))
-                    {
-                        var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                        ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 46));
-                    }
-
-                    var valueText = value.ToString();
-                    Color textColor = value > max ? Color.Red : Color.White;
-                    ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
+                    var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 46));
                 }
-                else
-                {
-                    //////////////////////////////////////////////////
-                    ///WIP, NOT RELEASE READY, JUST EXPERIMENTING
-                    ///set a current gauge to X|y0,y1,y2,y3
-                    ///x : height of bar
-                    ///y0-3 : correspond to width of current button percent to be that color of the bar
-                    ///
-                    /// example : 10|12,24,74
-                    /// roughly a C172 G1000 fuel gauge, needs more work, but its almost there
-                    /// 
-                    /// need to do indicator needle(s)
-                    /// allow 1 or 2 inputs to drive needles
-                    /// 
-                    /// six labors doesn't really allow custom arcs to be drawn, 
-                    /// might have to try to revert to system.drawing implementation if we need that. IDK
-                    //////////////////////////////////////////////////
 
-                    bool vertical = text.StartsWith("*");
-                    ctx.Draw(new Pen(Color.Black, 100), new RectangleF(0, 0, WIDTH, WIDTH));
-                    string[] splitFirst = text.Substring(1).Split("|");
-                    float.TryParse(splitFirst[0], out float height);
-                    float.TryParse(splitFirst[1], out float chevronSize);
-                    string[] splitGauge = splitFirst[2].Split(",");
-                    int width_margin = 10;
-                    int img_width = WIDTH - (width_margin * 2);
-                    
-
-                    //0 = critical : Red
-                    //1 = warning : Yellow
-                    //2 = nominal : Green
-                    //3 = superb : No Color
-                    Color[] colors = { Color.Red, Color.Yellow, Color.Green };
-                    PointF? stepWidth = null, previousWidth = new PointF(width_margin, HALF_WIDTH);
-                    int colorSentinel = 0;
-
-                    splitGauge.ToList().ForEach(pct => {
-                        if (float.TryParse(pct, out float critFloatWidth) && colors.Length > colorSentinel)
-                        {
-                            stepWidth = new PointF(((PointF)previousWidth).X + ((critFloatWidth / 100) * img_width), HALF_WIDTH);
-                            PointF[] critical = { (PointF)previousWidth, (PointF)stepWidth };
-                            ctx.DrawLines(new Pen(colors[colorSentinel], height), critical);
-                            previousWidth = stepWidth;
-                        }
-                        colorSentinel += 1;
-                    });
-
-                    var ratio = (value - min) / range;
-                    pen = new Pen(Color.White, chevronSize+1);
-
-                    var arrowStartX = (ratio * img_width) + width_margin;
-                    var arrowStartY = (HALF_WIDTH + (height / 2));
-                    var arrowAddY = arrowStartY + (chevronSize * 2);
-                    
-
-                    var startPoint = new PointF(arrowStartX, arrowStartY);
-                    var right = new PointF(arrowStartX + chevronSize, arrowAddY);
-                    var left = new PointF(arrowStartX - chevronSize, arrowAddY);
-
-                    PointF[] needle = { startPoint, right, left, startPoint };
-
-                    var valueText = value.ToString();
-                    Color textColor = value > max ? Color.Red : Color.White;
-                    font = SystemFonts.CreateFont("Arial", chevronSize*3, FontStyle.Regular);
-
-                    var size = TextMeasurer.Measure(valueText, new RendererOptions(font));
-                    var valuePoint = new PointF(startPoint.X - size.Width / 2, arrowAddY + 5);
-                    ctx.DrawText(valueText, font, textColor, valuePoint);
-
-                    ctx.DrawPolygon(pen, needle);
-
-                    if (vertical) ctx.Rotate(-90);
-                }
+                var valueText = value.ToString();
+                Color textColor = value > max ? Color.Red : Color.White;
+                ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
             });
 
             
@@ -337,22 +261,6 @@ namespace FlightStreamDeck.Logics
 
             using var img = defaultBackground.Clone(ctx =>
             {
-                //////////////////////////////////////////////////
-                ///WIP, NOT RELEASE READY, JUST EXPERIMENTING
-                ///set a current gauge to X|y0,y1,y2,y3
-                ///x : height of bar
-                ///y0-3 : correspond to width of current button percent to be that color of the bar
-                ///
-                /// example : 10|12,24,74
-                /// roughly a C172 G1000 fuel gauge, needs more work, but its almost there
-                /// 
-                /// need to do indicator needle(s)
-                /// allow 1 or 2 inputs to drive needles
-                /// 
-                /// six labors doesn't really allow custom arcs to be drawn, 
-                /// might have to try to revert to system.drawing implementation if we need that. IDK
-                //////////////////////////////////////////////////
-
                 ctx.Draw(new Pen(Color.Black, 100), new RectangleF(0, 0, WIDTH, WIDTH));
                 int width_margin = 10;
                 int img_width = WIDTH - (width_margin * 2);
@@ -405,8 +313,6 @@ namespace FlightStreamDeck.Logics
 
                 if (!horizontal) ctx.Rotate(-90);
             });
-
-
 
             using var memoryStream = new MemoryStream();
             img.Save(memoryStream, new PngEncoder());
