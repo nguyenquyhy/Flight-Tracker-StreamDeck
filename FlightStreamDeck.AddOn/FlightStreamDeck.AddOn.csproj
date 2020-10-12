@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <PlatformTarget>x64</PlatformTarget>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Version>0.8.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -151,7 +152,10 @@
     <None Update="PropertyInspector\GenericGauge.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="PropertyInspector\ApToggle.html">
+    <None Update="PropertyInspector\PresetChange.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PropertyInspector\PresetToggle.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="PropertyInspector\GenericToggle.html">

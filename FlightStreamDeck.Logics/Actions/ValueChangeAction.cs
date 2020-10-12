@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
@@ -10,32 +11,32 @@ namespace FlightStreamDeck.Logics.Actions
 {
     #region Action Registration
     
-    [StreamDeckAction("tech.flighttracker.streamdeck.heading.increase")]
-    public class HeadingIncreaseAction : ValueChangeAction
+    [StreamDeckAction("tech.flighttracker.streamdeck.preset.increase")]
+    public class ValueIncreaseAction : ValueChangeAction
     {
-        public HeadingIncreaseAction(ILogger<HeadingIncreaseAction> logger, IFlightConnector flightConnector)
+        public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector)
             : base(logger, flightConnector) { }
     }
-    [StreamDeckAction("tech.flighttracker.streamdeck.heading.decrease")]
-    public class HeadingDecreaseAction : ValueChangeAction
+    [StreamDeckAction("tech.flighttracker.streamdeck.preset.decrease")]
+    public class ValueDecreaseAction : ValueChangeAction
     {
-        public HeadingDecreaseAction(ILogger<HeadingDecreaseAction> logger, IFlightConnector flightConnector)
-            : base(logger, flightConnector) { }
-    }
-    [StreamDeckAction("tech.flighttracker.streamdeck.altitude.increase")]
-    public class AltitudeIncreaseAction : ValueChangeAction
-    {
-        public AltitudeIncreaseAction(ILogger<AltitudeIncreaseAction> logger, IFlightConnector flightConnector)
-            : base(logger, flightConnector) { }
-    }
-    [StreamDeckAction("tech.flighttracker.streamdeck.altitude.decrease")]
-    public class AltitudeDecreaseAction : ValueChangeAction
-    {
-        public AltitudeDecreaseAction(ILogger<AltitudeDecreaseAction> logger, IFlightConnector flightConnector)
+        public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector)
             : base(logger, flightConnector) { }
     }
 
     #endregion
+
+    public class ValueChangeFunction
+    {
+        public const string Heading = "Heading";
+        public const string Altitude = "Altitude";
+        public const string VerticalSpeed = "VerticalSpeed";
+    }
+
+    public class ValueChangeSettings
+    {
+        public string Type { get; set; }
+    }
 
     public abstract class ValueChangeAction : StreamDeckAction
     {
@@ -47,6 +48,7 @@ namespace FlightStreamDeck.Logics.Actions
         private bool timerHaveTick = false;
         private uint? originalValue = null;
         private AircraftStatus status;
+        private ValueChangeSettings settings;
 
         public ValueChangeAction(ILogger logger, IFlightConnector flightConnector)
         {
@@ -74,30 +76,40 @@ namespace FlightStreamDeck.Logics.Actions
                 return;
             }
             
-            var valueToChange = actions[^2];
             var change = actions[^1];
-            var increment = change == "increase" ? 1 : -1;
-            if (!isUp) increment *= 10;
+            var sign = change == "increase" ? 1 : -1;
+            var increment = isUp ? 1 : 10;
 
-            if (originalValue == null) originalValue = valueToChange switch
+            var buttonType = settings?.Type;
+            if (string.IsNullOrWhiteSpace(buttonType))
             {
-                "heading" => (uint)status.ApHeading,
-                "altitude" => (uint)status.ApAltitude,
-                _ => throw new NotImplementedException($"Value type: {valueToChange}")
+                return;
+            }
+
+            if (originalValue == null) originalValue = buttonType switch
+            {
+                ValueChangeFunction.Heading => (uint)status.ApHeading,
+                ValueChangeFunction.Altitude => (uint)status.ApAltitude,
+                ValueChangeFunction.VerticalSpeed => (uint)status.ApVs,
+                _ => throw new NotImplementedException($"Value type: {buttonType}")
             };
 
-            switch (valueToChange)
+            switch (buttonType)
             {
-                case "heading":
-                    originalValue = (uint)(originalValue + 360 + increment) % 360;
+                case ValueChangeFunction.Heading:
+                    originalValue = (uint)(originalValue + 360 + sign * increment) % 360;
                     flightConnector.ApHdgSet(originalValue.Value);
                     break;
 
-                case "altitude":
-                    originalValue = (uint)(originalValue + 100 * increment);
+                case ValueChangeFunction.Altitude:
+                    originalValue = (uint)(originalValue + 100 * sign * increment);
                     flightConnector.ApAltSet(originalValue.Value);
                     break;
 
+                case ValueChangeFunction.VerticalSpeed:
+                    originalValue = (uint)(originalValue + 100 * sign);
+                    flightConnector.ApVsSet(originalValue.Value);
+                    break;
             }
         }
 
@@ -127,6 +139,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
+            settings = args.Payload.GetSettings<ValueChangeSettings>();
             status = null;
             this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
             return Task.CompletedTask;
@@ -136,6 +149,12 @@ namespace FlightStreamDeck.Logics.Actions
         {
             status = null;
             this.flightConnector.AircraftStatusUpdated -= FlightConnector_AircraftStatusUpdated;
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnSendToPlugin(ActionEventArgs<JObject> args)
+        {
+            this.settings = args.Payload.ToObject<ValueChangeSettings>();
             return Task.CompletedTask;
         }
     }
