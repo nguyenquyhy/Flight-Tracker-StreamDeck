@@ -108,6 +108,8 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_APR_TOGGLE, "AP_APR_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_TOGGLE, "AP_PANEL_ALTITUDE_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_TOGGLE, "AP_VS_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_FLC_ON, "FLIGHT_LEVEL_CHANGE_ON");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_FLC_OFF, "FLIGHT_LEVEL_CHANGE_OFF");
 
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
@@ -120,6 +122,8 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_SET, "AP_VS_VAR_SET_ENGLISH");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_INC, "AP_VS_VAR_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_DEC, "AP_VS_VAR_DEC");
+
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_SET, "AP_SPD_VAR_SET");
 
             simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
 
@@ -170,6 +174,16 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AP_VS_TOGGLE);
         }
 
+        public void ApFlcOn()
+        {
+            SendCommand(EVENTS.AP_FLC_ON);
+        }
+
+        public void ApFlcOff()
+        {
+            SendCommand(EVENTS.AP_FLC_OFF);
+        }
+
         public void ApHdgSet(uint heading)
         {
             SendCommand(EVENTS.AP_HDG_SET, heading);
@@ -203,6 +217,11 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApVsSet(uint speed)
         {
             SendCommand(EVENTS.AP_VS_SET, speed);
+        }
+
+        public void ApAirspeedSet(uint speed)
+        {
+            SendCommand(EVENTS.AP_AIRSPEED_SET, speed);
         }
 
         public void AvMasterToggle(uint state)
@@ -453,6 +472,19 @@ namespace FlightStreamDeck.SimConnectFSX
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
 
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT FLIGHT LEVEL CHANGE",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT AIRSPEED HOLD VAR",
+                "Knots",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
             #endregion
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
@@ -525,6 +557,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsApAltOn = flightStatus.Value.IsApAltOn == 1,
                                     ApAltitude = flightStatus.Value.ApAlt,
                                     IsApVsOn = flightStatus.Value.IsApVsOn == 1,
+                                    IsApFlcOn = flightStatus.Value.IsApFlcOn == 1,
+                                    ApAirspeed = flightStatus.Value.ApAirspeed,
                                     ApVs = flightStatus.Value.ApVs,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,

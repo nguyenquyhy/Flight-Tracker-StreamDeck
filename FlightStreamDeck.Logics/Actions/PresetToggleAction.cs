@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
+using System;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -24,6 +25,7 @@ namespace FlightStreamDeck.Logics.Actions
         public const string Altitude = "Altitude";
         public const string VerticalSpeed = "VerticalSpeed";
         public const string Approach = "Approach";
+        public const string FLC = "FLC";
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.preset.toggle")]
@@ -115,6 +117,13 @@ namespace FlightStreamDeck.Logics.Actions
                         await UpdateImage();
                     }
                     break;
+                case PresetFunction.FLC:
+                    if (e.AircraftStatus.IsApFlcOn != lastStatus?.IsApFlcOn)
+                    {
+                        logger.LogInformation("Received FLC update: {IsApFlcOn}", e.AircraftStatus.IsApFlcOn);
+                        await UpdateImage();
+                    }
+                    break;
                 case PresetFunction.Approach:
                     if (e.AircraftStatus.IsApAprOn != lastStatus?.IsApAprOn)
                     {
@@ -199,6 +208,19 @@ namespace FlightStreamDeck.Logics.Actions
                             flightConnector.ApVsToggle();
                             break;
 
+                        case PresetFunction.FLC:
+                            logger.LogInformation("Toggle AP FLC. Current state: {state}.", currentStatus.IsApFlcOn);
+                            if (currentStatus.IsApFlcOn)
+                            {
+                                flightConnector.ApFlcOff();
+                            }
+                            else
+                            {
+                                flightConnector.ApAirspeedSet((uint)Math.Round(currentStatus.IndicatedAirSpeed));
+                                flightConnector.ApFlcOn();
+                            }
+                            break;
+
                         case PresetFunction.Approach:
                             logger.LogInformation("Toggle AP APR. Current state: {state}.", currentStatus.IsApAprOn);
                             flightConnector.ApAprToggle();
@@ -245,6 +267,10 @@ namespace FlightStreamDeck.Logics.Actions
 
                     case PresetFunction.VerticalSpeed:
                         await SetImageAsync(imageLogic.GetImage("VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        break;
+
+                    case PresetFunction.FLC:
+                        await SetImageAsync(imageLogic.GetImage("FLC", currentStatus.IsApFlcOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff, value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null));
                         break;
 
                     case PresetFunction.Approach:
