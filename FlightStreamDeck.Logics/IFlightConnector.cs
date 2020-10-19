@@ -32,7 +32,9 @@ namespace FlightStreamDeck.Logics
         /// <param name="speed">In Feet per min</param>
         void ApVsSet(uint speed);
 
-        void ApAirspeedSet(uint speed);
+        void ApAirSpeedSet(uint speed);
+        void ApAirSpeedInc();
+        void ApAirSpeedDec();
 
         void AvMasterToggle(uint state);
 

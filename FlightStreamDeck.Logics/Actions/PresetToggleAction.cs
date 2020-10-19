@@ -118,7 +118,7 @@ namespace FlightStreamDeck.Logics.Actions
                     }
                     break;
                 case PresetFunction.FLC:
-                    if (e.AircraftStatus.IsApFlcOn != lastStatus?.IsApFlcOn)
+                    if (e.AircraftStatus.ApAirspeed != lastStatus?.ApAirspeed || e.AircraftStatus.IsApFlcOn != lastStatus?.IsApFlcOn)
                     {
                         logger.LogInformation("Received FLC update: {IsApFlcOn}", e.AircraftStatus.IsApFlcOn);
                         await UpdateImage();
@@ -216,7 +216,7 @@ namespace FlightStreamDeck.Logics.Actions
                             }
                             else
                             {
-                                flightConnector.ApAirspeedSet((uint)Math.Round(currentStatus.IndicatedAirSpeed));
+                                flightConnector.ApAirSpeedSet((uint)Math.Round(currentStatus.IndicatedAirSpeed));
                                 flightConnector.ApFlcOn();
                             }
                             break;

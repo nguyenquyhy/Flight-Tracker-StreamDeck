@@ -10,15 +10,15 @@ using System.Timers;
 namespace FlightStreamDeck.Logics.Actions
 {
     #region Action Registration
-    
+
     [StreamDeckAction("tech.flighttracker.streamdeck.preset.increase")]
-    public class ValueIncreaseAction : ValueChangeAction
+    public class ValueIncreaseAction : PresetChangeAction
     {
         public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector)
             : base(logger, flightConnector) { }
     }
     [StreamDeckAction("tech.flighttracker.streamdeck.preset.decrease")]
-    public class ValueDecreaseAction : ValueChangeAction
+    public class ValueDecreaseAction : PresetChangeAction
     {
         public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector)
             : base(logger, flightConnector) { }
@@ -31,6 +31,8 @@ namespace FlightStreamDeck.Logics.Actions
         public const string Heading = "Heading";
         public const string Altitude = "Altitude";
         public const string VerticalSpeed = "VerticalSpeed";
+        public const string AirSpeed = "AirSpeed";
+        public const string VerticalSpeedAirSpeed = "VerticalSpeedAirSpeed";
     }
 
     public class ValueChangeSettings
@@ -38,7 +40,7 @@ namespace FlightStreamDeck.Logics.Actions
         public string Type { get; set; }
     }
 
-    public abstract class ValueChangeAction : StreamDeckAction
+    public abstract class PresetChangeAction : StreamDeckAction
     {
         private readonly ILogger logger;
         private readonly IFlightConnector flightConnector;
@@ -50,7 +52,7 @@ namespace FlightStreamDeck.Logics.Actions
         private AircraftStatus status;
         private ValueChangeSettings settings;
 
-        public ValueChangeAction(ILogger logger, IFlightConnector flightConnector)
+        public PresetChangeAction(ILogger logger, IFlightConnector flightConnector)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
@@ -75,7 +77,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 return;
             }
-            
+
             var change = actions[^1];
             var sign = change == "increase" ? 1 : -1;
             var increment = isUp ? 1 : 10;
@@ -91,6 +93,8 @@ namespace FlightStreamDeck.Logics.Actions
                 ValueChangeFunction.Heading => (uint)status.ApHeading,
                 ValueChangeFunction.Altitude => (uint)status.ApAltitude,
                 ValueChangeFunction.VerticalSpeed => (uint)status.ApVs,
+                ValueChangeFunction.AirSpeed => (uint)status.IndicatedAirSpeed,
+                ValueChangeFunction.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.IndicatedAirSpeed : (uint)status.ApVs,
                 _ => throw new NotImplementedException($"Value type: {buttonType}")
             };
 
@@ -107,9 +111,24 @@ namespace FlightStreamDeck.Logics.Actions
                     break;
 
                 case ValueChangeFunction.VerticalSpeed:
-                    originalValue = (uint)(originalValue + 100 * sign);
-                    flightConnector.ApVsSet(originalValue.Value);
+                    ChangeVerticalSpeed(sign);
                     break;
+
+                case ValueChangeFunction.AirSpeed:
+                    ChangeAirSpeed(sign);
+                    break;
+
+                case ValueChangeFunction.VerticalSpeedAirSpeed:
+                    if (status.IsApFlcOn)
+                    {
+                        ChangeAirSpeed(sign);
+                    }
+                    else
+                    {
+                        ChangeVerticalSpeed(sign);
+                    }
+                    break;
+
             }
         }
 
@@ -156,6 +175,24 @@ namespace FlightStreamDeck.Logics.Actions
         {
             this.settings = args.Payload.ToObject<ValueChangeSettings>();
             return Task.CompletedTask;
+        }
+
+        private void ChangeVerticalSpeed(int sign)
+        {
+            originalValue = (uint)(originalValue + 100 * sign);
+            flightConnector.ApVsSet(originalValue.Value);
+        }
+
+        private void ChangeAirSpeed(int sign)
+        {
+            if (sign == 1)
+            {
+                flightConnector.ApAirSpeedInc();
+            }
+            else
+            {
+                flightConnector.ApAirSpeedDec();
+            }
         }
     }
 }

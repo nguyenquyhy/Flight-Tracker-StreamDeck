@@ -124,6 +124,8 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_DEC, "AP_VS_VAR_DEC");
 
             simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_SET, "AP_SPD_VAR_SET");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_INC, "AP_SPD_VAR_INC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_DEC, "AP_SPD_VAR_DEC");
 
             simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
 
@@ -219,9 +221,19 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AP_VS_SET, speed);
         }
 
-        public void ApAirspeedSet(uint speed)
+        public void ApAirSpeedSet(uint speed)
         {
             SendCommand(EVENTS.AP_AIRSPEED_SET, speed);
+        }
+
+        public void ApAirSpeedInc()
+        {
+            SendCommand(EVENTS.AP_AIRSPEED_INC);
+        }
+
+        public void ApAirSpeedDec()
+        {
+            SendCommand(EVENTS.AP_AIRSPEED_DEC);
         }
 
         public void AvMasterToggle(uint state)
