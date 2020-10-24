@@ -94,11 +94,9 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.OnRecvException += Simconnect_OnRecvException;
 
             simconnect.OnRecvSimobjectDataBytype += Simconnect_OnRecvSimobjectDataBytypeAsync;
-            RegisterFlightStatusDefinition();
-            RegisterGenericValues(true);
-            RegisterGenericEvents();
-
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
+
+            RegisterFlightStatusDefinition();
 
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
@@ -129,6 +127,9 @@ namespace FlightStreamDeck.SimConnectFSX
 
             simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
 
+            isGenericValueRegistered = false;
+            RegisterGenericValues();
+            RegisterGenericEvents();
         }
 
         public void Send(string message)
@@ -649,7 +650,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         cts?.Token.ThrowIfCancellationRequested();
                         simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.FLIGHT_STATUS, DEFINITIONS.FlightStatus, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
 
-                        if (genericValues.Count > 0)
+                        if (genericValues.Count > 0 && isGenericValueRegistered)
                         {
                             simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                         }
@@ -689,7 +690,7 @@ namespace FlightStreamDeck.SimConnectFSX
             Closed?.Invoke(this, new EventArgs());
         }
 
-        #region Experimental
+        #region Generic Buttons
 
         public void RegisterToggleEvent(TOGGLE_EVENT toggleAction)
         {
@@ -722,83 +723,139 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void RegisterSimValue(TOGGLE_VALUE simValue)
         {
+            var changed = false;
             lock (lockLists)
             {
-                bool isEmpty = genericValues.Count == 0;
-
-                if (genericValues.Add(simValue))
-                {
-                    RegisterGenericValues(isEmpty);
-                }
+                logger.LogInformation("Registering {value}", simValue);
+                changed = genericValues.Add(simValue);
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
         public void DeRegisterSimValue(TOGGLE_VALUE simValue)
         {
+            var changed = false;
             lock (lockLists)
             {
-                logger.LogInformation("De-Registering {1}", simValue);
-                genericValues.Remove(simValue);
-                RegisterGenericValues(false);
+                logger.LogInformation("De-Registering {value}", simValue);
+                changed = genericValues.Remove(simValue);
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
         public void RegisterSimValues(params TOGGLE_VALUE[] simValues)
         {
+            var changed = false;
             lock (lockLists)
             {
-                bool isEmpty = genericValues.Count == 0;
-                var changed = false;
+                logger.LogInformation("Registering {values}", string.Join(", ", simValues));
                 foreach (var simValue in simValues)
                 {
                     changed |= genericValues.Add(simValue);
                 }
-                if (changed)
-                {
-                    RegisterGenericValues(isEmpty);
-                }
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
         public void DeRegisterSimValues(params TOGGLE_VALUE[] simValues)
         {
+            var changed = false;
             lock (lockLists)
             {
                 logger.LogInformation("De-Registering {values}", string.Join(", ", simValues));
                 foreach (var simValue in simValues)
                 {
-                    genericValues.Remove(simValue);
+                    changed |= genericValues.Remove(simValue);
                 }
-                RegisterGenericValues(false);
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
-        private void RegisterGenericValues(bool wasEmpty)
+        private CancellationTokenSource ctsGeneric = null;
+        private readonly object lockGeneric = new object();
+        private readonly SemaphoreSlim smGeneric = new SemaphoreSlim(1);
+        private bool isGenericValueRegistered = false;
+
+        private void RegisterGenericValues()
         {
             if (simconnect == null) return;
 
-            if (!wasEmpty)
+            CancellationTokenSource cts;
+            lock (lockGeneric)
             {
-                logger.LogInformation("Clearing Data definition");
-                simconnect.ClearDataDefinition(DEFINITIONS.GenericData);
+                ctsGeneric?.Cancel();
+                cts = ctsGeneric = new CancellationTokenSource();
             }
 
-            foreach (TOGGLE_VALUE simValue in genericValues)
+            Task.Run(async () =>
             {
-                string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
-                logger.LogInformation("RegisterValue {1} {2}", simValue, value);
+                try
+                {
+                    await smGeneric.WaitAsync();
 
-                simconnect.AddToDataDefinition(
-                    DEFINITIONS.GenericData,
-                    value,
-                    eventLib.GetUnit(simValue),
-                    SIMCONNECT_DATATYPE.FLOAT64,
-                    0.0f,
-                    SimConnect.SIMCONNECT_UNUSED
-                );
-            }
+                    await Task.Delay(500, cts.Token);
+                    cts.Token.ThrowIfCancellationRequested();
 
-            simconnect.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
+                    if (simconnect == null) return;
+
+                    if (isGenericValueRegistered)
+                    {
+                        logger.LogInformation("Clearing Data definition");
+                        simconnect.ClearDataDefinition(DEFINITIONS.GenericData);
+                        isGenericValueRegistered = false;
+                    }
+
+                    if (genericValues.Count == 0)
+                    {
+                        logger.LogInformation("Registration is not needed.");
+                    }
+                    else
+                    {
+                        var log = "Registering generic data structure:";
+
+                        foreach (TOGGLE_VALUE simValue in genericValues)
+                        {
+                            string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
+                            log += string.Format("\n- {0} {1}", simValue, value);
+
+                            simconnect.AddToDataDefinition(
+                                DEFINITIONS.GenericData,
+                                value,
+                                eventLib.GetUnit(simValue),
+                                SIMCONNECT_DATATYPE.FLOAT64,
+                                0.0f,
+                                SimConnect.SIMCONNECT_UNUSED
+                            );
+                        }
+
+                        logger.LogInformation(log);
+
+                        simconnect.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
+
+                        isGenericValueRegistered = true;
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    logger.LogDebug("Registration is cancelled.");
+                }
+                finally
+                {
+                    smGeneric.Release();
+                }
+            });
         }
 
         private void RegisterGenericEvents()
@@ -807,7 +864,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
             foreach (var toggleAction in genericEvents)
             {
-                logger.LogInformation("RegisterEvent {1}", toggleAction);
+                logger.LogInformation("RegisterEvent {action}", toggleAction);
                 simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
             }
 
@@ -820,7 +877,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void Toggle(TOGGLE_EVENT toggleAction)
         {
-            logger.LogInformation("Toggle {1}", toggleAction);
+            logger.LogInformation("Toggle {action}", toggleAction);
             SendGenericCommand(toggleAction);
         }
 
