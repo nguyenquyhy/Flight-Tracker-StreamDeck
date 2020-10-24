@@ -5,7 +5,6 @@ using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -13,8 +12,8 @@ namespace FlightStreamDeck.Logics.Actions
     public class GenericGaugeSettings
     {
         public string Header { get; set; }
-        public string MinValue { get; set; }
-        public string MaxValue { get; set; }
+        public float MinValue { get; set; }
+        public float MaxValue { get; set; }
         public string ToggleValue { get; set; }
         public string DisplayValue { get; set; }
     }
@@ -29,12 +28,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? displayValue = null;
-        private TOGGLE_VALUE? minValue = null;
-        private TOGGLE_VALUE? maxValue = null;
 
         private float currentValue = 0;
-        private float minFloatValue = 0;
-        private float maxFloatValue = 0;
 
         private GenericGaugeSettings settings;
 
@@ -90,18 +85,14 @@ namespace FlightStreamDeck.Logics.Actions
 
             TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
-            TOGGLE_VALUE? newMinValue = enumConverter.GetVariableEnum(settings.MinValue);
-            TOGGLE_VALUE? newMaxValue = enumConverter.GetVariableEnum(settings.MaxValue);
 
-            if (newDisplayValue != displayValue || newMinValue != minValue || newMaxValue != maxValue)
+            if (newDisplayValue != displayValue)
             {
                 DeRegisterValues();
             }
 
             toggleEvent = newToggleEvent;
             displayValue = newDisplayValue;
-            minValue = newMinValue;
-            maxValue = newMaxValue;
 
             RegisterValues();
         }
@@ -119,26 +110,6 @@ namespace FlightStreamDeck.Logics.Actions
                 currentValue = newValue;
             }
 
-            if (minValue.HasValue && e.GenericValueStatus.ContainsKey(minValue.Value))
-            {
-                float.TryParse(e.GenericValueStatus[minValue.Value], out float newValue);
-                isUpdated |= minFloatValue != newValue;
-                minFloatValue = newValue;
-            } else
-            {
-                if (float.TryParse(settings.MinValue, out float result)) minFloatValue = result;
-            }
-
-            if (maxValue.HasValue && e.GenericValueStatus.ContainsKey(maxValue.Value))
-            {
-                float.TryParse(e.GenericValueStatus[maxValue.Value], out float newValue);
-                isUpdated |= maxFloatValue != newValue;
-                maxFloatValue = newValue;
-            } else
-            {
-                if (float.TryParse(settings.MaxValue, out float result)) maxFloatValue = result;
-            }
-
             if (isUpdated)
             {
                 await UpdateImage();
@@ -149,25 +120,19 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
             if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
-            if (minValue.HasValue) flightConnector.RegisterSimValue(minValue.Value);
-            if (maxValue.HasValue) flightConnector.RegisterSimValue(maxValue.Value);
         }
 
         private void DeRegisterValues()
         {
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
-            if (minValue.HasValue) flightConnector.DeRegisterSimValue(minValue.Value);
-            if (maxValue.HasValue) flightConnector.DeRegisterSimValue(maxValue.Value);
             currentValue = 0;
-            minFloatValue = 0;
-            maxFloatValue = 0;
         }
 
         private async Task UpdateImage()
         {
             if (settings != null)
             {
-                await SetImageAsync(imageLogic.GetGenericGaugeImage(settings.Header, currentValue, minFloatValue, maxFloatValue));
+                await SetImageAsync(imageLogic.GetGenericGaugeImage(settings.Header, currentValue, settings.MinValue, settings.MaxValue));
             }
         }
     }
