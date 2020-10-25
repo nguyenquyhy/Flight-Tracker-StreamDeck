@@ -221,6 +221,8 @@ function handleSdpiItemChange(e, idx) {
 
     if (sdpiItemChildren.length && ['radio', 'checkbox'].includes(sdpiItemChildren[0].type)) {
         e.setAttribute('_value', e.checked); //'_value' has priority over .value
+    } else if (['radio', 'checkbox'].includes(e.type)) {
+        e.value = e.checked;
     }
     if (sdpiItemGroup && !sdpiItemChildren.length) {
         for (let x of ['input', 'meter', 'progress']) {
