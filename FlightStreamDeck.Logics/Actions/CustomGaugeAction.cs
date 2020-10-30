@@ -54,7 +54,8 @@ namespace FlightStreamDeck.Logics.Actions
         private string currentValueTop = "0";
         private string currentValueBottom = "0";
 
-        public CustomGaugeSettings settings = new CustomGaugeSettings() { 
+        public CustomGaugeSettings settings = new CustomGaugeSettings() 
+        { 
             DisplayHorizontalValue = true,
             ChartSplitValue = "12:red,24:yellow,64:green",
             ChartThicknessValue = 13,

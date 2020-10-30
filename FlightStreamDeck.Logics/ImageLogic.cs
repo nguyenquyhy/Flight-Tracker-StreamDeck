@@ -222,18 +222,20 @@ namespace FlightStreamDeck.Logics
 
                 ctx.DrawLines(pen, needle);
 
+                FontRectangle size = new FontRectangle(0, 0, 0, 0); 
                 if (!string.IsNullOrWhiteSpace(text))
                 {
-                    var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 46));
+                    size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
                 }
 
                 var valueText = value.ToString();
+                var sizeValue = TextMeasurer.Measure(valueText, new RendererOptions(font));
                 Color textColor = value > max ? Color.Red : Color.White;
                 ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
-            });
 
-            
+                if (subValue != float.MinValue) ctx.DrawText(subValue.ToString("F2"), titleFont, textColor, new PointF(18, 20 + sizeValue.Height + size.Height));
+            });
 
             using var memoryStream = new MemoryStream();
             img.Save(memoryStream, new PngEncoder());
@@ -243,11 +245,7 @@ namespace FlightStreamDeck.Logics
         }
 
 
-        public string GetCustomGaugeImage(string textTop, string textBottom, 
-            string valueTop, string valueBottom, 
-            float min, float max, 
-            bool horizontal, string[] splitGauge, 
-            int chartWidth, float chevronSize)
+        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize)
         {
             var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
@@ -264,7 +262,6 @@ namespace FlightStreamDeck.Logics
                 ctx.Draw(new Pen(Color.Black, 100), new RectangleF(0, 0, WIDTH, WIDTH));
                 int width_margin = 10;
                 int img_width = WIDTH - (width_margin * 2);
-
 
                 //0 = critical : Red
                 //1 = warning : Yellow
