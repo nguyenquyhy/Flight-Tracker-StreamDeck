@@ -80,14 +80,12 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void RegisterValues()
         {
-            flightConnector.RegisterSimValue(bankValue);
-            flightConnector.RegisterSimValue(pitchValue);
+            flightConnector.RegisterSimValues(bankValue, pitchValue);
         }
 
         private void DeRegisterValues()
         {
-            flightConnector.DeRegisterSimValue(bankValue);
-            flightConnector.DeRegisterSimValue(pitchValue);
+            flightConnector.DeRegisterSimValues(bankValue, pitchValue);
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
