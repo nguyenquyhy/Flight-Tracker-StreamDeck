@@ -16,6 +16,8 @@ namespace FlightStreamDeck.Logics
         void ApAprToggle();
         void ApAltToggle();
         void ApVsToggle();
+        void ApFlcOn();
+        void ApFlcOff();
 
         /// <param name="heading">In Degree</param>
         void ApHdgSet(uint heading);
@@ -29,6 +31,10 @@ namespace FlightStreamDeck.Logics
 
         /// <param name="speed">In Feet per min</param>
         void ApVsSet(uint speed);
+
+        void ApAirSpeedSet(uint speed);
+        void ApAirSpeedInc();
+        void ApAirSpeedDec();
 
         void AvMasterToggle(uint state);
 
@@ -109,6 +115,9 @@ namespace FlightStreamDeck.Logics
 
         public bool IsApVsOn { get; set; }
         public int ApVs { get; set; }
+
+        public bool IsApFlcOn { get; set; }
+        public int ApAirspeed { get; set; }
 
         public string Transponder { get; set; }
         public int FreqencyCom1 { get; set; }
