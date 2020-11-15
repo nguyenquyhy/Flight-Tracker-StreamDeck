@@ -64,6 +64,17 @@ namespace FlightStreamDeck.Logics
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
+
+                // Calculate scaling for header
+                var smallerDim = imgSize.Width < imgSize.Height ? imgSize.Width : imgSize.Height;
+                var scale = 1f;
+                if (smallerDim != WIDTH)
+                {
+                    scale = (float)smallerDim / WIDTH;
+                    font = new Font(font, font.Size * scale);
+                    valueFont = new Font(valueFont, valueFont.Size * scale);
+                }
+
                 FontRectangle size;
                 if (!string.IsNullOrWhiteSpace(text))
                 {
@@ -74,7 +85,7 @@ namespace FlightStreamDeck.Logics
                 if (hasValue)
                 {
                     size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
-                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46));
+                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
                 }
             });
             using var memoryStream = new MemoryStream();

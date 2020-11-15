@@ -12,6 +12,7 @@ namespace FlightStreamDeck.Logics.Actions
     public class PresetToggleSettings
     {
         public string Type { get; set; }
+        public bool HideHeader { get; set; }
         public string ImageOn { get; set; }
         public string ImageOff { get; set; }
     }
@@ -250,31 +251,31 @@ namespace FlightStreamDeck.Logics.Actions
                         break;
 
                     case PresetFunction.ApMaster:
-                        await SetImageAsync(imageLogic.GetImage("AP", currentStatus.IsAutopilotOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case PresetFunction.Heading:
-                        await SetImageAsync(imageLogic.GetImage("HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case PresetFunction.Nav:
-                        await SetImageAsync(imageLogic.GetImage("NAV", currentStatus.IsApNavOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case PresetFunction.Altitude:
-                        await SetImageAsync(imageLogic.GetImage("ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case PresetFunction.VerticalSpeed:
-                        await SetImageAsync(imageLogic.GetImage("VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case PresetFunction.FLC:
-                        await SetImageAsync(imageLogic.GetImage("FLC", currentStatus.IsApFlcOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff, value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff, value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null));
                         break;
 
                     case PresetFunction.Approach:
-                        await SetImageAsync(imageLogic.GetImage("APR", currentStatus.IsApAprOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
                 }
             }
