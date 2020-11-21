@@ -29,20 +29,6 @@
       "UUID": "tech.flighttracker.streamdeck.generic.gauge"
     },
     {
-      "Icon": "Images/gaugeIcon",
-      "Name": "Custom Bar Gauge",
-      "States": [
-        {
-          "Image": "Images/button",
-          "ShowTitle": false
-        }
-      ],
-      "SupportedInMultiActions": false,
-      "PropertyInspectorPath": "PropertyInspector/CustomGauge.html",
-      "Tooltip": "Custom bar gauge to display any numeric value with setable limits.",
-      "UUID": "tech.flighttracker.streamdeck.custom.gauge"
-    },
-    {
       "Icon": "Images/horizonIcon",
       "Name": "Horizon Button",
       "States": [

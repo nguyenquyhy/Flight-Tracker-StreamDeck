@@ -16,12 +16,8 @@ namespace FlightStreamDeck.Logics
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
-        public string GetGenericGaugeImage(string text, float value, float min, float max);
-        public string GetCustomGaugeImage(string textTop, string textBottom,
-            string valueTop, string valueBottom,
-            float min, float max,
-            bool horizontal, string[] chartSplits,
-            int chartWidth, float chevronSize);
+        public string GetGenericGaugeImage(string text, float value, float min, float max, string valuePrecision, float subValue = float.MinValue);
+        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision);
     }
 
     public class ImageLogic : IImageLogic
@@ -196,7 +192,7 @@ namespace FlightStreamDeck.Logics
             }
         }
 
-        public string GetGenericGaugeImage(string text, float value, float min, float max)
+        public string GetGenericGaugeImage(string text, float value, float min, float max, string valuePrecision, float subValue = float.MinValue)
         {
             var font = SystemFonts.CreateFont("Arial", 22, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
@@ -207,8 +203,6 @@ namespace FlightStreamDeck.Logics
             {
                 range = 1;
             }
-
-            bool barGauge = text.StartsWith("^") || text.StartsWith("*");
 
             using var img = gaugeImage.Clone(ctx =>
             {
@@ -240,7 +234,7 @@ namespace FlightStreamDeck.Logics
                     ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
                 }
 
-                var valueText = value.ToString();
+                var valueText = value.ToString(valuePrecision);
                 var sizeValue = TextMeasurer.Measure(valueText, new RendererOptions(font));
                 Color textColor = value > max ? Color.Red : Color.White;
                 ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
@@ -256,7 +250,7 @@ namespace FlightStreamDeck.Logics
         }
 
 
-        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize)
+        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision)
         {
             var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
@@ -311,13 +305,15 @@ namespace FlightStreamDeck.Logics
 
                 //topValue
                 float.TryParse(valueTop, out float floatValueTop);
-                var ratio = (floatValueTop - min) / range;
-                setupValue(true, textTop, valueTop, ratio, img_width, chevronSize, width_margin, chartWidth, max, ctx);
+                var ratio = (floatValueTop - (min < max ? min : max)) / range;
+                valueTop = absoluteValueText ? Math.Abs(floatValueTop).ToString(valuePrecision) : valueTop;
+                setupValue(true, textTop, valueTop, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx);
 
                 //bottomValue
                 float.TryParse(valueBottom, out float floatValueBottom);
-                ratio = (floatValueBottom - min) / range;
-                setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, max, ctx);
+                ratio = (floatValueBottom - (min < max ? min : max)) / range;
+                valueBottom = absoluteValueText ? Math.Abs(floatValueBottom).ToString(valuePrecision) : valueTop;
+                setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx);
 
                 if (!horizontal) ctx.Rotate(-90);
             });
@@ -329,11 +325,10 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        private void setupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, 
-            float width_margin, float chart_width, float max, IImageProcessingContext ctx
+        private void setupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx
         )
         {
-            if (labelText.Length > 0)
+            if ((labelText?.Length ?? 0) > 0)
             {
                 var pen = new Pen(Color.White, chevronSize + 1);
 
@@ -349,13 +344,13 @@ namespace FlightStreamDeck.Logics
 
                 var valueText = value.ToString();
                 float.TryParse(value, out float floatValue);
-                Color textColor = floatValue > max ? Color.Red : Color.White;
+                Color textColor = (floatValue > max && min < max) ? Color.Red : Color.White;
                 var font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
 
                 var size = TextMeasurer.Measure(valueText, new RendererOptions(font));
                 float adjustY = top ? Math.Abs(-5 - size.Height) : 5;
                 arrowAddY = top ? arrowAddY - adjustY : arrowAddY + adjustY;
-                var valuePoint = new PointF(startPoint.X - size.Width / 2, arrowAddY);
+                var valuePoint = new PointF(HALF_WIDTH - size.Width / 2, arrowAddY);
                 ctx.DrawText(valueText, font, textColor, valuePoint);
 
                 ctx.DrawPolygon(pen, needle);
