@@ -312,7 +312,7 @@ namespace FlightStreamDeck.Logics
                 //bottomValue
                 float.TryParse(valueBottom, out float floatValueBottom);
                 ratio = (floatValueBottom - (min < max ? min : max)) / range;
-                valueBottom = absoluteValueText ? Math.Abs(floatValueBottom).ToString(valuePrecision) : valueTop;
+                valueBottom = absoluteValueText ? Math.Abs(floatValueBottom).ToString(valuePrecision) : valueBottom;
                 setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx);
 
                 if (!horizontal) ctx.Rotate(-90);
