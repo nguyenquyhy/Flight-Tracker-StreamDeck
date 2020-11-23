@@ -16,6 +16,34 @@ namespace FlightStreamDeck.Logics.Actions
         public float MaxValue { get; set; }
         public string ToggleValue { get; set; }
         public string DisplayValue { get; set; }
+        public string SubDisplayValue { get; set; }
+        public string Type { get; set; }
+        public string ValuePrecision { get; set; }
+        public string HeaderBottom { get; set; }
+        public string DisplayValueBottom { get; set; }
+        public bool DisplayHorizontalValue { get; set; }
+        public string ChartSplitValue { get; set; }
+        public int ChartThicknessValue { get; set; }
+        public int ChartChevronSizeValue { get; set; }
+        public string AbsValText { get; set; }
+
+        internal bool EmptyPayload
+        {
+            get =>
+                string.IsNullOrEmpty(Header) &&
+                string.IsNullOrEmpty(HeaderBottom) &&
+                string.IsNullOrEmpty(ToggleValue) &&
+                string.IsNullOrEmpty(DisplayValue) &&
+                string.IsNullOrEmpty(SubDisplayValue) &&
+                string.IsNullOrEmpty(DisplayValueBottom) &&
+                string.IsNullOrEmpty(ChartSplitValue) &&
+                string.IsNullOrEmpty(AbsValText) &&
+                string.IsNullOrEmpty(ValuePrecision) &&
+                MinValue == 0 &&
+                MaxValue == 0 &&
+                ChartThicknessValue == 0 &&
+                ChartChevronSizeValue == 0 && !DisplayHorizontalValue;
+        }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
@@ -28,10 +56,29 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? displayValue = null;
+        private TOGGLE_VALUE? subDisplayValue = null;
+        private TOGGLE_VALUE? displayValueBottom = null;
 
         private float currentValue = 0;
+        private float currentValueBottom = 0;
+        private float currentSubValue = float.MinValue;
 
-        private GenericGaugeSettings settings;
+        private GenericGaugeSettings settings = new GenericGaugeSettings()
+        {
+            Type = "Custom",
+            DisplayHorizontalValue = true,
+            ChartSplitValue = "12:red,24:yellow,64:green",
+            ChartThicknessValue = 13,
+            ChartChevronSizeValue = 3,
+            Header = "L",
+            DisplayValue = Core.TOGGLE_VALUE.FUEL_LEFT_QUANTITY.ToString(),
+            HeaderBottom = string.Empty,
+            DisplayValueBottom = string.Empty,
+            MinValue = 0,
+            MaxValue = 30,
+            AbsValText = "false",
+            ValuePrecision = "2"
+        };
 
         public GenericGaugeAction(ILogger<GenericGaugeAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
             EnumConverter enumConverter)
@@ -62,7 +109,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue) flightConnector.Toggle(toggleEvent.Value);
+            if (toggleEvent.HasValue) flightConnector.Trigger(toggleEvent.Value);
             return Task.CompletedTask;
         }
 
@@ -85,14 +132,18 @@ namespace FlightStreamDeck.Logics.Actions
 
             TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
+            TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(settings.SubDisplayValue);
+            TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(settings.DisplayValueBottom);
 
-            if (newDisplayValue != displayValue)
+            if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue)
             {
                 DeRegisterValues();
             }
 
             toggleEvent = newToggleEvent;
             displayValue = newDisplayValue;
+            subDisplayValue = newSubDisplayValue;
+            displayValueBottom = newDisplayValueBottom;
 
             RegisterValues();
         }
@@ -109,6 +160,18 @@ namespace FlightStreamDeck.Logics.Actions
                 isUpdated = currentValue != newValue;
                 currentValue = newValue;
             }
+            if (displayValueBottom.HasValue && e.GenericValueStatus.ContainsKey(displayValueBottom.Value))
+            {
+                float.TryParse(e.GenericValueStatus[displayValueBottom.Value], out float newValue);
+                isUpdated |= currentValueBottom != newValue;
+                currentValueBottom = newValue;
+            }
+            if (subDisplayValue.HasValue && e.GenericValueStatus.ContainsKey(subDisplayValue.Value))
+            {
+                float.TryParse(e.GenericValueStatus[subDisplayValue.Value], out float newValue);
+                isUpdated |= currentSubValue != newValue;
+                currentSubValue = newValue;
+            }
 
             if (isUpdated)
             {
@@ -120,19 +183,59 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
             if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+            if (subDisplayValue.HasValue) flightConnector.RegisterSimValue(subDisplayValue.Value);
+            if (displayValueBottom.HasValue) flightConnector.RegisterSimValue(displayValueBottom.Value);
         }
 
         private void DeRegisterValues()
         {
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
+            if (subDisplayValue.HasValue) flightConnector.DeRegisterSimValue(subDisplayValue.Value);
+            if (displayValueBottom.HasValue) flightConnector.DeRegisterSimValue(displayValueBottom.Value);
             currentValue = 0;
+            currentValueBottom = 0;
+            currentSubValue = float.MinValue;
         }
 
         private async Task UpdateImage()
         {
             if (settings != null)
             {
-                await SetImageAsync(imageLogic.GetGaugeImage(settings.Header, currentValue, settings.MinValue, settings.MaxValue));
+                string precision = $"F{((settings.ValuePrecision?.Length ?? 0) > 0 ? settings.ValuePrecision : "2")}";
+                if (settings.Type?.Equals("Custom", StringComparison.OrdinalIgnoreCase) ?? false)
+                {
+                    int modifier = settings.MinValue > settings.MaxValue ? -1 : 1;
+                    bool.TryParse(settings.AbsValText, out bool absValueText);
+                    await SetImageAsync(
+                        imageLogic.GetCustomGaugeImage(
+                            settings.Header,
+                            settings.HeaderBottom,
+                            (currentValue * modifier).ToString(precision),
+                            (currentValueBottom * modifier).ToString(precision),
+                            settings.MinValue,
+                            settings.MaxValue,
+                            settings.DisplayHorizontalValue,
+                            settings.ChartSplitValue?.Split(','),
+                            settings.ChartThicknessValue,
+                            settings.ChartChevronSizeValue,
+                            absValueText,
+                            precision
+                        )
+                    );
+                } 
+                else
+                {
+                    await SetImageAsync(
+                        imageLogic.GetGenericGaugeImage(
+                            settings.Header,
+                            currentValue,
+                            settings.MinValue,
+                            settings.MaxValue,
+                            precision,
+                            currentSubValue
+                        )
+                    );
+                }
             }
         }
     }

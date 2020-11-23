@@ -9,7 +9,7 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": false,
+      "SupportedInMultiActions": true,
       "PropertyInspectorPath": "PropertyInspector/GenericToggle.html",
       "Tooltip": "Use the SimConnect variables to define the toggle button",
       "UUID": "tech.flighttracker.streamdeck.generic.toggle"
@@ -64,7 +64,7 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": false,
+      "SupportedInMultiActions": true,
       "PropertyInspectorPath": "PropertyInspector/PresetToggle.html",
       "Tooltip": "Activate/Deactivate different functions",
       "UUID": "tech.flighttracker.streamdeck.preset.toggle"
@@ -79,7 +79,7 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": false,
+      "SupportedInMultiActions": true,
       "PropertyInspectorPath": "PropertyInspector/PresetChange.html",
       "Tooltip": "Increase value of a preset function",
       "UUID": "tech.flighttracker.streamdeck.preset.increase"
@@ -93,7 +93,7 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": false,
+      "SupportedInMultiActions": true,
       "PropertyInspectorPath": "PropertyInspector/PresetChange.html",
       "Tooltip": "Decrease value of a preset function",
       "UUID": "tech.flighttracker.streamdeck.preset.decrease"
@@ -347,7 +347,7 @@
   "Name": "Flight Tracker",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
-  "Version": "0.15",
+  "Version": "0.17",
   "OS": [
     {
       "Platform": "windows",

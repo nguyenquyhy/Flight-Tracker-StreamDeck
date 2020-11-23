@@ -33,7 +33,7 @@ namespace FlightStreamDeck.Logics.Tests
         {
             ImageLogic images = new ImageLogic();
 
-            string result = images.GetGaugeImage("TRQ", 50, 0, 100);
+            string result = images.GetGenericGaugeImage("TRQ", 50, 0, 100, "F2");
 
             var path = @"Images\gauge.png";
 
