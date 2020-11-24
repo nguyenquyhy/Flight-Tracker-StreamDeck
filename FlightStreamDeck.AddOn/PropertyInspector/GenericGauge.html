@@ -42,10 +42,8 @@
                 <option value="Custom">Custom</option>
             </select>
         </div>
-    </div>
-    <div class="sdpi-wrapper" id="customFields">
-        <details>
-            <summary>Custom Gauge Settings</summary>
+        <div id="customFields">
+            <div class="sdpi-heading">Custom Gauge Settings</div>
             <div class="sdpi-item" type="field">
                 <div class="sdpi-item-label">Chart Split by Percentage</div>
                 <input class="sdpi-item-value" id="ChartSplitValue" value="12:red,24:yellow,64:green" placeholder="12,24,64" onchange="updateData()" pattern="[0-9,]*">
@@ -80,8 +78,9 @@
                     <option value="true">Yes</option>
                 </select>
             </div>
-        </details>
+        </div>
     </div>
+    
     <script src="common.js"></script>
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
