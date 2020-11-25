@@ -109,7 +109,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue) flightConnector.Toggle(toggleEvent.Value);
+            if (toggleEvent.HasValue) flightConnector.Trigger(toggleEvent.Value);
             return Task.CompletedTask;
         }
 

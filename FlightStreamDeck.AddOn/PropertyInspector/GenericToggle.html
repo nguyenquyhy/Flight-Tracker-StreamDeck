@@ -12,16 +12,20 @@
             <input class="sdpi-item-value" id="Header" value="" placeholder="YD">
         </div>
         <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Toggle value</div>
-            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" pattern="[A-Z_]">
+            <div class="sdpi-item-label">Toggle event</div>
+            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE" pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter</div>
+            <input class="sdpi-item-value" id="ToggleValueData" value="" placeholder="" pattern="[0-9]*">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Feedback value</div>
-            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="AUTOPILOT YAW DAMPER" pattern="[A-Z0-9: ]">
+            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="e.g. AUTOPILOT YAW DAMPER" pattern="[A-Z0-9: ]*">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" pattern="[A-Z0-9: ]">
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" pattern="[A-Z0-9: ]*">
         </div>
         <div type="group" class="sdpi-item" id="messagegroup">
             <div class="sdpi-item-label">Custom ON/OFF images</div>
@@ -52,6 +56,7 @@
         function loadSettings(settings) {
             if (settings['Header']) { Header.value = settings['Header'] };
             if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
+            if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
             if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['ImageOn']) {

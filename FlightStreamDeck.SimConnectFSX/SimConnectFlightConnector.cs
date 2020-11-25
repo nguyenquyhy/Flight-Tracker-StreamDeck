@@ -20,7 +20,6 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public event EventHandler Closed;
 
-        private readonly List<SET_EVENT> setEvents = new List<SET_EVENT>();
         private readonly List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
         private readonly HashSet<TOGGLE_VALUE> genericValues = new HashSet<TOGGLE_VALUE>();
 
@@ -254,19 +253,7 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        private void SendGenericCommand(TOGGLE_EVENT sendingEvent)
-        {
-            try
-            {
-                simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, 0, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-            }
-            catch (COMException ex) when (ex.Message == "0xC00000B0")
-            {
-                RecoverFromError(ex);
-            }
-        }
-
-        private void SendGenericCommand(SET_EVENT sendingEvent, uint dwData)
+        private void SendGenericCommand(TOGGLE_EVENT sendingEvent, uint dwData = 0)
         {
             try
             {
@@ -710,23 +697,8 @@ namespace FlightStreamDeck.SimConnectFSX
             }
 
             genericEvents.Add(toggleAction);
-            logger.LogInformation("RegisterEvent {1}", toggleAction);
+            logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.ToString());
             simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
-        }
-
-        public void RegisterSetEvent(SET_EVENT action)
-        {
-            if (simconnect == null) return;
-
-            if (setEvents.Contains(action))
-            {
-                logger.LogInformation("Already registered: {action}", action);
-                return;
-            }
-
-            setEvents.Add(action);
-            logger.LogInformation("RegisterEvent {action} {simConnectAction}", action, action.ToString());
-            simconnect.MapClientEventToSimEvent(action, action.ToString());
         }
 
         public void RegisterSimValue(TOGGLE_VALUE simValue)
@@ -872,27 +844,15 @@ namespace FlightStreamDeck.SimConnectFSX
 
             foreach (var toggleAction in genericEvents)
             {
-                logger.LogInformation("RegisterEvent {action}", toggleAction);
+                logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.ToString());
                 simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
             }
-
-            foreach (var action in setEvents)
-            {
-                logger.LogInformation("RegisterEvent {action} {simConnectAction}", action, action.ToString());
-                simconnect.MapClientEventToSimEvent(action, action.ToString());
-            }
         }
 
-        public void Toggle(TOGGLE_EVENT toggleAction)
+        public void Trigger(TOGGLE_EVENT toggleAction, uint data = 0)
         {
-            logger.LogInformation("Toggle {action}", toggleAction);
-            SendGenericCommand(toggleAction);
-        }
-
-        public void Set(SET_EVENT action, uint data)
-        {
-            logger.LogInformation("Set {action} to {data}", action, data);
-            SendGenericCommand(action, data);
+            logger.LogInformation("Toggle {action} {data}", toggleAction, data);
+            SendGenericCommand(toggleAction, data);
         }
 
         #endregion
