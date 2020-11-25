@@ -255,12 +255,7 @@ namespace FlightStreamDeck.Logics
             var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
             var pen = new Pen(Color.DarkRed, 5);
-            var range = max - min;
-
-            if (range <= 0)
-            {
-                range = 1;
-            }
+            var range = Math.Abs(max - min);
 
             using var img = defaultBackground.Clone(ctx =>
             {
