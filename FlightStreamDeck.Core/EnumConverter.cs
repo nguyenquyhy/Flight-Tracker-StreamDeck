@@ -6,7 +6,7 @@ namespace FlightStreamDeck.Core
     {
         public TOGGLE_EVENT? GetEventEnum(string value)
         {
-            if (value != null && Enum.TryParse(value, true, out TOGGLE_EVENT result))
+            if (value != null && Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_EVENT result))
             {
                 return result;
             }

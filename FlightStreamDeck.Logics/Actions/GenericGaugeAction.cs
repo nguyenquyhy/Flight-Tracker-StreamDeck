@@ -30,6 +30,8 @@ namespace FlightStreamDeck.Logics.Actions
         public string AbsValText { get; set; }
         public bool HideLabelOutsideMinMaxTop { get; set; }
         public bool HideLabelOutsideMinMaxBottom { get; set; }
+        public bool MinValueUsesToggleValue { get; set; }
+        public bool MaxValueUsesToggleValue { get; set; }
 
         internal bool EmptyPayload
         {
@@ -49,7 +51,9 @@ namespace FlightStreamDeck.Logics.Actions
                 string.IsNullOrEmpty(MaxValue) &&
                 string.IsNullOrEmpty(ChartThicknessValue) &&
                 string.IsNullOrEmpty(ChartChevronSizeValue) && 
-                !DisplayHorizontalValue;
+                !DisplayHorizontalValue &&
+                !MinValueUsesToggleValue &&
+                !MaxValueUsesToggleValue;
         }
     }
 
@@ -65,6 +69,8 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? displayValue = null;
         private TOGGLE_VALUE? subDisplayValue = null;
         private TOGGLE_VALUE? displayValueBottom = null;
+        private TOGGLE_VALUE? minValue = null;
+        private TOGGLE_VALUE? maxValue = null;
 
         private float currentValue = 0;
         private float currentValueBottom = 0;
@@ -86,7 +92,9 @@ namespace FlightStreamDeck.Logics.Actions
             AbsValText = "false",
             ValuePrecision = "2",
             HideLabelOutsideMinMaxTop = false,
-            HideLabelOutsideMinMaxBottom = false
+            HideLabelOutsideMinMaxBottom = false,
+            MinValueUsesToggleValue = false,
+            MaxValueUsesToggleValue = false
         };
 
         private GenericGaugeSettings settings = null;
@@ -155,8 +163,10 @@ namespace FlightStreamDeck.Logics.Actions
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(this.settings.DisplayValue);
             TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(this.settings.SubDisplayValue);
             TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(this.settings.DisplayValueBottom);
+            TOGGLE_VALUE? newMinValue = this.settings.MinValueUsesToggleValue ? enumConverter.GetVariableEnum(this.settings.MinValue) : null;
+            TOGGLE_VALUE? newMaxValue = this.settings.MaxValueUsesToggleValue ? enumConverter.GetVariableEnum(this.settings.MaxValue) : null;
 
-            if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue)
+            if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue || newMinValue != minValue || newMaxValue != maxValue)
             {
                 DeRegisterValues();
             }
@@ -165,6 +175,8 @@ namespace FlightStreamDeck.Logics.Actions
             displayValue = newDisplayValue;
             subDisplayValue = newSubDisplayValue;
             displayValueBottom = newDisplayValueBottom;
+            minValue = newMinValue;
+            maxValue = newMaxValue;
 
             RegisterValues();
         }
@@ -198,6 +210,18 @@ namespace FlightStreamDeck.Logics.Actions
                 isUpdated |= currentSubValue != newValue;
                 currentSubValue = newValue;
             }
+            if (minValue.HasValue && e.GenericValueStatus.ContainsKey(minValue.Value))
+            {
+                float.TryParse(e.GenericValueStatus[minValue.Value], out float newValue);
+                isUpdated |= settings.MinValue != newValue.ToString(this.precision);
+                settings.MinValue = newValue.ToString(this.precision);
+            }
+            if (maxValue.HasValue && e.GenericValueStatus.ContainsKey(maxValue.Value))
+            {
+                float.TryParse(e.GenericValueStatus[maxValue.Value], out float newValue);
+                isUpdated |= settings.MaxValue != newValue.ToString(this.precision);
+                settings.MaxValue = newValue.ToString(this.precision);
+            }
 
             if (isUpdated)
             {
@@ -211,6 +235,8 @@ namespace FlightStreamDeck.Logics.Actions
             if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
             if (subDisplayValue.HasValue) flightConnector.RegisterSimValue(subDisplayValue.Value);
             if (displayValueBottom.HasValue) flightConnector.RegisterSimValue(displayValueBottom.Value);
+            if (minValue.HasValue) flightConnector.RegisterSimValue(minValue.Value);
+            if (maxValue.HasValue) flightConnector.RegisterSimValue(maxValue.Value);
         }
 
         private void DeRegisterValues()
@@ -218,6 +244,8 @@ namespace FlightStreamDeck.Logics.Actions
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
             if (subDisplayValue.HasValue) flightConnector.DeRegisterSimValue(subDisplayValue.Value);
             if (displayValueBottom.HasValue) flightConnector.DeRegisterSimValue(displayValueBottom.Value);
+            if (minValue.HasValue) flightConnector.DeRegisterSimValue(minValue.Value);
+            if (maxValue.HasValue) flightConnector.DeRegisterSimValue(maxValue.Value);
             currentValue = 0;
             currentValueBottom = 0;
             currentSubValue = float.MinValue;
@@ -227,7 +255,6 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                string precision = $"F{((settings.ValuePrecision?.Length ?? 0) > 0 ? settings.ValuePrecision : this.defaultSettings.ValuePrecision)}";
                 float MinValue = settings.MinValue.ConvertTo<float>(this.defaultSettings.MinValue);
                 float MaxValue = settings.MaxValue.ConvertTo<float>(this.defaultSettings.MaxValue);
                 string chartSplit = string.IsNullOrEmpty(settings.ChartSplitValue) ? defaultSettings.ChartSplitValue : settings.ChartSplitValue;
@@ -242,8 +269,8 @@ namespace FlightStreamDeck.Logics.Actions
                         imageLogic.GetCustomGaugeImage(
                             settings.Header,
                             settings.HeaderBottom,
-                            (currentValue * modifier).ToString(precision),
-                            (currentValueBottom * modifier).ToString(precision),
+                            (currentValue * modifier).ToString(this.precision),
+                            (currentValueBottom * modifier).ToString(this.precision),
                             MinValue,
                             MaxValue,
                             settings.DisplayHorizontalValue,
@@ -270,6 +297,14 @@ namespace FlightStreamDeck.Logics.Actions
                         )
                     );
                 }
+            }
+        }
+
+        private string precision
+        {
+            get
+            {
+                return $"F{((settings.ValuePrecision?.Length ?? 0) > 0 ? settings.ValuePrecision : this.defaultSettings.ValuePrecision)}";
             }
         }
     }

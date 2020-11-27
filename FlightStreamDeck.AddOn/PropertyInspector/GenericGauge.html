@@ -34,8 +34,18 @@
             <input class="sdpi-item-value" id="MinValue" value="" placeholder="0" onchange="updateData()" pattern="[0-9.-]">
         </div>
         <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Minimal value uses Toggle Value</div>
+            <input class="sdpi-item-value" id="MinValueUsesToggleValue" type="checkbox" onchange="updateData()">
+            <label for="MinValueUsesToggleValue"><span></span></label>
+        </div>
+        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Maximum value</div>
             <input class="sdpi-item-value" id="MaxValue" value="" placeholder="100" onchange="updateData()" pattern="[0-9.-]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Maximum value uses Toggle Value</div>
+            <input class="sdpi-item-value" id="MaxValueUsesToggleValue" type="checkbox" onchange="updateData()">
+            <label for="MaxValueUsesToggleValue"><span></span></label>
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Value Precision</div>
@@ -112,6 +122,8 @@
             if (settings['ValuePrecision']) { ValuePrecision.value = settings['ValuePrecision'] };
             if (settings['HideLabelOutsideMinMaxTop']) { HideLabelOutsideMinMaxTop.checked = settings['HideLabelOutsideMinMaxTop'] };
             if (settings['HideLabelOutsideMinMaxBottom']) { HideLabelOutsideMinMaxBottom.checked = settings['HideLabelOutsideMinMaxBottom'] };
+            if (settings['MinValueUsesToggleValue']) { MinValueUsesToggleValue.checked = settings['MinValueUsesToggleValue'] };
+            if (settings['MaxValueUsesToggleValue']) { MaxValueUsesToggleValue.checked = settings['MaxValueUsesToggleValue'] };            
             CustomShow()
         }
 
@@ -133,7 +145,9 @@
                 "AbsValText": AbsValText.value,
                 "ValuePrecision": ValuePrecision.value,
                 "HideLabelOutsideMinMaxTop": HideLabelOutsideMinMaxTop.checked,
-                "HideLabelOutsideMinMaxBottom": HideLabelOutsideMinMaxBottom.checked
+                "HideLabelOutsideMinMaxBottom": HideLabelOutsideMinMaxBottom.checked,
+                "MinValueUsesToggleValue": MinValueUsesToggleValue.checked,
+                "MaxValueUsesToggleValue": MaxValueUsesToggleValue.checked
             };
             CustomShow();
             sendValueToPlugin(payload);
