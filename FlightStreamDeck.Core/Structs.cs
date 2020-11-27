@@ -564,6 +564,8 @@
         TURB_ENG_PRIMARY_NOZZLE_PERCENT__2,
         TRANSPONDER_CODE__1,
         TRANSPONDER_STATE__1,
+        NAV_SOUND__1,
+        NAV_SOUND__2,
     }
 
     public enum TOGGLE_EVENT

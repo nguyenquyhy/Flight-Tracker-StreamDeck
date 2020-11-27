@@ -48,7 +48,7 @@ namespace FlightStreamDeck.Logics.Actions
                 string.IsNullOrEmpty(MinValue) &&
                 string.IsNullOrEmpty(MaxValue) &&
                 string.IsNullOrEmpty(ChartThicknessValue) &&
-                string.IsNullOrEmpty(ChartChevronSizeValue) &&
+                string.IsNullOrEmpty(ChartChevronSizeValue) && 
                 !DisplayHorizontalValue;
         }
     }

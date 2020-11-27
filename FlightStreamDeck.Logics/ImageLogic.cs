@@ -289,13 +289,13 @@ namespace FlightStreamDeck.Logics
                         } else if (colors.Length > colorSentinel)
                         {
                             color = colors[colorSentinel];
+                            colorSentinel += 1;
                         }
 
                         if (color != null) ctx.DrawLines(new Pen((Color)color, chartWidth), critical);
 
                         previousWidth = stepWidth;
                     }
-                    colorSentinel += 1;
                 });
 
                 //topValue
