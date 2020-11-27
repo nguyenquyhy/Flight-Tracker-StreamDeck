@@ -30,8 +30,6 @@ namespace FlightStreamDeck.Logics.Actions
         public string AbsValText { get; set; }
         public bool HideLabelOutsideMinMaxTop { get; set; }
         public bool HideLabelOutsideMinMaxBottom { get; set; }
-        public bool MinValueUsesToggleValue { get; set; }
-        public bool MaxValueUsesToggleValue { get; set; }
 
         internal bool EmptyPayload
         {
@@ -50,10 +48,8 @@ namespace FlightStreamDeck.Logics.Actions
                 string.IsNullOrEmpty(MinValue) &&
                 string.IsNullOrEmpty(MaxValue) &&
                 string.IsNullOrEmpty(ChartThicknessValue) &&
-                string.IsNullOrEmpty(ChartChevronSizeValue) && 
-                !DisplayHorizontalValue &&
-                !MinValueUsesToggleValue &&
-                !MaxValueUsesToggleValue;
+                string.IsNullOrEmpty(ChartChevronSizeValue) &&
+                !DisplayHorizontalValue;
         }
     }
 
@@ -92,9 +88,7 @@ namespace FlightStreamDeck.Logics.Actions
             AbsValText = "false",
             ValuePrecision = "2",
             HideLabelOutsideMinMaxTop = false,
-            HideLabelOutsideMinMaxBottom = false,
-            MinValueUsesToggleValue = false,
-            MaxValueUsesToggleValue = false
+            HideLabelOutsideMinMaxBottom = false
         };
 
         private GenericGaugeSettings settings = null;
@@ -163,8 +157,8 @@ namespace FlightStreamDeck.Logics.Actions
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(this.settings.DisplayValue);
             TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(this.settings.SubDisplayValue);
             TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(this.settings.DisplayValueBottom);
-            TOGGLE_VALUE? newMinValue = this.settings.MinValueUsesToggleValue ? enumConverter.GetVariableEnum(this.settings.MinValue) : null;
-            TOGGLE_VALUE? newMaxValue = this.settings.MaxValueUsesToggleValue ? enumConverter.GetVariableEnum(this.settings.MaxValue) : null;
+            TOGGLE_VALUE? newMinValue = enumConverter.GetVariableEnum(this.settings.MinValue);
+            TOGGLE_VALUE? newMaxValue = enumConverter.GetVariableEnum(this.settings.MaxValue);
 
             if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue || newMinValue != minValue || newMaxValue != maxValue)
             {

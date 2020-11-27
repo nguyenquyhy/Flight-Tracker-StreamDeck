@@ -16,7 +16,7 @@ namespace FlightStreamDeck.Core
 
         public TOGGLE_VALUE? GetVariableEnum(string value)
         {
-            if (value != null && Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_VALUE result))
+            if (!float.TryParse(value, out float floatvalue) && value != null && Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_VALUE result))
             {
                 return result;
             }
