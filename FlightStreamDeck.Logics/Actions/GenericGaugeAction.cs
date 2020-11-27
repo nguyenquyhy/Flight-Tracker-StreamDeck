@@ -5,15 +5,17 @@ using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using EnumConverter = FlightStreamDeck.Core.EnumConverter;
 
 namespace FlightStreamDeck.Logics.Actions
 {
     public class GenericGaugeSettings
     {
         public string Header { get; set; }
-        public float MinValue { get; set; }
-        public float MaxValue { get; set; }
+        public string MinValue { get; set; }
+        public string MaxValue { get; set; }
         public string ToggleValue { get; set; }
         public string DisplayValue { get; set; }
         public string SubDisplayValue { get; set; }
@@ -23,9 +25,11 @@ namespace FlightStreamDeck.Logics.Actions
         public string DisplayValueBottom { get; set; }
         public bool DisplayHorizontalValue { get; set; }
         public string ChartSplitValue { get; set; }
-        public int ChartThicknessValue { get; set; }
-        public int ChartChevronSizeValue { get; set; }
+        public string ChartThicknessValue { get; set; }
+        public string ChartChevronSizeValue { get; set; }
         public string AbsValText { get; set; }
+        public bool HideLabelOutsideMinMaxTop { get; set; }
+        public bool HideLabelOutsideMinMaxBottom { get; set; }
 
         internal bool EmptyPayload
         {
@@ -39,10 +43,13 @@ namespace FlightStreamDeck.Logics.Actions
                 string.IsNullOrEmpty(ChartSplitValue) &&
                 string.IsNullOrEmpty(AbsValText) &&
                 string.IsNullOrEmpty(ValuePrecision) &&
-                MinValue == 0 &&
-                MaxValue == 0 &&
-                ChartThicknessValue == 0 &&
-                ChartChevronSizeValue == 0 && !DisplayHorizontalValue;
+                !HideLabelOutsideMinMaxTop &&
+                !HideLabelOutsideMinMaxBottom &&
+                string.IsNullOrEmpty(MinValue) &&
+                string.IsNullOrEmpty(MaxValue) &&
+                string.IsNullOrEmpty(ChartThicknessValue) &&
+                string.IsNullOrEmpty(ChartChevronSizeValue) && 
+                !DisplayHorizontalValue;
         }
     }
 
@@ -63,26 +70,31 @@ namespace FlightStreamDeck.Logics.Actions
         private float currentValueBottom = 0;
         private float currentSubValue = float.MinValue;
 
-        private GenericGaugeSettings settings = new GenericGaugeSettings()
+        private GenericGaugeSettings defaultSettings => new GenericGaugeSettings()
         {
-            Type = "Custom",
+            Type = "Generic",
             DisplayHorizontalValue = true,
             ChartSplitValue = "12:red,24:yellow,64:green",
-            ChartThicknessValue = 13,
-            ChartChevronSizeValue = 3,
+            ChartThicknessValue = "13",
+            ChartChevronSizeValue = "3",
             Header = "L",
             DisplayValue = Core.TOGGLE_VALUE.FUEL_LEFT_QUANTITY.ToString(),
             HeaderBottom = string.Empty,
             DisplayValueBottom = string.Empty,
-            MinValue = 0,
-            MaxValue = 30,
+            MinValue = "0",
+            MaxValue = "30",
             AbsValText = "false",
-            ValuePrecision = "2"
+            ValuePrecision = "2",
+            HideLabelOutsideMinMaxTop = false,
+            HideLabelOutsideMinMaxBottom = false
         };
+
+        private GenericGaugeSettings settings = null;
 
         public GenericGaugeAction(ILogger<GenericGaugeAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
             EnumConverter enumConverter)
         {
+            this.settings = this.defaultSettings;
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
@@ -117,7 +129,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             try
             {
-                InitializeSettings(args.Payload.ToObject<GenericGaugeSettings>());
+                await InitializeSettings(args.Payload.ToObject<GenericGaugeSettings>());
                 await UpdateImage();
             }
             catch (Exception e)
@@ -126,14 +138,23 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        private void InitializeSettings(GenericGaugeSettings settings)
+        private async Task InitializeSettings(GenericGaugeSettings settings)
         {
-            this.settings = settings;
+            //keep constructor'd settings if the gauge is newly added.
+            bool emptyPayload = settings?.EmptyPayload ?? true;
+            if (emptyPayload)
+            {
+                await this.UpdatePropertyInspector();
+            }
+            else
+            {
+                this.settings = settings;
+            }
 
-            TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
-            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
-            TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(settings.SubDisplayValue);
-            TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(settings.DisplayValueBottom);
+            TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(this.settings.ToggleValue);
+            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(this.settings.DisplayValue);
+            TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(this.settings.SubDisplayValue);
+            TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(this.settings.DisplayValueBottom);
 
             if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue)
             {
@@ -146,6 +167,11 @@ namespace FlightStreamDeck.Logics.Actions
             displayValueBottom = newDisplayValueBottom;
 
             RegisterValues();
+        }
+
+        private async Task UpdatePropertyInspector()
+        {
+            await this.SendToPropertyInspectorAsync(this.settings);
         }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
@@ -201,41 +227,78 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                string precision = $"F{((settings.ValuePrecision?.Length ?? 0) > 0 ? settings.ValuePrecision : "2")}";
+                string precision = $"F{((settings.ValuePrecision?.Length ?? 0) > 0 ? settings.ValuePrecision : this.defaultSettings.ValuePrecision)}";
+                float MinValue = settings.MinValue.ConvertTo<float>(this.defaultSettings.MinValue);
+                float MaxValue = settings.MaxValue.ConvertTo<float>(this.defaultSettings.MaxValue);
+                string chartSplit = string.IsNullOrEmpty(settings.ChartSplitValue) ? defaultSettings.ChartSplitValue : settings.ChartSplitValue;
                 if (settings.Type?.Equals("Custom", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
-                    int modifier = settings.MinValue > settings.MaxValue ? -1 : 1;
                     bool.TryParse(settings.AbsValText, out bool absValueText);
+
+                    int chartThickness = settings.ChartThicknessValue.ConvertTo<int>(this.defaultSettings.ChartThicknessValue);
+                    float chartChevronSize = settings.ChartChevronSizeValue.ConvertTo<int>(this.defaultSettings.ChartChevronSizeValue);
+                    int modifier = MinValue > MaxValue ? -1 : 1;
                     await SetImageAsync(
                         imageLogic.GetCustomGaugeImage(
                             settings.Header,
                             settings.HeaderBottom,
                             (currentValue * modifier).ToString(precision),
                             (currentValueBottom * modifier).ToString(precision),
-                            settings.MinValue,
-                            settings.MaxValue,
+                            MinValue,
+                            MaxValue,
                             settings.DisplayHorizontalValue,
-                            settings.ChartSplitValue?.Split(','),
-                            settings.ChartThicknessValue,
-                            settings.ChartChevronSizeValue,
+                            chartSplit?.Split(','),
+                            chartThickness,
+                            chartChevronSize,
                             absValueText,
-                            precision
+                            precision,
+                            settings.HideLabelOutsideMinMaxTop,
+                            settings.HideLabelOutsideMinMaxBottom
                         )
                     );
-                } 
+                }
                 else
                 {
                     await SetImageAsync(
                         imageLogic.GetGenericGaugeImage(
                             settings.Header,
                             currentValue,
-                            settings.MinValue,
-                            settings.MaxValue,
+                            MinValue,
+                            MaxValue,
                             precision,
                             currentSubValue
                         )
                     );
                 }
+            }
+        }
+    }
+
+    public static class GenericGaugeActionExtensions
+    {
+        //https://stackoverflow.com/a/51429227
+        public static T ConvertTo<T>(this object? value, object defaultValue)
+        {
+            if (value is T variable) return variable;
+
+            try
+            {
+                if (string.IsNullOrEmpty(value.ToString()) && defaultValue != null)
+                {
+                    value = defaultValue;
+                }
+
+                //Handling Nullable types i.e, int?, double?, bool? .. etc
+                if (Nullable.GetUnderlyingType(typeof(T)) != null)
+                {
+                    return (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFrom(value);
+                }
+
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            catch (Exception)
+            {
+                return default(T);
             }
         }
     }

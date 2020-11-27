@@ -17,7 +17,7 @@ namespace FlightStreamDeck.Logics
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
         public string GetGenericGaugeImage(string text, float value, float min, float max, string valuePrecision, float subValue = float.MinValue);
-        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision);
+        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision, bool hideHeaderTop, bool hideHeaderBottom);
     }
 
     public class ImageLogic : IImageLogic
@@ -250,7 +250,7 @@ namespace FlightStreamDeck.Logics
         }
 
 
-        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision)
+        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision, bool hideHeaderTop, bool hideHeaderBottom)
         {
             var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
@@ -302,13 +302,13 @@ namespace FlightStreamDeck.Logics
                 float.TryParse(valueTop, out float floatValueTop);
                 var ratio = (floatValueTop - (min < max ? min : max)) / range;
                 valueTop = absoluteValueText ? Math.Abs(floatValueTop).ToString(valuePrecision) : valueTop;
-                setupValue(true, textTop, valueTop, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx);
+                setupValue(true, textTop, valueTop, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx, hideHeaderTop);
 
                 //bottomValue
                 float.TryParse(valueBottom, out float floatValueBottom);
                 ratio = (floatValueBottom - (min < max ? min : max)) / range;
                 valueBottom = absoluteValueText ? Math.Abs(floatValueBottom).ToString(valuePrecision) : valueBottom;
-                setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx);
+                setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx, hideHeaderBottom);
 
                 if (!horizontal) ctx.Rotate(-90);
             });
@@ -320,10 +320,14 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        private void setupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx
-        )
+        private void setupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)
         {
-            if ((labelText?.Length ?? 0) > 0)
+
+            float.TryParse(value, out float floatValue);
+            bool missingHeaderLabel = (labelText?.Length ?? 0) == 0;
+            bool writeValueHeaderAndChevron = !hideHeader || (hideHeader && !(floatValue < min || floatValue > max));
+
+            if (writeValueHeaderAndChevron && !missingHeaderLabel)
             {
                 var pen = new Pen(Color.White, chevronSize + 1);
 
@@ -338,7 +342,6 @@ namespace FlightStreamDeck.Logics
                 PointF[] needle = { startPoint, right, left, startPoint };
 
                 var valueText = value.ToString();
-                float.TryParse(value, out float floatValue);
                 Color textColor = (floatValue > max && min < max) ? Color.Red : Color.White;
                 var font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
 
