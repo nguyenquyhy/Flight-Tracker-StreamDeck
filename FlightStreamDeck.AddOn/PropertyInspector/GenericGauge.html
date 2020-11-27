@@ -12,6 +12,12 @@
             <input class="sdpi-item-value" id="Header" value="" placeholder="Throttle" onchange="updateData()">
         </div>
         <div class="sdpi-item" type="field">
+            <div id="HideTopHeader" class="sdpi-item-label">Header Top Hide If Outside Min/Max</div>
+            <div id="HideHeader" class="sdpi-item-label">Header Hide If Outside Min/Max</div>
+            <input class="sdpi-item-value" id="HideLabelOutsideMinMaxTop" type="checkbox" onchange="updateData()">
+            <label for="HideLabelOutsideMinMaxTop"><span></span></label>
+        </div>
+        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Toggle value</div>
             <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
         </div>
@@ -46,23 +52,28 @@
             <div class="sdpi-heading">Custom Gauge Settings</div>
             <div class="sdpi-item" type="field">
                 <div class="sdpi-item-label">Chart Split by Percentage</div>
-                <input class="sdpi-item-value" id="ChartSplitValue" value="12:red,24:yellow,64:green" placeholder="12,24,64" onchange="updateData()" pattern="[0-9,]*">
+                <input class="sdpi-item-value" id="ChartSplitValue" placeholder="12:red,24:yellow,64:green" onchange="updateData()" pattern="[0-9,]*">
             </div>
             <div class="sdpi-item" type="field">
                 <div class="sdpi-item-label">Chart Thickness</div>
-                <input class="sdpi-item-value" id="ChartThicknessValue" value="13" placeholder="10" onchange="updateData()" pattern="[0-9]*">
+                <input class="sdpi-item-value" id="ChartThicknessValue" placeholder="13" onchange="updateData()" pattern="[0-9]*">
             </div>
             <div class="sdpi-item" type="field">
                 <div class="sdpi-item-label">Chart Chevron Size</div>
-                <input class="sdpi-item-value" id="ChartChevronSizeValue" value="3" placeholder="3" onchange="updateData()" pattern="[0-9]*">
+                <input class="sdpi-item-value" id="ChartChevronSizeValue" placeholder="3" onchange="updateData()" pattern="[0-9]*">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Header Bottom Hide If Outside Min/Max</div>
+                <input class="sdpi-item-value" id="HideLabelOutsideMinMaxBottom" type="checkbox" onchange="updateData()">
+                <label for="HideLabelOutsideMinMaxBottom"><span></span></label>
             </div>
             <div class="sdpi-item" type="field">
                 <div class="sdpi-item-label">Header Bottom</div>
-                <input class="sdpi-item-value" id="HeaderBottom" value="R" placeholder="Throttle" onchange="updateData()">
+                <input class="sdpi-item-value" id="HeaderBottom" placeholder="R" onchange="updateData()">
             </div>
             <div class="sdpi-item" type="field">
                 <div class="sdpi-item-label">Display value Bottom</div>
-                <input class="sdpi-item-value" id="DisplayValueBottom" value="FUEL_RIGHT_QUANTITY" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
+                <input class="sdpi-item-value" id="DisplayValueBottom" placeholder="FUEL_RIGHT_QUANTITY" onchange="updateData()" pattern="[A-Z_]">
             </div>
             <div class="sdpi-item" type="field">
                 <div class="sdpi-item-label">Vertical Or Horizontal?</div>
@@ -99,6 +110,8 @@
             if (settings['ChartChevronSizeValue']) { ChartChevronSizeValue.value = settings['ChartChevronSizeValue'] };
             if (settings['AbsValText']) { AbsValText.value = settings['AbsValText'] };
             if (settings['ValuePrecision']) { ValuePrecision.value = settings['ValuePrecision'] };
+            if (settings['HideLabelOutsideMinMaxTop']) { HideLabelOutsideMinMaxTop.checked = settings['HideLabelOutsideMinMaxTop'] };
+            if (settings['HideLabelOutsideMinMaxBottom']) { HideLabelOutsideMinMaxBottom.checked = settings['HideLabelOutsideMinMaxBottom'] };
             CustomShow()
         }
 
@@ -118,7 +131,9 @@
                 "ChartThicknessValue": ChartThicknessValue.value,
                 "ChartChevronSizeValue": ChartChevronSizeValue.value,
                 "AbsValText": AbsValText.value,
-                "ValuePrecision": ValuePrecision.value
+                "ValuePrecision": ValuePrecision.value,
+                "HideLabelOutsideMinMaxTop": HideLabelOutsideMinMaxTop.checked,
+                "HideLabelOutsideMinMaxBottom": HideLabelOutsideMinMaxBottom.checked
             };
             CustomShow();
             sendValueToPlugin(payload);
@@ -127,6 +142,8 @@
 
         function CustomShow() {
             document.getElementById("customFields").hidden = (Type.value != "Custom");
+            document.getElementById("HideTopHeader").hidden = (Type.value != "Custom");
+            document.getElementById("HideHeader").hidden = (Type.value == "Custom");
         }
     </script>
     <script src="init.js"></script>
