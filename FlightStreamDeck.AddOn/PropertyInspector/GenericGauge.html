@@ -17,7 +17,11 @@
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="INDICATED_ALTITUDE" onchange="updateData()" pattern="[A-Z_]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Sub Display value</div>
+            <input class="sdpi-item-value" id="SubDisplayValue" value="" placeholder="KOHLSMAN_SETTING_HG" onchange="updateData()" pattern="[A-Z_]">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Minimal value</div>
@@ -27,28 +31,102 @@
             <div class="sdpi-item-label">Maximum value</div>
             <input class="sdpi-item-value" id="MaxValue" value="" placeholder="100" onchange="updateData()" pattern="[0-9.-]">
         </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Value Precision</div>
+            <input class="sdpi-item-value" id="ValuePrecision" value="" placeholder="2" onchange="updateData()" pattern="[0-9]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Type</div>
+            <select class="sdpi-item-value select" id="Type" onchange="updateData()">
+                <option value="Generic">Generic</option>
+                <option value="Custom">Custom</option>
+            </select>
+        </div>
+        <div id="customFields">
+            <div class="sdpi-heading">Custom Gauge Settings</div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Chart Split by Percentage</div>
+                <input class="sdpi-item-value" id="ChartSplitValue" value="12:red,24:yellow,64:green" placeholder="12,24,64" onchange="updateData()" pattern="[0-9,]*">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Chart Thickness</div>
+                <input class="sdpi-item-value" id="ChartThicknessValue" value="13" placeholder="10" onchange="updateData()" pattern="[0-9]*">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Chart Chevron Size</div>
+                <input class="sdpi-item-value" id="ChartChevronSizeValue" value="3" placeholder="3" onchange="updateData()" pattern="[0-9]*">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Header Bottom</div>
+                <input class="sdpi-item-value" id="HeaderBottom" value="R" placeholder="Throttle" onchange="updateData()">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Display value Bottom</div>
+                <input class="sdpi-item-value" id="DisplayValueBottom" value="FUEL_RIGHT_QUANTITY" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Vertical Or Horizontal?</div>
+                <select class="sdpi-item-value select" id="DisplayHorizontalValue" onchange="updateData()">
+                    <option value="false">Vertical</option>
+                    <option value="true">Horizontal</option>
+                </select>
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Use Absolute Value for Value Text</div>
+                <select class="sdpi-item-value select" id="AbsValText" onchange="updateData()">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                </select>
+            </div>
+        </div>
     </div>
+    
     <script src="common.js"></script>
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
             if (settings['Header']) { Header.value = settings['Header'] };
+            if (settings['HeaderBottom']) { HeaderBottom.value = settings['HeaderBottom'] };
             if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+            if (settings['SubDisplayValue']) { SubDisplayValue.value = settings['SubDisplayValue'] };
+            if (settings['DisplayValueBottom']) { DisplayValueBottom.value = settings['DisplayValueBottom'] };
             if (settings['MinValue']) { MinValue.value = settings['MinValue'] };
             if (settings['MaxValue']) { MaxValue.value = settings['MaxValue'] };
+            if (settings['Type']) { Type.value = settings['Type'] };
+            if (settings['DisplayHorizontalValue']) { DisplayHorizontalValue.value = settings['DisplayHorizontalValue'] };
+            if (settings['ChartSplitValue']) { ChartSplitValue.value = settings['ChartSplitValue'] };
+            if (settings['ChartThicknessValue']) { ChartThicknessValue.value = settings['ChartThicknessValue'] };
+            if (settings['ChartChevronSizeValue']) { ChartChevronSizeValue.value = settings['ChartChevronSizeValue'] };
+            if (settings['AbsValText']) { AbsValText.value = settings['AbsValText'] };
+            if (settings['ValuePrecision']) { ValuePrecision.value = settings['ValuePrecision'] };
+            CustomShow()
         }
 
         function updateData() {
             const payload = {
                 "Header": Header.value,
+                "HeaderBottom": HeaderBottom.value,
                 "ToggleValue": ToggleValue.value,
                 "DisplayValue": DisplayValue.value,
+                "SubDisplayValue": SubDisplayValue.value,
+                "DisplayValueBottom": DisplayValueBottom.value,
                 "MinValue": MinValue.value,
-                "MaxValue": MaxValue.value
+                "MaxValue": MaxValue.value,
+                "Type": Type.value,
+                "DisplayHorizontalValue": DisplayHorizontalValue.value,
+                "ChartSplitValue": ChartSplitValue.value,
+                "ChartThicknessValue": ChartThicknessValue.value,
+                "ChartChevronSizeValue": ChartChevronSizeValue.value,
+                "AbsValText": AbsValText.value,
+                "ValuePrecision": ValuePrecision.value
             };
-
+            CustomShow();
             sendValueToPlugin(payload);
             setSettings(payload);
+        }
+
+        function CustomShow() {
+            document.getElementById("customFields").hidden = (Type.value != "Custom");
         }
     </script>
     <script src="init.js"></script>

@@ -35,7 +35,8 @@ However, with great power comes great responsibility: you have to do a bit of se
 |-----------|-------------|---------|
 | Title | This is the built-in title of any Stream Deck button. We hide this by default. You should consider using the next parameter instead. | *Empty* |
 | Header | This is similar to title but with a pre-defined font, size and position that looks nice on the button. | HDG |
-| Toggle value | The SimConnect event that triggers when the button is tapped on.<br />You can find the supporting event ID in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination of each ID can be found in [Prepar3D SDK - Event IDs](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/event_ids.html) or MSFS SDK docs. | KEY_AP_PANEL_HEADING_HOLD |
+| Toggle event | The SimConnect event that triggers when the button is tapped on.<br />You can find the supporting event ID in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination of each ID can be found in [Prepar3D SDK - Event IDs](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/event_ids.html) or MSFS SDK docs. | KEY_AP_PANEL_HEADING_HOLD |
+| Toggle parameter | The parameter to pass along with the event | 1 |
 | Feedback value | The SimConnect variable that indicates if the button is *active* or not. Active state will show a green light or a green number (if `Display value` below is set) on the button.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.<br />You can also use some comparison operators such as "==", "!=", ">", "<", ">=", "<=" between a variable and a value or between 2 variables. | AUTOPILOT HEADING LOCK<br />FLAPS HANDLE INDEX==2 |
 | Display value | The SimConnect variable (any numeric unit) to display as a number below the header.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.  | AUTOPILOT HEADING LOCK DIR |
 
@@ -89,9 +90,18 @@ Interactions:
 
 This button is very similar to Generic Toggle Button except from it does not have an active state, hence no `Feedback value` parameter is needed.
 
-![Sample NAV/COM buttons](sample_gauge.png)
+![Sample NAV/COM buttons](sample_custom_gauge.png)
 
-`Minimal value` and `Maximum value` are compulsory, indicating the range of the `Display value`.
+- `Minimal value` and `Maximum value` are compulsory, indicating the range of the `Display value`.
+- Having a `Minimal value` greater than the `Maximum value` will flip the way the value resolves on the graph (see two trim gauges above).
+- You may enter `Use Absolute Value for Value Text` on a `custom` type gauge, which will display the value without a negative if one would show up (right column trim gauges, for example).
+- The gauge may be cusom color coded, and knows basic colors from [system.drawing.colors](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-5.0#properties).
+  - The default custom gauge that displays is color coded like the fuel gauge and has all the properties in it for a generic 2 tank aircraft.
+- You can adjust the thickness of the bar by adjusting `Chart Thickness` in the custom 
+section.
+- You can adjust the chevron size by adjusting `Chart Chevron Size` in the custom section.
+- If you do not specify a header for a value in the top or bottom, it won't show that respective value or chevron.  If you want a blank chevron, simply put a blank space in, it will recognize that.
+- There is now a concept of a `Sub Display value`.  In my example for Indicated Altitude, the inches of MG displayed by adding `KOHLSMAN_SETTING_HG` to that setting.
 
 ### Known Issues
 

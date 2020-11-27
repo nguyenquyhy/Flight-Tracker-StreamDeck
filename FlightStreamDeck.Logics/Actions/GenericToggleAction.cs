@@ -14,6 +14,7 @@ namespace FlightStreamDeck.Logics.Actions
     {
         public string Header { get; set; }
         public string ToggleValue { get; set; }
+        public string ToggleValueData { get; set; }
         public string FeedbackValue { get; set; }
         public string DisplayValue { get; set; }
         public string ImageOn { get; set; }
@@ -32,6 +33,7 @@ namespace FlightStreamDeck.Logics.Actions
         private GenericToggleSettings settings = null;
 
         private TOGGLE_EVENT? toggleEvent = null;
+        private uint? toggleEventData = null;
         private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
         private IExpression expression;
         private TOGGLE_VALUE? displayValue = null;
@@ -66,6 +68,10 @@ namespace FlightStreamDeck.Logics.Actions
             this.settings = settings;
 
             TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
+            if (uint.TryParse(settings.ToggleValueData, out var toggleParameter))
+            {
+                toggleEventData = toggleParameter;
+            }
             (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
 
@@ -132,7 +138,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue) flightConnector.Toggle(toggleEvent.Value);
+            if (toggleEvent.HasValue) flightConnector.Trigger(toggleEvent.Value, toggleEventData ?? 0);
             return Task.CompletedTask;
         }
 

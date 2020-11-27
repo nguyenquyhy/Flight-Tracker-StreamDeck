@@ -247,7 +247,7 @@ namespace FlightStreamDeck.Logics.Actions
                 switch (settings.Type)
                 {
                     case PresetFunction.Avionics:
-                        await SetImageAsync(imageLogic.GetImage("", currentStatus.IsAvMasterOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
                         break;
 
                     case PresetFunction.ApMaster:
