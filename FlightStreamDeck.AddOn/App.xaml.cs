@@ -63,6 +63,7 @@ namespace FlightStreamDeck.AddOn
                 configure.AddSerilog();
             });
 
+            services.AddSingleton<ThrottlingLogic>();
             services.AddSingleton<DeckLogic>();
             services.AddSingleton<IFlightConnector, SimConnectFlightConnector>();
             //services.AddSingleton(new UserPreferencesLoader("preferences.json"));

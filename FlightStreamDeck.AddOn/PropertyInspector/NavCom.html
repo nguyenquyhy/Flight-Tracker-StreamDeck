@@ -17,10 +17,12 @@
                 <option value="XPDR">XPDR</option>
             </select>
         </div>
-        <div class="sdpi-item">
-            <details class="message info">
-                <summary>Hold the button to open the numpad</summary>
-            </details>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Tap/Hold functions</div>
+            <select class="sdpi-item-value select" id="HoldFunction" onchange="updateData()">
+                <option value="Numpad">Swap/Numpad</option>
+                <option value="Swap">Numpad/Swap</option>
+            </select>
         </div>
         <div type="group" class="sdpi-item" id="messagegroup">
             <div class="sdpi-item-label">Dependencies</div>
@@ -46,6 +48,7 @@
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
             if (settings['Type']) { Type.value = settings['Type'] };
+            if (settings['HoldFunction']) { Type.value = settings['HoldFunction'] };
             if (settings['BattMasterValue']) { BattMasterValue.value = settings['BattMasterValue'] };
             if (settings['AvionicsValue']) { AvionicsValue.value = settings['AvionicsValue'] };
         }
@@ -54,6 +57,7 @@
             console.log('update data');
             const payload = {
                 "Type": Type.value,
+                "HoldFunction": HoldFunction.value,
                 "BattMasterValue": BattMasterValue.value,
                 "AvionicsValue": AvionicsValue.value,
             };
