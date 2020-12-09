@@ -19,14 +19,16 @@ namespace FlightStreamDeck.AddOn
         private readonly DeckLogic deckLogic;
         private readonly IFlightConnector flightConnector;
         private readonly ILogger<MainWindow> logger;
+        private readonly ThrottlingLogic throttlingLogic;
         private IntPtr Handle;
 
-        public MainWindow(DeckLogic deckLogic, IFlightConnector flightConnector, ILogger<MainWindow> logger)
+        public MainWindow(DeckLogic deckLogic, IFlightConnector flightConnector, ILogger<MainWindow> logger, ThrottlingLogic throttlingLogic)
         {
             InitializeComponent();
             this.deckLogic = deckLogic;
             this.flightConnector = flightConnector;
             this.logger = logger;
+            this.throttlingLogic = throttlingLogic;
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -48,6 +50,7 @@ namespace FlightStreamDeck.AddOn
 
                 try
                 {
+                    logger.LogDebug("Start connecting...");
                     await InitializeSimConnectAsync(simConnect);
                 }
                 catch (BadImageFormatException ex)
@@ -91,17 +94,23 @@ namespace FlightStreamDeck.AddOn
                     simConnect.Send("Connected to Stream Deck plugin");
                     break;
                 }
-                catch (COMException)
+                catch (COMException ex)
                 {
+                    logger.LogDebug(ex, "SimConnect error.");
                     await Task.Delay(5000).ConfigureAwait(true);
                 }
             }
         }
 
-        private async void SimConnect_Closed(object sender, EventArgs e)
+        private void SimConnect_Closed(object sender, EventArgs e)
         {
-            var simConnect = sender as SimConnectFlightConnector;
-            await InitializeSimConnectAsync(simConnect);
+            logger.LogDebug("SimConnect is closed.");
+            throttlingLogic.RunAsync(async () =>
+            {
+                logger.LogDebug("Start reconnecting...");
+                var simConnect = sender as SimConnectFlightConnector;
+                await InitializeSimConnectAsync(simConnect);
+            }).Forget();
         }
 
         private void Window_Closed(object sender, EventArgs e)

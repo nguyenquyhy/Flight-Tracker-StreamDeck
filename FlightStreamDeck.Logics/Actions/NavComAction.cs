@@ -16,6 +16,7 @@ namespace FlightStreamDeck.Logics.Actions
     public class NavComSettings
     {
         public string Type { get; set; }
+        public string HoldFunction { get; set; }
         public string AvionicsValue { get; set; }
         public string BattMasterValue { get; set; }
     }
@@ -40,7 +41,7 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly Timer timer;
 
         private IdentifiableDeviceInfo device;
-        
+
         private NavComSettings settings;
 
         private TOGGLE_VALUE? dependantOnAvionics;
@@ -68,71 +69,14 @@ namespace FlightStreamDeck.Logics.Actions
         {
             timer.Stop();
 
-            if (settings?.Type != null && set != null && mask != null && lastDependant)
+            // Handle hold
+            if (settings.HoldFunction != "Swap")
             {
-                var set = this.set;
-                var mask = this.mask;
-                var min = settings.Type switch
-                {
-                    "NAV1" => minNavVal,
-                    "NAV2" => minNavVal,
-                    "COM1" => minComVal,
-                    "COM2" => minComVal,
-                    "XPDR" => minXpdrVal,
-                    _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
-                };
-                DeckLogic.NumpadParams = new NumpadParams(
-                    settings.Type,
-                    min,
-                    settings.Type switch
-                    {
-                        "NAV1" => maxNavVal,
-                        "NAV2" => maxNavVal,
-                        "COM1" => maxComVal,
-                        "COM2" => maxComVal,
-                        "XPDR" => maxXpdrVal,
-                        _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
-                    },
-                    mask
-                );
-                DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
-
-                var toggle = this.toggle;
-
-                this.initializationTcs = new TaskCompletionSource<bool>();
-
-                await StreamDeck.SwitchToProfileAsync(registration.PluginUUID,
-                    device.Id,
-                    device.Type == DeviceType.StreamDeckXL ? "Profiles/Numpad_XL" : "Profiles/Numpad");
-
-                await initializationTcs.Task;
-
-                var (value, swap) = await DeckLogic.NumpadTcs.Task;
-                if (!string.IsNullOrEmpty(value))
-                {
-                    value += min.Substring(value.Length);
-
-                    if (settings.Type == "NAV1" || settings.Type == "NAV2" || settings.Type == "COM1" || settings.Type == "COM2")
-                    {
-                        // NOTE: SimConnect ignore first 1
-                        value = value[1..];
-                    }
-
-                    // BCD encode
-                    uint data = 0;
-                    for (var i = 0; i < value.Length; i++)
-                    {
-                        uint digit = (byte)value[i] - (uint)48;
-                        data = data * 16 + digit;
-                    }
-                    flightConnector.Trigger(set.Value, data);
-
-                    if (toggle != null && swap)
-                    {
-                        await Task.Delay(500);
-                        flightConnector.Trigger(toggle.Value);
-                    }
-                }
+                await SwitchToNumpad();
+            }
+            else
+            {
+                SwapFrequencies();
             }
         }
 
@@ -183,10 +127,14 @@ namespace FlightStreamDeck.Logics.Actions
                 {
                     timer.Stop();
 
-                    // Transfer
-                    if (toggle != null)
+                    // Click
+                    if (settings.HoldFunction != "Swap")
                     {
-                        flightConnector.Trigger(toggle.Value);
+                        SwapFrequencies();
+                    }
+                    else
+                    {
+                        return SwitchToNumpad();
                     }
                 }
             }
@@ -341,6 +289,84 @@ namespace FlightStreamDeck.Logics.Actions
             if (dependantOnBatt != null)
             {
                 flightConnector.RegisterSimValues(dependantOnBatt.Value);
+            }
+        }
+
+        private void SwapFrequencies()
+        {
+            if (toggle != null)
+            {
+                flightConnector.Trigger(toggle.Value);
+            }
+        }
+
+        private async Task SwitchToNumpad()
+        {
+            if (settings?.Type != null && set != null && mask != null && lastDependant)
+            {
+                var set = this.set;
+                var mask = this.mask;
+                var min = settings.Type switch
+                {
+                    "NAV1" => minNavVal,
+                    "NAV2" => minNavVal,
+                    "COM1" => minComVal,
+                    "COM2" => minComVal,
+                    "XPDR" => minXpdrVal,
+                    _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
+                };
+                DeckLogic.NumpadParams = new NumpadParams(
+                    settings.Type,
+                    min,
+                    settings.Type switch
+                    {
+                        "NAV1" => maxNavVal,
+                        "NAV2" => maxNavVal,
+                        "COM1" => maxComVal,
+                        "COM2" => maxComVal,
+                        "XPDR" => maxXpdrVal,
+                        _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
+                    },
+                    mask
+                );
+                DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
+
+                var toggle = this.toggle;
+
+                this.initializationTcs = new TaskCompletionSource<bool>();
+
+                await StreamDeck.SwitchToProfileAsync(registration.PluginUUID,
+                    device.Id,
+                    device.Type == DeviceType.StreamDeckXL ? "Profiles/Numpad_XL" : "Profiles/Numpad");
+
+                await initializationTcs.Task;
+
+                var (value, swap) = await DeckLogic.NumpadTcs.Task;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    value += min.Substring(value.Length);
+
+                    if (settings.Type == "NAV1" || settings.Type == "NAV2" || settings.Type == "COM1" || settings.Type == "COM2")
+                    {
+                        // NOTE: SimConnect ignore first 1
+                        value = value[1..];
+                    }
+
+                    // BCD encode
+                    uint data = 0;
+                    for (var i = 0; i < value.Length; i++)
+                    {
+                        uint digit = (byte)value[i] - (uint)48;
+                        data = data * 16 + digit;
+                    }
+                    flightConnector.Trigger(set.Value, data);
+
+                    if (toggle != null && swap)
+                    {
+                        await Task.Delay(500);
+                        flightConnector.Trigger(toggle.Value);
+                    }
+                }
             }
         }
     }
