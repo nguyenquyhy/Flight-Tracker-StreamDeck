@@ -48,5 +48,23 @@ namespace FlightStreamDeck.Logics.Tests
                 fs.Write(bytes, 0, bytes.Length);
             }
         }
+
+        [TestMethod()]
+        public void GetCustomImageTest_NoCoordinateRangeError()
+        {
+            ImageLogic images = new ImageLogic();
+            bool hitError = false;
+
+            try
+            {
+                images.GetCustomGaugeImage("T", "B", "2000", "-2000", 1, 1, false, new string[] { "100:green" }, 5, 3, false, "2", false, false);
+            }
+            catch (Exception e)
+            {
+                hitError = e.Message == "Coordinate outside allowed range";
+            }
+
+            Assert.IsFalse(hitError, "we should not have  hit a ClipperLib.ClipperException");
+        }
     }
 }
