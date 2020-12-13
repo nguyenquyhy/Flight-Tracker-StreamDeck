@@ -697,8 +697,8 @@ namespace FlightStreamDeck.SimConnectFSX
             }
 
             genericEvents.Add(toggleAction);
-            logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.ToString());
-            simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
+            logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.EventToMobiFlightEventString());
+            simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.EventToMobiFlightEventString());
         }
 
         public void RegisterSimValue(TOGGLE_VALUE simValue)
@@ -844,8 +844,8 @@ namespace FlightStreamDeck.SimConnectFSX
 
             foreach (var toggleAction in genericEvents)
             {
-                logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.ToString());
-                simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
+                logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.EventToMobiFlightEventString());
+                simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.EventToMobiFlightEventString());
             }
         }
 
@@ -857,4 +857,6 @@ namespace FlightStreamDeck.SimConnectFSX
 
         #endregion
     }
+
+    
 }
