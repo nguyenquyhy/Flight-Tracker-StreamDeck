@@ -124,7 +124,7 @@ Here are the steps that you need to do to get access to the new events:
 9. Relaunch MSFS 2020
 10. Configure Flight-Stream-Deck with [newly supported events](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/blob/master/FlightStreamDeck.Core/Structs.cs#L1317), courtesy of MobiFlight!  They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
 
-We've included a quick GNS 530 example for the knobs and basic buttons [here]()
+We've included a quick GNS 530 example for the knobs and basic buttons [here](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/tree/master/Assets/Starter%20Profiles/MobiFlight-GNS-530.streamDeckProfile)
 
 ### Known Issues
 
