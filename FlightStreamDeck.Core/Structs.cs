@@ -566,6 +566,7 @@
         TRANSPONDER_STATE__1,
         NAV_SOUND__1,
         NAV_SOUND__2,
+        SIMULATION_RATE,
     }
 
     public enum TOGGLE_EVENT
