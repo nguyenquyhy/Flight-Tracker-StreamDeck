@@ -36,12 +36,23 @@ However, with great power comes great responsibility: you have to do a bit of se
 | Title | This is the built-in title of any Stream Deck button. We hide this by default. You should consider using the next parameter instead. | *Empty* |
 | Header | This is similar to title but with a pre-defined font, size and position that looks nice on the button. | HDG |
 | Toggle event | The SimConnect event that triggers when the button is tapped on.<br />You can find the supporting event ID in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination of each ID can be found in [Prepar3D SDK - Event IDs](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/event_ids.html) or MSFS SDK docs. | KEY_AP_PANEL_HEADING_HOLD |
-| Toggle parameter | The parameter to pass along with the event | 1 |
+| Toggle parameter | The parameter to pass along with the event. This can be a number or a SimConnect variable. If using a variable, the value of the variable will be passed to the event. | 1 <BR/> PLANE HEADING DEGREES MAGNETIC |
 | Feedback value | The SimConnect variable that indicates if the button is *active* or not. Active state will show a green light or a green number (if `Display value` below is set) on the button.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.<br />You can also use some comparison operators such as "==", "!=", ">", "<", ">=", "<=" between a variable and a value or between 2 variables. | AUTOPILOT HEADING LOCK<br />FLAPS HANDLE INDEX==2 |
 | Display value | The SimConnect variable (any numeric unit) to display as a number below the header.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.  | AUTOPILOT HEADING LOCK DIR |
 
 This button allows you to choose custom button images for active and inactive states. 
 The image should be of size 72x72 pixel (or 144x144 for higher res decks) and should be in PNG format.
+
+Example generic toggle button that displays the current value of the autopilot heading bug, and syncs the heading bug with the aircraft's current heading when pushed:
+
+| Parameter | Value |
+|-----------|-------|
+| Title | *Empty* |
+| Header | HDG |
+| Toggle event | HEADING_BUG_SET |
+| Toggle parameter | PLANE HEADING DEGREES MAGNETIC |
+| Feedback value | *Empty* |
+| Display value | AUTOPILOT HEADING LOCK DIR |
 
 ##### Preset Toggle Button
 

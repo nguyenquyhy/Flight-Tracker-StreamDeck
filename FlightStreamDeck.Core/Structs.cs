@@ -819,6 +819,7 @@
         AUTO_THROTTLE_TO_GA,
         HEADING_BUG_INC,
         HEADING_BUG_DEC,
+        HEADING_BUG_SET,
         AP_PANEL_SPEED_HOLD,
         AP_ALT_VAR_INC,
         AP_ALT_VAR_DEC,
