@@ -52,7 +52,10 @@ namespace FlightStreamDeck.Logics.Actions
         private GenericToggleSettings settings = null;
 
         private TOGGLE_EVENT? toggleEvent = null;
-        private uint? toggleEventData = null;
+        private uint? toggleEventDataUInt = null;
+        private TOGGLE_VALUE? toggleEventDataVariable = null;
+        private string toggleEventDataVariableValue = null;
+
         private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
         private IExpression expression;
         private TOGGLE_VALUE? displayValue = null;
@@ -87,14 +90,12 @@ namespace FlightStreamDeck.Logics.Actions
             this.settings = settings;
 
             TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
-            if (uint.TryParse(settings.ToggleValueData, out var toggleParameter))
-            {
-                toggleEventData = toggleParameter;
-            }
+            (var newToggleEventDataUInt, var newToggleEventDataVariable) = enumConverter.GetUIntOrVariable(settings.ToggleValueData);
+
             (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
 
-            if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue)
+            if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue || newToggleEventDataVariable != toggleEventDataVariable)
             {
                 DeRegisterValues();
             }
@@ -103,6 +104,8 @@ namespace FlightStreamDeck.Logics.Actions
             feedbackVariables = newFeedbackVariables;
             expression = newExpression;
             displayValue = newDisplayValue;
+            toggleEventDataUInt = newToggleEventDataUInt;
+            toggleEventDataVariable = newToggleEventDataVariable;
 
             RegisterValues();
         }
@@ -120,6 +123,11 @@ namespace FlightStreamDeck.Logics.Actions
                 string newValue = e.GenericValueStatus[displayValue.Value];
                 isUpdated |= newValue != currentValue;
                 currentValue = newValue;
+            }
+
+            if (toggleEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey(toggleEventDataVariable.Value))
+            {
+                toggleEventDataVariableValue = e.GenericValueStatus[toggleEventDataVariable.Value];
             }
 
             if (isUpdated)
@@ -227,18 +235,32 @@ namespace FlightStreamDeck.Logics.Actions
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
             foreach (var feedbackVariable in feedbackVariables) flightConnector.RegisterSimValue(feedbackVariable);
             if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+            if (toggleEventDataVariable.HasValue) flightConnector.RegisterSimValue(toggleEventDataVariable.Value);
         }
 
         private void DeRegisterValues()
         {
             foreach (var feedbackVariable in feedbackVariables) flightConnector.DeRegisterSimValue(feedbackVariable);
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
+            if (toggleEventDataVariable.HasValue) flightConnector.DeRegisterSimValue(toggleEventDataVariable.Value);
             currentValue = null;
+            toggleEventDataVariableValue = null;
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue) flightConnector.Trigger(toggleEvent.Value, toggleEventData ?? 0);
+            if (toggleEvent.HasValue)
+            {
+                if (!(toggleEventDataVariable is null) && double.TryParse(toggleEventDataVariableValue, out double parameterValue))
+                {
+                    uint parameterForSimConnect = Convert.ToUInt32(Math.Round(parameterValue));
+                    flightConnector.Trigger(toggleEvent.Value, parameterForSimConnect);
+                }
+                else
+                {
+                    flightConnector.Trigger(toggleEvent.Value, toggleEventDataUInt ?? 0);
+                }
+            }
             return Task.CompletedTask;
         }
 
