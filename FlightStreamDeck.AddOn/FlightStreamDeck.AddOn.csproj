@@ -178,8 +178,4 @@
     <Folder Include="Profiles\" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command=".\bin\debug\netcoreapp3.1\deploy.bat" />
-  </Target>
-
 </Project>

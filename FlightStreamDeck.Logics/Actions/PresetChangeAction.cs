@@ -61,6 +61,9 @@ namespace FlightStreamDeck.Logics.Actions
             this.flightConnector = flightConnector;
             timer = new Timer { Interval = 400 };
             timer.Elapsed += Timer_Elapsed;
+            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.VOR1_SET);
+            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.VOR2_SET);
+            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.ADF_SET);
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -134,13 +137,13 @@ namespace FlightStreamDeck.Logics.Actions
                     }
                     break;
                 case ValueChangeFunction.VOR1:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
                     break;
                 case ValueChangeFunction.VOR2:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
                     break;
                 case ValueChangeFunction.ADF:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
                     break;
 
             }
