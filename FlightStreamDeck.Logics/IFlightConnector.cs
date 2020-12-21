@@ -47,6 +47,7 @@ namespace FlightStreamDeck.Logics
         
         void RegisterSimValues(params TOGGLE_VALUE[] simValues);
         void DeRegisterSimValues(params TOGGLE_VALUE[] simValues);
+        void GenericSet(TOGGLE_EVENT evt, uint data);
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs

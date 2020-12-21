@@ -241,6 +241,11 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AVIONICS_TOGGLE, state);
         }
 
+        public void GenericSet(TOGGLE_EVENT evt, uint data)
+        {
+            SendGenericCommand(evt, data);
+        }
+
         private void SendCommand(EVENTS sendingEvent, uint data = 0)
         {
             try
