@@ -33,6 +33,9 @@ namespace FlightStreamDeck.Logics.Actions
         public const string VerticalSpeed = "VerticalSpeed";
         public const string AirSpeed = "AirSpeed";
         public const string VerticalSpeedAirSpeed = "VerticalSpeedAirSpeed";
+        public const string VOR1 = "VOR1";
+        public const string VOR2 = "VOR2";
+        public const string ADF = "ADF";
     }
 
     public class ValueChangeSettings
@@ -95,14 +98,16 @@ namespace FlightStreamDeck.Logics.Actions
                 ValueChangeFunction.VerticalSpeed => (uint)status.ApVs,
                 ValueChangeFunction.AirSpeed => (uint)status.IndicatedAirSpeed,
                 ValueChangeFunction.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.IndicatedAirSpeed : (uint)status.ApVs,
+                ValueChangeFunction.VOR1 => (uint)status.Nav1OBS,
+                ValueChangeFunction.VOR2 => (uint)status.Nav2OBS,
+                ValueChangeFunction.ADF => (uint)status.ADFCard,
                 _ => throw new NotImplementedException($"Value type: {buttonType}")
             };
 
             switch (buttonType)
             {
                 case ValueChangeFunction.Heading:
-                    originalValue = (uint)(originalValue + 360 + sign * increment) % 360;
-                    flightConnector.ApHdgSet(originalValue.Value);
+                    ChangeSphericalValue(sign, increment, null, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.ApHdgSet(value.Value); });
                     break;
 
                 case ValueChangeFunction.Altitude:
@@ -128,6 +133,15 @@ namespace FlightStreamDeck.Logics.Actions
                         ChangeVerticalSpeed(sign);
                     }
                     break;
+                case ValueChangeFunction.VOR1:
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    break;
+                case ValueChangeFunction.VOR2:
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    break;
+                case ValueChangeFunction.ADF:
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    break;
 
             }
         }
@@ -136,6 +150,8 @@ namespace FlightStreamDeck.Logics.Actions
         {
             status = e.AircraftStatus;
         }
+
+
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
@@ -193,6 +209,12 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 flightConnector.ApAirSpeedDec();
             }
+        }
+
+        private void ChangeSphericalValue(int sign, int increment, Core.TOGGLE_EVENT? evt, Action<uint?, Core.TOGGLE_EVENT?> changeValue)
+        {
+            originalValue = (uint)(originalValue + 360 + sign * increment) % 360;
+            changeValue(originalValue, evt);
         }
     }
 }
