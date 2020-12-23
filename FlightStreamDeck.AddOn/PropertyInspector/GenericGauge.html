@@ -38,6 +38,10 @@
             <input class="sdpi-item-value" id="MaxValue" value="" placeholder="100" onchange="updateData()" pattern="[0-9.-]">
         </div>
         <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Value Units</div>
+            <input class="sdpi-item-value" id="ValueUnit" value="" placeholder="empty for default units" onchange="updateData()" pattern="[A-Z0-9: ]*">
+        </div>
+        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Value Precision</div>
             <input class="sdpi-item-value" id="ValuePrecision" value="" placeholder="2" onchange="updateData()" pattern="[0-9]">
         </div>
@@ -109,6 +113,7 @@
             if (settings['ChartThicknessValue']) { ChartThicknessValue.value = settings['ChartThicknessValue'] };
             if (settings['ChartChevronSizeValue']) { ChartChevronSizeValue.value = settings['ChartChevronSizeValue'] };
             if (settings['AbsValText']) { AbsValText.value = settings['AbsValText'] };
+            if (settings['ValueUnit']) { ValueUnit.value = settings['ValueUnit'] };
             if (settings['ValuePrecision']) { ValuePrecision.value = settings['ValuePrecision'] };
             if (settings['HideLabelOutsideMinMaxTop']) { HideLabelOutsideMinMaxTop.checked = settings['HideLabelOutsideMinMaxTop'] };
             if (settings['HideLabelOutsideMinMaxBottom']) { HideLabelOutsideMinMaxBottom.checked = settings['HideLabelOutsideMinMaxBottom'] };
@@ -131,6 +136,7 @@
                 "ChartThicknessValue": ChartThicknessValue.value,
                 "ChartChevronSizeValue": ChartChevronSizeValue.value,
                 "AbsValText": AbsValText.value,
+                "ValueUnit": ValueUnit.value,
                 "ValuePrecision": ValuePrecision.value,
                 "HideLabelOutsideMinMaxTop": HideLabelOutsideMinMaxTop.checked,
                 "HideLabelOutsideMinMaxBottom": HideLabelOutsideMinMaxBottom.checked

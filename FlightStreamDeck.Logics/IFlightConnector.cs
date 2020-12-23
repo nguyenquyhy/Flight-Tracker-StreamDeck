@@ -43,8 +43,10 @@ namespace FlightStreamDeck.Logics
         void RegisterToggleEvent(TOGGLE_EVENT toggleAction);
 
         void RegisterSimValue(TOGGLE_VALUE simValue);
+        void RegisterSimValue(TOGGLE_VALUE simValue, ValueEntry simValueEntry);
         void DeRegisterSimValue(TOGGLE_VALUE simValue);
-        
+        void DeRegisterSimValue(TOGGLE_VALUE simValue, ValueEntry simValueEntry);
+
         void RegisterSimValues(params TOGGLE_VALUE[] simValues);
         void DeRegisterSimValues(params TOGGLE_VALUE[] simValues);
     }

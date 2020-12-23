@@ -20,6 +20,7 @@ namespace FlightStreamDeck.Logics.Actions
         public string DisplayValue { get; set; }
         public string SubDisplayValue { get; set; }
         public string Type { get; set; }
+        public string ValueUnit { get; set; }
         public string ValuePrecision { get; set; }
         public string HeaderBottom { get; set; }
         public string DisplayValueBottom { get; set; }
@@ -42,6 +43,7 @@ namespace FlightStreamDeck.Logics.Actions
                 string.IsNullOrEmpty(DisplayValueBottom) &&
                 string.IsNullOrEmpty(ChartSplitValue) &&
                 string.IsNullOrEmpty(AbsValText) &&
+                string.IsNullOrEmpty(ValueUnit) &&
                 string.IsNullOrEmpty(ValuePrecision) &&
                 !HideLabelOutsideMinMaxTop &&
                 !HideLabelOutsideMinMaxBottom &&
@@ -67,6 +69,7 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? displayValueBottom = null;
         private TOGGLE_VALUE? minValue = null;
         private TOGGLE_VALUE? maxValue = null;
+        private ValueEntry displayValueEntry = new ValueEntry();
 
         private float currentValue = 0;
         private float currentValueBottom = 0;
@@ -86,6 +89,7 @@ namespace FlightStreamDeck.Logics.Actions
             MinValue = "0",
             MaxValue = "30",
             AbsValText = "false",
+            ValueUnit = string.Empty,
             ValuePrecision = "2",
             HideLabelOutsideMinMaxTop = false,
             HideLabelOutsideMinMaxBottom = false
@@ -160,13 +164,21 @@ namespace FlightStreamDeck.Logics.Actions
             TOGGLE_VALUE? newMinValue = enumConverter.GetVariableEnum(this.settings.MinValue);
             TOGGLE_VALUE? newMaxValue = enumConverter.GetVariableEnum(this.settings.MaxValue);
 
-            if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue || newMinValue != minValue || newMaxValue != maxValue)
+            short.TryParse(settings.ValuePrecision, out short result);
+            ValueEntry newDisplayValueEntry = new ValueEntry()
+            {
+                Unit = settings.ValueUnit,
+                Decimals = result
+            };
+
+            if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue || newMinValue != minValue || newMaxValue != maxValue || Newtonsoft.Json.JsonConvert.SerializeObject(newDisplayValueEntry) != Newtonsoft.Json.JsonConvert.SerializeObject(displayValueEntry))
             {
                 DeRegisterValues();
             }
 
             toggleEvent = newToggleEvent;
             displayValue = newDisplayValue;
+            displayValueEntry = newDisplayValueEntry;
             subDisplayValue = newSubDisplayValue;
             displayValueBottom = newDisplayValueBottom;
             minValue = newMinValue;
@@ -226,8 +238,8 @@ namespace FlightStreamDeck.Logics.Actions
         private void RegisterValues()
         {
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
-            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
-            if (subDisplayValue.HasValue) flightConnector.RegisterSimValue(subDisplayValue.Value);
+            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value, displayValueEntry);
+            if (subDisplayValue.HasValue) flightConnector.RegisterSimValue(subDisplayValue.Value, displayValueEntry);
             if (displayValueBottom.HasValue) flightConnector.RegisterSimValue(displayValueBottom.Value);
             if (minValue.HasValue) flightConnector.RegisterSimValue(minValue.Value);
             if (maxValue.HasValue) flightConnector.RegisterSimValue(maxValue.Value);
@@ -235,8 +247,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void DeRegisterValues()
         {
-            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
-            if (subDisplayValue.HasValue) flightConnector.DeRegisterSimValue(subDisplayValue.Value);
+            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value, displayValueEntry);
+            if (subDisplayValue.HasValue) flightConnector.DeRegisterSimValue(subDisplayValue.Value, displayValueEntry);
             if (displayValueBottom.HasValue) flightConnector.DeRegisterSimValue(displayValueBottom.Value);
             if (minValue.HasValue) flightConnector.DeRegisterSimValue(minValue.Value);
             if (maxValue.HasValue) flightConnector.DeRegisterSimValue(maxValue.Value);

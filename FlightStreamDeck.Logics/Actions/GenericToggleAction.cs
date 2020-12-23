@@ -19,6 +19,8 @@ namespace FlightStreamDeck.Logics.Actions
         public string DisplayValue { get; set; }
         public string ImageOn { get; set; }
         public string ImageOff { get; set; }
+        public string DisplayValueUnit { get; set; }
+        public string DisplayValuePrecision { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
@@ -37,6 +39,7 @@ namespace FlightStreamDeck.Logics.Actions
         private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
         private IExpression expression;
         private TOGGLE_VALUE? displayValue = null;
+        private ValueEntry displayValueEntry;
 
         private string currentValue = "";
         private bool currentStatus = false;
@@ -75,7 +78,14 @@ namespace FlightStreamDeck.Logics.Actions
             (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
 
-            if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue)
+            short.TryParse(settings.DisplayValuePrecision, out short result);
+            ValueEntry newDisplayValueEntry = new ValueEntry()
+            {
+                Unit = settings.DisplayValueUnit,
+                Decimals = result
+            };
+
+            if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue || Newtonsoft.Json.JsonConvert.SerializeObject(newDisplayValueEntry) != Newtonsoft.Json.JsonConvert.SerializeObject(displayValueEntry))
             {
                 DeRegisterValues();
             }
@@ -84,6 +94,7 @@ namespace FlightStreamDeck.Logics.Actions
             feedbackVariables = newFeedbackVariables;
             expression = newExpression;
             displayValue = newDisplayValue;
+            displayValueEntry = newDisplayValueEntry;
 
             RegisterValues();
         }
@@ -126,13 +137,13 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
             foreach (var feedbackVariable in feedbackVariables) flightConnector.RegisterSimValue(feedbackVariable);
-            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value, displayValueEntry);
         }
-
+        
         private void DeRegisterValues()
         {
             foreach (var feedbackVariable in feedbackVariables) flightConnector.DeRegisterSimValue(feedbackVariable);
-            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
+            if (displayValue.HasValue ) flightConnector.DeRegisterSimValue(displayValue.Value, displayValueEntry);
             currentValue = null;
         }
 
