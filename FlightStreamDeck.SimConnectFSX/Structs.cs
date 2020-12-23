@@ -131,16 +131,4 @@ namespace FlightStreamDeck.SimConnectFSX
             return Data[index];
         }
     }
-
-    struct ValueEntry
-    {
-        public ValueEntry(string unit, short decimals)
-        {
-            Unit = unit;
-            Decimals = decimals;
-        }
-
-        public string Unit;
-        public short Decimals;
-    }
 }

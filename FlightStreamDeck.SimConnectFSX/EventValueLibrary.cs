@@ -1,16 +1,14 @@
 ﻿using FlightStreamDeck.Core;
-using Microsoft.FlightSimulator.SimConnect;
-using System;
 using System.Collections.Generic;
 
 namespace FlightStreamDeck.SimConnectFSX
 {
-    class EventValueLibrary
+    static class EventValueLibrary
     {
-        private const string DEFAULT_UNIT = "number";
-        private const int DEFAULT_DECIMALS = 0;
+        internal const string DEFAULT_UNIT = "number";
+        internal const int DEFAULT_DECIMALS = 0;
 
-        private static Dictionary<TOGGLE_VALUE, ValueEntry> availableValues = new Dictionary<TOGGLE_VALUE, ValueEntry>()
+        internal static Dictionary<TOGGLE_VALUE, ValueEntry> availableValues = new Dictionary<TOGGLE_VALUE, ValueEntry>()
         {
             { TOGGLE_VALUE.THROTTLE_LOWER_LIMIT, new ValueEntry("Percent", 2) },
             { TOGGLE_VALUE.GENERAL_ENG_RPM__1, new ValueEntry("Rpm", 1) },
@@ -348,24 +346,44 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.PROP_THRUST__3, new ValueEntry("Pounds", 2) },
             { TOGGLE_VALUE.PROP_THRUST__4, new ValueEntry("Pounds", 2) },
         };
+    }
 
-        public EventValueLibrary()
+    public static class EventValueLibraryExtensions
+    {
+        public static string GetUnit(this TOGGLE_VALUE value, Dictionary<TOGGLE_VALUE, ValueEntry> specifiedValuesWithUnitAndDecimals)
         {
+            string output = EventValueLibrary.DEFAULT_UNIT;
+
+            if (specifiedValuesWithUnitAndDecimals.ContainsKey(value))
+            {
+                output = specifiedValuesWithUnitAndDecimals[value].Unit;
+            }
+            else if (EventValueLibrary.availableValues.ContainsKey(value))
+            {
+                output = EventValueLibrary.availableValues[value].Unit;
+            }
+
+            output = output == null ? EventValueLibrary.DEFAULT_UNIT : output;
+
+            return output;
         }
 
-        public bool isSpecial(TOGGLE_VALUE value)
+        public static int GetDecimals(this TOGGLE_VALUE value, Dictionary<TOGGLE_VALUE, ValueEntry> specifiedValuesWithUnitAndDecimals)
         {
-            return availableValues.ContainsKey(value);
-        }
+            int output = EventValueLibrary.DEFAULT_DECIMALS;
 
-        public string GetUnit(TOGGLE_VALUE value)
-        {
-            return isSpecial(value) ? availableValues[value].Unit : DEFAULT_UNIT;
-        }
+            if (specifiedValuesWithUnitAndDecimals.ContainsKey(value))
+            {
+                output = specifiedValuesWithUnitAndDecimals[value].Decimals;
+            }
+            else if (EventValueLibrary.availableValues.ContainsKey(value))
+            {
+                output = EventValueLibrary.availableValues[value].Decimals;
+            }
 
-        public int GetDecimals(TOGGLE_VALUE value)
-        {
-            return isSpecial(value) ? availableValues[value].Decimals : DEFAULT_DECIMALS;
+            output = output == int.MinValue ? EventValueLibrary.DEFAULT_DECIMALS : output;
+
+            return output;
         }
     }
 }

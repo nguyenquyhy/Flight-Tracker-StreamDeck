@@ -27,6 +27,14 @@
             <div class="sdpi-item-label">Display value</div>
             <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" pattern="[A-Z0-9: ]*">
         </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Display Value Units</div>
+            <input class="sdpi-item-value" id="DisplayValueUnit" value="" placeholder="empty for default units" pattern="[A-Z0-9: ]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Display Value Precision</div>
+            <input class="sdpi-item-value" id="DisplayValuePrecision" value="" placeholder="Empty for default precision" pattern="[A-Z0-9: ]*">
+        </div>
         <div type="group" class="sdpi-item" id="messagegroup">
             <div class="sdpi-item-label">Custom ON/OFF images</div>
             <div class="sdpi-item-group">
@@ -63,6 +71,8 @@
             if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
             if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+            if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
+            if (settings['DisplayValuePrecision']) { DisplayValuePrecision.value = settings['DisplayValuePrecision'] };
             if (settings['ImageOn']) {
                 setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
             };
