@@ -851,6 +851,9 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void Trigger(TOGGLE_EVENT toggleAction, uint data = 0)
         {
+            ///attempt to add it to the generics, if it isnt there already
+            ///was getting some weird edge cases when coming back from the numpad profiles on nav/com/xpdr actions
+            RegisterToggleEvent(toggleAction);
             logger.LogInformation("Toggle {action} {data}", toggleAction, data);
             SendGenericCommand(toggleAction, data);
         }
