@@ -511,6 +511,24 @@ namespace FlightStreamDeck.SimConnectFSX
                 SIMCONNECT_DATATYPE.INT32,
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "NAV OBS:1",
+                "Degrees",
+                SIMCONNECT_DATATYPE.FLOAT64,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "NAV OBS:2",
+                "Degrees",
+                SIMCONNECT_DATATYPE.FLOAT64,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "ADF CARD",
+                "Degrees",
+                SIMCONNECT_DATATYPE.FLOAT64,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
 
             // IMPORTANT: register it with the simconnect managed wrapper marshaller
             // if you skip this step, you will only receive a uint in the .dwData field.
@@ -529,6 +547,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         if (flightStatus.HasValue)
                         {
                             logger.LogTrace("Get Aircraft status");
+                            logger.LogDebug($"Nav1: {flightStatus.Value.Nav1OBS} / Nav2: {flightStatus.Value.Nav2OBS} / Nav1: {flightStatus.Value.ADFCard}");
                             AircraftStatusUpdated?.Invoke(this, new AircraftStatusUpdatedEventArgs(
                                 new AircraftStatus
                                 {
@@ -563,7 +582,10 @@ namespace FlightStreamDeck.SimConnectFSX
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,
                                     FreqencyCom2 = flightStatus.Value.Com2,
-                                    IsAvMasterOn = flightStatus.Value.AvMasterOn == 1
+                                    IsAvMasterOn = flightStatus.Value.AvMasterOn == 1,
+                                    Nav1OBS = flightStatus.Value.Nav1OBS,
+                                    Nav2OBS = flightStatus.Value.Nav2OBS,
+                                    ADFCard = flightStatus.Value.ADFCard,
                                 }));
                         }
                         else

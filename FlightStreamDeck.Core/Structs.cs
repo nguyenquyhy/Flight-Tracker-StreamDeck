@@ -567,6 +567,8 @@
         NAV_SOUND__1,
         NAV_SOUND__2,
         SIMULATION_RATE,
+        NAV_OBS__1,
+        NAV_OBS__2,
     }
 
     public enum TOGGLE_EVENT
@@ -1309,6 +1311,9 @@
         COM_STBY_RADIO_SET,
         COM2_STBY_RADIO_SET,
         XPNDR_SET,
+        VOR1_SET,
+        VOR2_SET,
+        ADF_SET,
         AP_NAV_SELECT_SET,
         SPEED_SLOT_INDEX_SET,
         HEADING_SLOT_INDEX_SET,

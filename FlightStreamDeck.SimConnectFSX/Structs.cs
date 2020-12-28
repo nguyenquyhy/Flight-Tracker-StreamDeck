@@ -53,7 +53,7 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_AIRSPEED_SET,
         AP_AIRSPEED_INC,
         AP_AIRSPEED_DEC,
-        AVIONICS_TOGGLE
+        AVIONICS_TOGGLE,
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
@@ -111,6 +111,9 @@ namespace FlightStreamDeck.SimConnectFSX
         public int Com1;
         public int Com2;
         public int AvMasterOn;
+        public double Nav1OBS;
+        public double Nav2OBS;
+        public double ADFCard;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
