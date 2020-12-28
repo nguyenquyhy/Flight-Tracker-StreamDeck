@@ -137,13 +137,13 @@ namespace FlightStreamDeck.Logics.Actions
                     }
                     break;
                 case ValueChangeFunction.VOR1:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
                     break;
                 case ValueChangeFunction.VOR2:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
                     break;
                 case ValueChangeFunction.ADF:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
                     break;
 
             }
@@ -153,8 +153,6 @@ namespace FlightStreamDeck.Logics.Actions
         {
             status = e.AircraftStatus;
         }
-
-
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
