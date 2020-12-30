@@ -1,24 +1,43 @@
 ﻿using FlightStreamDeck.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    /// <summary>
+    /// Note: We need to fix the JSON property names to avoid conversion to camel case
+    /// </summary>
     public class GenericToggleSettings
     {
+        [JsonProperty(nameof(Header))]
         public string Header { get; set; }
+        [JsonProperty(nameof(ToggleValue))]
         public string ToggleValue { get; set; }
+        [JsonProperty(nameof(ToggleValueData))]
         public string ToggleValueData { get; set; }
+        [JsonProperty(nameof(FeedbackValue))]
         public string FeedbackValue { get; set; }
+        [JsonProperty(nameof(DisplayValue))]
         public string DisplayValue { get; set; }
+        [JsonProperty(nameof(ImageOn))]
         public string ImageOn { get; set; }
+        [JsonProperty(nameof(ImageOn_base64))]
+        public string ImageOn_base64 { get; set; }
+        [JsonProperty(nameof(ImageOff))]
         public string ImageOff { get; set; }
+        [JsonProperty(nameof(ImageOff_base64))]
+        public string ImageOff_base64 { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
@@ -118,8 +137,89 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            InitializeSettings(args.Payload.ToObject<GenericToggleSettings>());
+            if (args.Payload.TryGetValue("convertToEmbed", out JToken fileKeyObject))
+            {
+                var fileKey = fileKeyObject.Value<string>();
+                await ConvertLinkToEmbed(fileKey);
+            }
+            else if (args.Payload.TryGetValue("convertToLink", out fileKeyObject))
+            {
+                var fileKey = fileKeyObject.Value<string>();
+
+                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
+            }
+            else
+            {
+                InitializeSettings(args.Payload.ToObject<GenericToggleSettings>());
+            }
             await UpdateImage();
+        }
+
+        private async Task ConvertLinkToEmbed(string fileKey)
+        {
+            switch (fileKey)
+            {
+                case "ImageOn":
+                    settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
+                    break;
+                case "ImageOff":
+                    settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
+                    break;
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
+        }
+
+        private async Task ConvertEmbedToLink(string fileKey)
+        {
+            var dialog = new SaveFileDialog
+            {
+                FileName = fileKey switch
+                {
+                    "ImageOn" => Path.GetFileName(settings.ImageOn),
+                    "ImageOff" => Path.GetFileName(settings.ImageOff),
+                    _ => "image.png"
+                },
+                Filter = "Images|*.jpg;*.jpeg;*.png"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                var bytes = fileKey switch
+                {
+                    "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
+                    "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
+                    _ => null
+                };
+                if (bytes != null)
+                {
+                    File.WriteAllBytes(dialog.FileName, bytes);
+                }
+                switch (fileKey)
+                {
+                    case "ImageOn":
+                        settings.ImageOn_base64 = null;
+                        settings.ImageOn = dialog.FileName.Replace("\\", "/");
+                        break;
+                    case "ImageOff":
+                        settings.ImageOff_base64 = null;
+                        settings.ImageOff = dialog.FileName.Replace("\\", "/");
+                        break;
+                }
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
         }
 
         private void RegisterValues()
@@ -146,7 +246,23 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus, currentValue, settings.ImageOn, settings.ImageOff));
+                byte[] imageOnBytes = null;
+                byte[] imageOffBytes = null;
+                if (settings.ImageOn_base64 != null)
+                {
+                    var s = settings.ImageOn_base64;
+                    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                    imageOnBytes = Convert.FromBase64String(s);
+                }
+                if (settings.ImageOff_base64 != null)
+                {
+                    var s = settings.ImageOff_base64;
+                    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                    imageOffBytes = Convert.FromBase64String(s);
+                }
+                await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus, currentValue,
+                    imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
             }
         }
     }

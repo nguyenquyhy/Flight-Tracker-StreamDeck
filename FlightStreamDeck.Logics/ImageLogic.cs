@@ -12,7 +12,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string value = null, string customActiveBackground = null, string customBackground = null);
+        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
@@ -31,10 +31,12 @@ namespace FlightStreamDeck.Logics
         private const int HALF_WIDTH = 36;
 
         /// <summary>
-        /// 
+        /// NOTE: either filePath or bytes should be set at the same time
         /// </summary>
         /// <returns>Base64 image data</returns>
-        public string GetImage(string text, bool active, string value = null, string customActiveBackground = null, string customBackground = null)
+        public string GetImage(string text, bool active, string value = null, 
+            string imageOnFilePath = null, byte[] imageOnBytes = null,
+            string imageOffFilePath = null, byte[] imageOffBytes = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
@@ -48,13 +50,34 @@ namespace FlightStreamDeck.Logics
             Image img;
             if (active)
             {
-                img = !string.IsNullOrEmpty(customActiveBackground) && File.Exists(customActiveBackground) ?
-                    Image.Load(customActiveBackground) : (!hasValue ? defaultActiveBackground : defaultBackground);
+                if (imageOnBytes != null)
+                {
+                    img = Image.Load(imageOnBytes, new PngDecoder());
+                }
+                else if (!string.IsNullOrEmpty(imageOnFilePath) && File.Exists(imageOnFilePath))
+                {
+                    img = Image.Load(imageOnFilePath);
+                }
+                else
+                {
+                    img = !hasValue ? defaultActiveBackground : defaultBackground;
+                }
             }
             else
             {
-                img = !string.IsNullOrEmpty(customBackground) && File.Exists(customBackground) ?
-                    Image.Load(customBackground) : defaultBackground;
+                if (imageOffBytes != null)
+                {
+                    img = Image.Load(imageOffBytes, new PngDecoder());
+                }
+                else if (!string.IsNullOrEmpty(imageOffFilePath) && File.Exists(imageOffFilePath))
+                {
+                    img = Image.Load(imageOffFilePath);
+                }
+                else
+                {
+                    img = defaultBackground;
+                }
+                
             }
 
             using var img2 = img.Clone(ctx =>

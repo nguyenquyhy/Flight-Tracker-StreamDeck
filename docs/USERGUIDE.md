@@ -40,8 +40,7 @@ However, with great power comes great responsibility: you have to do a bit of se
 | Feedback value | The SimConnect variable that indicates if the button is *active* or not. Active state will show a green light or a green number (if `Display value` below is set) on the button.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.<br />You can also use some comparison operators such as "==", "!=", ">", "<", ">=", "<=" between a variable and a value or between 2 variables. | AUTOPILOT HEADING LOCK<br />FLAPS HANDLE INDEX==2 |
 | Display value | The SimConnect variable (any numeric unit) to display as a number below the header.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.  | AUTOPILOT HEADING LOCK DIR |
 
-This button allows you to choose custom button images for active and inactive states. 
-The image should be of size 72x72 pixel (or 144x144 for higher res decks) and should be in PNG format.
+This button allows you to choose custom button images for active and inactive states. Please check out Custom images section below for more details.
 
 ##### Preset Toggle Button
 
@@ -103,6 +102,20 @@ section.
 - If you do not specify a header for a value in the top or bottom, it won't show that respective value or chevron.  If you want a blank chevron, simply put a blank space in, it will recognize that.
 - There is now a concept of a `Sub Display value`.  In my example for Indicated Altitude, the inches of MG displayed by adding `KOHLSMAN_SETTING_HG` to that setting.
 
+#### Custom Images
+
+Custom active/inactive images should be of size 72x72 pixel (or 144x144 for Stream Deck XL) and should be in PNG format.
+There are 2 ways to use custom images in the plugins.
+
+| Embed | Link |
+|-------|------|
+| The whole image is stored in the profile. | The path to the image is stored in the profile. |
+| Profile export with custom images works on any PCs. | The importing PCs need to have the custom images in the same folder. |
+| Needs to have the original image or to change back to Link mode to edit | Is easier to edit the image and immediately see the change |
+| Profile is heavier and might reach some limitation of Stream Deck. | Profile is very light. |
+
+The plugin also allows you to switch between the 2 modes by clicking on the other mode and click OK on the prompt.
+
 ### MobiFlight WASM Module Integration
 
 [MobiFlight](https://www.mobiflight.com/en/download.html) has put some awesome work together to allow MSFS users to have access to some events that we haven't gotten in the SDK yet!  One of the most requested things yet has been GPS/G1000/ETC integration with the streamdeck plugin, but the SDK has been lagging behind.
@@ -128,7 +141,6 @@ We've included a quick GNS 530 example for the knobs and basic buttons [here](ht
 
 ### Known Issues
 
-- At the moment, the customm images are stored as absolute path to the image files, so it is not very user friendly for exporting and importing to another PC. We are working on image embedding feature for future updates.
 - If you spam the same buttons too quickly, SimConnect will get error and stop responding to any further command. The plugin will try to automatically reconnect. 
   - However, if you see the message "Connected to Flight Simulator" flashing constantly in the sim, the plugin might be in a infinitely retry loop. In this case, close Stream Deck software on your PC (which will kill the plugin), wait a couple of seconds for all the SimConnect connections to close, and re-open Stream Deck.
 - When you setup new generic buttons or COM/NAV button, the registration between the plugin and SimConnect might get messed up and the plugin stops receiving data. In this case, you'll need to restart Stream Deck software.

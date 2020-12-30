@@ -34,8 +34,9 @@
                     <div class="sdpi-item-label">ON image</div>
                     <div class="sdpi-item-group file">
                         <input class="sdpi-item-value" type="file" id="ImageOn" accept=".jpg, .jpeg, .png">
-                        <label class="sdpi-file-info" for="ImageOn">no file...</label>
-                        <label class="sdpi-file-label" for="ImageOn">Choose...</label>
+                        <label class="sdpi-file-info">no file...</label>
+                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleEmbed(this)">Embed</label>
+                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleLink(this)">Link</label>
                         <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn">Clear</label>
                     </div>
                 </div>
@@ -43,15 +44,18 @@
                     <div class="sdpi-item-label">OFF image</div>
                     <div class="sdpi-item-group file">
                         <input class="sdpi-item-value" type="file" id="ImageOff" accept=".jpg, .jpeg, .png">
-                        <label class="sdpi-file-info" for="ImageOff">no file...</label>
-                        <label class="sdpi-file-label" for="ImageOff">Choose...</label>
+                        <label class="sdpi-file-info">no file...</label>
+                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleEmbed(this)">Embed</label>
+                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleLink(this)">Link</label>
                         <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOff">Clear</label>
                     </div>
                 </div>
+                <input type="hidden" id="IsEmbedding" />
             </div>
         </div>
     </div>
     <script src="common.js"></script>
+    <script src="embedimages.js"></script>
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
             if (settings['Header']) { Header.value = settings['Header'] };
@@ -60,18 +64,11 @@
             if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['ImageOn']) {
-                setFileLabel(on_image_file_selector, settings['ImageOn']);
+                setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
             };
             if (settings['ImageOff']) {
-                setFileLabel(off_image_file_selector, settings['ImageOff']);
+                setFileLabel(off_image_file_selector, settings['ImageOff'], !!settings['ImageOff_base64']);
             };
-        }
-
-        function handleItemChanged(control, value) {
-            settings[value.key] = value.value;
-
-            sendValueToPlugin(settings);
-            setSettings(settings);
         }
     </script>
     <script src="init.js"></script>

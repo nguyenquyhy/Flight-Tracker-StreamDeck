@@ -6,16 +6,18 @@
     }
 })
 
-function setFileLabel(wrapper, value) {
+function setFileLabel(wrapper, value, hasBase64) {
     const info = wrapper.querySelector('.sdpi-file-info');
     if (info) {
         if (value) {
             const s = value.split('/').pop();
-            info.textContent = s.length > 28
+            const fileName = s.length > 28
                 ? s.substr(0, 10)
                 + '...'
                 + s.substr(s.length - 10, s.length)
                 : s;
+            info.textContent = (hasBase64 ? '(Embed) ' : '') + fileName;
+            info.setAttribute('title', hasBase64 ? 'Embedded ' + fileName : value);
         } else {
             info.textContent = 'no file...';
         }

@@ -145,6 +145,9 @@
     <None Update="PropertyInspector\common.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="PropertyInspector\embedimages.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="PropertyInspector\GenericGauge.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

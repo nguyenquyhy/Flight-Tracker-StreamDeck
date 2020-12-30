@@ -1,20 +1,34 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
+    /// <summary>
+    /// Note: We need to fix the JSON property names to avoid conversion to camel case
+    /// </summary>
     public class PresetToggleSettings
     {
+        [JsonProperty(nameof(Type))]
         public string Type { get; set; }
+        [JsonProperty(nameof(HideHeader))]
         public bool HideHeader { get; set; }
+        [JsonProperty(nameof(ImageOn))]
         public string ImageOn { get; set; }
+        [JsonProperty(nameof(ImageOn_base64))]
+        public string ImageOn_base64 { get; set; }
+        [JsonProperty(nameof(ImageOff))]
         public string ImageOff { get; set; }
+        [JsonProperty(nameof(ImageOff_base64))]
+        public string ImageOff_base64 { get; set; }
     }
 
     public class PresetFunction
@@ -156,8 +170,88 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            InitializeSettings(args.Payload.ToObject<PresetToggleSettings>());
+            if (args.Payload.TryGetValue("convertToEmbed", out JToken fileKeyObject))
+            {
+                var fileKey = fileKeyObject.Value<string>();
+                await ConvertLinkToEmbed(fileKey);
+            }
+            else if (args.Payload.TryGetValue("convertToLink", out fileKeyObject))
+            {
+                var fileKey = fileKeyObject.Value<string>();
+
+                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
+            }
+            else
+            {
+                InitializeSettings(args.Payload.ToObject<PresetToggleSettings>());
+            }
             await UpdateImage();
+        }
+        private async Task ConvertLinkToEmbed(string fileKey)
+        {
+            switch (fileKey)
+            {
+                case "ImageOn":
+                    settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
+                    break;
+                case "ImageOff":
+                    settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
+                    break;
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
+        }
+
+        private async Task ConvertEmbedToLink(string fileKey)
+        {
+            var dialog = new SaveFileDialog
+            {
+                FileName = fileKey switch
+                {
+                    "ImageOn" => Path.GetFileName(settings.ImageOn),
+                    "ImageOff" => Path.GetFileName(settings.ImageOff),
+                    _ => "image.png"
+                },
+                Filter = "Images|*.jpg;*.jpeg;*.png"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                var bytes = fileKey switch
+                {
+                    "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
+                    "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
+                    _ => null
+                };
+                if (bytes != null)
+                {
+                    File.WriteAllBytes(dialog.FileName, bytes);
+                }
+                switch (fileKey)
+                {
+                    case "ImageOn":
+                        settings.ImageOn_base64 = null;
+                        settings.ImageOn = dialog.FileName.Replace("\\", "/");
+                        break;
+                    case "ImageOff":
+                        settings.ImageOff_base64 = null;
+                        settings.ImageOff = dialog.FileName.Replace("\\", "/");
+                        break;
+                }
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -242,40 +336,72 @@ namespace FlightStreamDeck.Logics.Actions
         private async Task UpdateImage()
         {
             var currentStatus = status;
-            if (currentStatus != null)
+            if (currentStatus != null && settings != null)
             {
+                byte[] imageOnBytes = null;
+                byte[] imageOffBytes = null;
+                if (settings.ImageOn_base64 != null)
+                {
+                    var s = settings.ImageOn_base64;
+                    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                    imageOnBytes = Convert.FromBase64String(s);
+                }
+                if (settings.ImageOff_base64 != null)
+                {
+                    var s = settings.ImageOff_base64;
+                    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                    imageOffBytes = Convert.FromBase64String(s);
+                }
+
                 switch (settings.Type)
                 {
                     case PresetFunction.Avionics:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn,
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.ApMaster:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn,
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.Heading:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(),
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.Nav:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn,
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.Altitude:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(),
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.VerticalSpeed:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(), customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(),
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.FLC:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff, value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn,
+                            value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null,
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.Approach:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn, customActiveBackground: settings.ImageOn, customBackground: settings.ImageOff));
+                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn,
+                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
                 }
             }

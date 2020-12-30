@@ -1257,8 +1257,11 @@ input:required:valid {
 .sdpi-file-info {
     overflow-wrap: break-word;
     word-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
     hyphens: auto;
-    min-width: 132px;
+    min-width: 112px;
     max-width: 144px;
     max-height: 32px;
     margin-top: 0px;
