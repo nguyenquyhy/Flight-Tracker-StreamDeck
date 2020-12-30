@@ -569,6 +569,7 @@
         SIMULATION_RATE,
         NAV_OBS__1,
         NAV_OBS__2,
+        RECIP_ENG_COWL_FLAP_POSITION__1
     }
 
     public enum TOGGLE_EVENT

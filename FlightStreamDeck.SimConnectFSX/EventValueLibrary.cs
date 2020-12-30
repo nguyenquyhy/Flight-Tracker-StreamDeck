@@ -332,6 +332,7 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.TURB_ENG_PRIMARY_NOZZLE_PERCENT__2, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.NAV_OBS__1, new ValueEntry("Degrees", 0) },
             { TOGGLE_VALUE.NAV_OBS__2, new ValueEntry("Degrees", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_COWL_FLAP_POSITION__1, new ValueEntry("Percent", 2) },
         };
 
         public EventValueLibrary()
