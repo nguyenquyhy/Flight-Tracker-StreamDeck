@@ -6,7 +6,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.IO;
-using System.Linq;
 
 namespace FlightStreamDeck.Logics
 {
@@ -23,7 +22,7 @@ namespace FlightStreamDeck.Logics
     public class ImageLogic : IImageLogic
     {
         readonly Image defaultBackground = Image.Load("Images/button.png");
-        readonly Image defaultActiveBackground = Image.Load("Images/button_active.png");   
+        readonly Image defaultActiveBackground = Image.Load("Images/button_active.png");
         readonly Image horizon = Image.Load("Images/horizon.png");
         readonly Image gaugeImage = Image.Load("Images/gauge.png");
 
@@ -34,7 +33,7 @@ namespace FlightStreamDeck.Logics
         /// NOTE: either filePath or bytes should be set at the same time
         /// </summary>
         /// <returns>Base64 image data</returns>
-        public string GetImage(string text, bool active, string value = null, 
+        public string GetImage(string text, bool active, string value = null,
             string imageOnFilePath = null, byte[] imageOnBytes = null,
             string imageOffFilePath = null, byte[] imageOffBytes = null)
         {
@@ -77,7 +76,7 @@ namespace FlightStreamDeck.Logics
                 {
                     img = defaultBackground;
                 }
-                
+
             }
 
             using var img2 = img.Clone(ctx =>
@@ -250,7 +249,7 @@ namespace FlightStreamDeck.Logics
 
                 ctx.DrawLines(pen, needle);
 
-                FontRectangle size = new FontRectangle(0, 0, 0, 0); 
+                FontRectangle size = new FontRectangle(0, 0, 0, 0);
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
@@ -292,35 +291,43 @@ namespace FlightStreamDeck.Logics
                 //2 = nominal : Green
                 //3 = superb : No Color
                 Color[] colors = { Color.Red, Color.Yellow, Color.Green };
-                PointF? stepWidth = null, previousWidth = new PointF(width_margin, HALF_WIDTH);
+                PointF previousWidth = new PointF(width_margin, HALF_WIDTH);
                 int colorSentinel = 0;
 
-                splitGauge?.ToList().ForEach(pct => {
+                foreach (var pct in splitGauge ?? Array.Empty<string>())
+                {
                     string[] split = pct.Split(':');
                     if (float.TryParse(split[0], out float critFloatWidth) && colors.Length > colorSentinel)
                     {
-                        stepWidth = new PointF(((PointF)previousWidth).X + ((critFloatWidth / 100) * img_width), HALF_WIDTH);
-                        PointF[] critical = { (PointF)previousWidth, (PointF)stepWidth };
+                        PointF stepWidth = previousWidth + new SizeF(critFloatWidth / 100f * img_width, 0);
+
                         Color? color = null;
                         if (split.Length > 1 && split[1] != string.Empty)
                         {
-                            try
-                            {
-                                System.Drawing.Color temp = System.Drawing.Color.FromName(split[1]);
-                                color = Color.FromRgb(temp.R, temp.G, temp.B);
-                            } finally
-                            {}
-                        } else if (colors.Length > colorSentinel)
+                            System.Drawing.Color temp = System.Drawing.Color.FromName(split[1]);
+                            color = Color.FromRgb(temp.R, temp.G, temp.B);
+                        }
+                        else if (colors.Length > colorSentinel)
                         {
                             color = colors[colorSentinel];
                             colorSentinel += 1;
                         }
 
-                        if (color != null) ctx.DrawLines(new Pen((Color)color, chartWidth), critical);
+                        if (color != null)
+                        {
+                            var shift = new SizeF(0, chartWidth / 2f);
+                            ctx.FillPolygon(
+                                color.Value,
+                                previousWidth - shift,
+                                previousWidth + shift,
+                                stepWidth + shift,
+                                stepWidth - shift
+                            );
+                        }
 
                         previousWidth = stepWidth;
                     }
-                });
+                }
 
                 //topValue
                 float.TryParse(valueTop, out float floatValueTop);
