@@ -95,7 +95,7 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.VELOCITY_BODY_Y, new ValueEntry("meter per second", 0) },
             { TOGGLE_VALUE.VELOCITY_WORLD_Z, new ValueEntry("meter per second", 0) },
             { TOGGLE_VALUE.VELOCITY_WORLD_X, new ValueEntry("meter per second", 0) },
-            { TOGGLE_VALUE.VELOCITY_WORLD_Y, new ValueEntry("meter per second", 0) },
+            { TOGGLE_VALUE.VELOCITY_WORLD_Y, new ValueEntry("feet per minute", 0) },
             { TOGGLE_VALUE.ACCELERATION_WORLD_X, new ValueEntry("meter per second squared", 2) },
             { TOGGLE_VALUE.ACCELERATION_WORLD_Y, new ValueEntry("meter per second squared", 2) },
             { TOGGLE_VALUE.ACCELERATION_WORLD_Z, new ValueEntry("meter per second squared", 2) },
