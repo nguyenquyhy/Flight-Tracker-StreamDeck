@@ -92,7 +92,7 @@ namespace FlightStreamDeck.Logics.Actions
             if (initializationTcs != null)
             {
                 logger.LogDebug("Trigger Task completion for initialization");
-                initializationTcs.SetResult(true);
+                initializationTcs.TrySetResult(true);
             }
         }
 

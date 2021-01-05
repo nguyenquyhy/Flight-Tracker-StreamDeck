@@ -44,14 +44,14 @@ namespace FlightStreamDeck.Logics.Actions
                     case "tech.flighttracker.streamdeck.number.enter":
                         if (DeckLogic.NumpadTcs != null)
                         {
-                            DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, false));
+                            DeckLogic.NumpadTcs.TrySetResult((DeckLogic.NumpadParams.Value, false));
                         }
                         await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                         break;
                     case "tech.flighttracker.streamdeck.number.cancel":
                         if (DeckLogic.NumpadTcs != null)
                         {
-                            DeckLogic.NumpadTcs.SetResult((null, false));
+                            DeckLogic.NumpadTcs.TrySetResult((null, false));
                         }
                         await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
                         break;
@@ -61,14 +61,14 @@ namespace FlightStreamDeck.Logics.Actions
                             DeckLogic.NumpadParams.Value = "1200";
                             if (DeckLogic.NumpadTcs != null)
                             {
-                                DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, false));
+                                DeckLogic.NumpadTcs.TrySetResult((DeckLogic.NumpadParams.Value, false));
                             }
                         }
                         else
                         {
                             if (DeckLogic.NumpadTcs != null)
                             {
-                                DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, true));
+                                DeckLogic.NumpadTcs.TrySetResult((DeckLogic.NumpadParams.Value, true));
                             }
                         }
                         await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
