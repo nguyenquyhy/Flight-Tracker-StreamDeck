@@ -35,6 +35,9 @@ namespace FlightStreamDeck.Logics
         void ApAirSpeedSet(uint speed);
         void ApAirSpeedInc();
         void ApAirSpeedDec();
+        void QNHSet(uint qnh);
+        void QNHInc();
+        void QNHDec();
 
         void AvMasterToggle(uint state);
 
@@ -116,6 +119,8 @@ namespace FlightStreamDeck.Logics
 
         public bool IsApFlcOn { get; set; }
         public int ApAirspeed { get; set; }
+
+        public int QNHMbar { get; set; }
 
         public string Transponder { get; set; }
         public int FreqencyCom1 { get; set; }
