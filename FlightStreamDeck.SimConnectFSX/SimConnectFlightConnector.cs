@@ -124,6 +124,10 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_INC, "AP_SPD_VAR_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_DEC, "AP_SPD_VAR_DEC");
 
+            simconnect.MapClientEventToSimEvent(EVENTS.QNH_SET, "KOHLSMAN_SET");
+            simconnect.MapClientEventToSimEvent(EVENTS.QNH_INC, "KOHLSMAN_INC");
+            simconnect.MapClientEventToSimEvent(EVENTS.QNH_DEC, "KOHLSMAN_DEC");
+
             simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
 
             isGenericValueRegistered = false;
@@ -235,6 +239,22 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             SendCommand(EVENTS.AP_AIRSPEED_DEC);
         }
+
+        public void QNHSet(uint qnh)
+        {
+            SendCommand(EVENTS.QNH_SET, qnh);
+        }
+
+        public void QNHInc()
+        {
+            SendCommand(EVENTS.QNH_INC);
+        }
+
+        public void QNHDec()
+        {
+            SendCommand(EVENTS.QNH_DEC);
+        }
+
 
         public void AvMasterToggle(uint state)
         {
@@ -488,6 +508,13 @@ namespace FlightStreamDeck.SimConnectFSX
             #endregion
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "KOHLSMAN SETTING MB",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 "TRANSPONDER CODE:1",
                 "Hz",
                 SIMCONNECT_DATATYPE.INT32,
@@ -579,6 +606,7 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsApFlcOn = flightStatus.Value.IsApFlcOn == 1,
                                     ApAirspeed = flightStatus.Value.ApAirspeed,
                                     ApVs = flightStatus.Value.ApVs,
+                                    QNHMbar = flightStatus.Value.QNHmbar,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,
                                     FreqencyCom2 = flightStatus.Value.Com2,
