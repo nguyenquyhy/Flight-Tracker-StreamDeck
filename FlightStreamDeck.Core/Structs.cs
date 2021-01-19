@@ -1331,6 +1331,8 @@
         AP_SPD_VAR_SET,
         AVIONICS_MASTER_SET,
         FUEL_SELECTOR_SET,
+        TURBINE_IGNITION_SWITCH_SET1,
+        TURBINE_IGNITION_SWITCH_SET2,
         KOHLSMAN_SET,
 
         MOBIFLIGHT_AS1000_PFD_VOL_1_INC = 10000,
@@ -1482,7 +1484,7 @@
         MOBIFLIGHT_AS3000_PFD_SOFTKEYS_10,
         MOBIFLIGHT_AS3000_PFD_SOFTKEYS_11,
         MOBIFLIGHT_AS3000_PFD_SOFTKEYS_12,
-        
+
         MOBIFLIGHT_AS3000_PFD_BottomKnob_Small_INC,
         MOBIFLIGHT_AS3000_PFD_BottomKnob_Small_DEC,
         MOBIFLIGHT_AS3000_PFD_BottomKnob_Push_Long,
@@ -1493,7 +1495,7 @@
         MOBIFLIGHT_AS3000_PFD_TopKnob_Large_DEC,
         MOBIFLIGHT_AS3000_PFD_TopKnob_Small_INC,
         MOBIFLIGHT_AS3000_PFD_TopKnob_Small_DEC,
-        
+
         MOBIFLIGHT_AS3000_MFD_SOFTKEYS_1,
         MOBIFLIGHT_AS3000_MFD_SOFTKEYS_2,
         MOBIFLIGHT_AS3000_MFD_SOFTKEYS_3,
@@ -1506,7 +1508,7 @@
         MOBIFLIGHT_AS3000_MFD_SOFTKEYS_10,
         MOBIFLIGHT_AS3000_MFD_SOFTKEYS_11,
         MOBIFLIGHT_AS3000_MFD_SOFTKEYS_12,
-        
+
         MOBIFLIGHT_AS3000_TSC_Horizontal_SoftKey_1,
         MOBIFLIGHT_AS3000_TSC_Horizontal_SoftKey_2,
         MOBIFLIGHT_AS3000_TSC_Horizontal_SoftKey_3,
@@ -1519,7 +1521,7 @@
         MOBIFLIGHT_AS3000_TSC_Horizontal_BottomKnob_Small_INC,
         MOBIFLIGHT_AS3000_TSC_Horizontal_BottomKnob_Small_DEC,
         MOBIFLIGHT_AS3000_TSC_Horizontal_BottomKnob_Push,
-        
+
         MOBIFLIGHT_AS3000_TSC_Vertical_BottomKnob_Small_INC,
         MOBIFLIGHT_AS3000_TSC_Vertical_BottomKnob_Small_DEC,
         MOBIFLIGHT_AS3000_TSC_Vertical_BottomKnob_Push_Long,
@@ -1530,7 +1532,7 @@
         MOBIFLIGHT_AS3000_TSC_Vertical_TopKnob_Large_DEC,
         MOBIFLIGHT_AS3000_TSC_Vertical_TopKnob_Small_INC,
         MOBIFLIGHT_AS3000_TSC_Vertical_TopKnob_Small_DEC,
-        
+
         MOBIFLIGHT_KAP140_Push_AP,
         MOBIFLIGHT_KAP140_Push_HDG,
         MOBIFLIGHT_KAP140_Push_NAV,
@@ -1546,12 +1548,12 @@
         MOBIFLIGHT_KAP140_Knob_Inner_DEC,
         MOBIFLIGHT_KAP140_Knob_Outer_INC,
         MOBIFLIGHT_KAP140_Knob_Outer_DEC,
-        
+
         MOBIFLIGHT_oclock_select,
         MOBIFLIGHT_oclock_oat,
         MOBIFLIGHT_oclock_control_long,
         MOBIFLIGHT_oclock_control,
-        
+
         MOBIFLIGHT_AS530_ENT_Push,
         MOBIFLIGHT_AS530_MENU_Push,
         MOBIFLIGHT_AS530_FPL_Push,
@@ -1576,7 +1578,7 @@
         MOBIFLIGHT_AS530_LeftSmallKnob_Right,
         MOBIFLIGHT_AS530_LeftSmallKnob_Left,
         MOBIFLIGHT_AS530_LeftSmallKnob_Push,
-        
+
         MOBIFLIGHT_AS430_ENT_Push,
         MOBIFLIGHT_AS430_MENU_Push,
         MOBIFLIGHT_AS430_FPL_Push,
@@ -1600,13 +1602,13 @@
         MOBIFLIGHT_AS430_LeftSmallKnob_Right,
         MOBIFLIGHT_AS430_LeftSmallKnob_Left,
         MOBIFLIGHT_AS430_LeftSmallKnob_Push,
-        
+
         MOBIFLIGHT_adf_AntAdf,
         MOBIFLIGHT_adf_bfo,
         MOBIFLIGHT_adf_frqTransfert,
         MOBIFLIGHT_adf_FltEt,
         MOBIFLIGHT_adf_SetRst,
-        
+
         MOBIFLIGHT_TransponderIDT,
         MOBIFLIGHT_TransponderVFR,
         MOBIFLIGHT_TransponderCLR,
