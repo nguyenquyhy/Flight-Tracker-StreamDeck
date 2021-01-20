@@ -339,15 +339,15 @@
     }
   ],
   "SDKVersion": 2,
-  "Author": "Pieter van 't Hof and Nguyen Quy Hy and rmroc451",
+  "Author": "Hy, Pieter van 't Hof and rmroc451",
   "CodePath": "FlightStreamDeck.AddOn.exe",
   "Category": "Flight Tracker",
   "CategoryIcon": "Images/categoryIcon",
-  "Description": "Interact with your flight simulator right from your Stream Deck",
+  "Description": "Interact with Microsoft Flight Simulator right from your Stream Deck!",
   "Name": "Flight Tracker",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
-  "Version": "0.23",
+  "Version": "0.24",
   "OS": [
     {
       "Platform": "windows",
