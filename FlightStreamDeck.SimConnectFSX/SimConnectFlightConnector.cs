@@ -41,7 +41,7 @@ namespace FlightStreamDeck.SimConnectFSX
             this.logger = logger;
         }
 
-        // Simconnect client will send a win32 message when there is 
+        // Simconnect client will send a win32 message when there is
         // a packet to process. ReceiveMessage must be called to
         // trigger the events. This model keeps simconnect processing on the main thread.
         public IntPtr HandleSimConnectEvents(IntPtr hWnd, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
@@ -574,7 +574,6 @@ namespace FlightStreamDeck.SimConnectFSX
                         if (flightStatus.HasValue)
                         {
                             logger.LogTrace("Get Aircraft status");
-                            logger.LogDebug($"Nav1: {flightStatus.Value.Nav1OBS} / Nav2: {flightStatus.Value.Nav2OBS} / Nav1: {flightStatus.Value.ADFCard}");
                             AircraftStatusUpdated?.Invoke(this, new AircraftStatusUpdatedEventArgs(
                                 new AircraftStatus
                                 {
@@ -717,8 +716,8 @@ namespace FlightStreamDeck.SimConnectFSX
                     break;
 
                 case SIMCONNECT_EXCEPTION.VERSION_MISMATCH:
-                    // HACK: when sending an event repeatedly, 
-                    // SimConnect might sendd thihs error and stop reacting and responding. 
+                    // HACK: when sending an event repeatedly,
+                    // SimConnect might sendd thihs error and stop reacting and responding.
                     // The workaround would be to force a reconnection.
                     CloseConnection();
                     Closed?.Invoke(this, new EventArgs());
@@ -908,5 +907,5 @@ namespace FlightStreamDeck.SimConnectFSX
         #endregion
     }
 
-    
+
 }

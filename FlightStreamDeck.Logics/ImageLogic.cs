@@ -42,10 +42,10 @@ namespace FlightStreamDeck.Logics
             bool hasValue = value != null && value.Length > 0;
 
             // Note: logic to choose with image to show
-            // 1. If user did not select custom images, the active image (with light) is used 
+            // 1. If user did not select custom images, the active image (with light) is used
             //    only when Feedback value is true AND Display value is empty.
-            // 2. If user select custom images (esp Active one), the custom Active image is used based on Feedback value 
-            //    ignoring Display value. 
+            // 2. If user select custom images (esp Active one), the custom Active image is used based on Feedback value
+            //    ignoring Display value.
             Image img;
             if (active)
             {
