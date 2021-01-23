@@ -683,12 +683,20 @@ namespace FlightStreamDeck.SimConnectFSX
                     while (true)
                     {
                         await Task.Delay(StatusDelayMilliseconds);
-                        cts?.Token.ThrowIfCancellationRequested();
-                        simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.FLIGHT_STATUS, DEFINITIONS.FlightStatus, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
-
-                        if (genericValues.Count > 0 && isGenericValueRegistered)
+                        await smGeneric.WaitAsync();
+                        try
                         {
-                            simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
+                            cts?.Token.ThrowIfCancellationRequested();
+                            simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.FLIGHT_STATUS, DEFINITIONS.FlightStatus, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
+
+                            if (genericValues.Count > 0 && isGenericValueRegistered)
+                            {
+                                simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
+                            }
+                        }
+                        finally
+                        {
+                            smGeneric.Release();
                         }
                     }
                 }
@@ -830,9 +838,9 @@ namespace FlightStreamDeck.SimConnectFSX
 
             Task.Run(async () =>
             {
+                await smGeneric.WaitAsync();
                 try
                 {
-                    await smGeneric.WaitAsync();
 
                     await Task.Delay(500, cts.Token);
                     cts.Token.ThrowIfCancellationRequested();
