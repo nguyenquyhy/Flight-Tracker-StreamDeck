@@ -334,6 +334,10 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.NAV_OBS__2, new ValueEntry("Degrees", 0) },
             { TOGGLE_VALUE.RECIP_ENG_COWL_FLAP_POSITION__1, new ValueEntry("Percent", 2) },
             { TOGGLE_VALUE.TURN_COORDINATOR_BALL, new ValueEntry("Position 128", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__1, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__2, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__3, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__4, new ValueEntry("Psi", 0) },
         };
 
         public EventValueLibrary()
