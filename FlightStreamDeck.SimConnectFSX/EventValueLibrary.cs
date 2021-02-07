@@ -338,6 +338,14 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__2, new ValueEntry("Psi", 0) },
             { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__3, new ValueEntry("Psi", 0) },
             { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__4, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__1, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__2, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__3, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__4, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__1, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__2, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__3, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__4, new ValueEntry("Pounds", 2) },
         };
 
         public EventValueLibrary()

@@ -579,6 +579,14 @@
         RECIP_ENG_MANIFOLD_PRESSURE__2,
         RECIP_ENG_MANIFOLD_PRESSURE__3,
         RECIP_ENG_MANIFOLD_PRESSURE__4,
+        TURB_ENG_JET_THRUST__1,
+        TURB_ENG_JET_THRUST__2,
+        TURB_ENG_JET_THRUST__3,
+        TURB_ENG_JET_THRUST__4,
+        PROP_THRUST__1,
+        PROP_THRUST__2,
+        PROP_THRUST__3,
+        PROP_THRUST__4,
     }
 
     public enum TOGGLE_EVENT
