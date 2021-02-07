@@ -1339,6 +1339,17 @@
         TURBINE_IGNITION_SWITCH_SET2,
         KOHLSMAN_SET,
 
+        ATC_MENU_0,
+        ATC_MENU_1,
+        ATC_MENU_2,
+        ATC_MENU_3,
+        ATC_MENU_4,
+        ATC_MENU_5,
+        ATC_MENU_6,
+        ATC_MENU_7,
+        ATC_MENU_8,
+        ATC_MENU_9,
+
         MOBIFLIGHT_AS1000_PFD_VOL_1_INC = 10000,
         MOBIFLIGHT_AS1000_PFD_VOL_1_DEC,
         MOBIFLIGHT_AS1000_PFD_VOL_2_INC,
