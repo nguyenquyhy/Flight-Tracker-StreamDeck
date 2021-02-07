@@ -165,6 +165,7 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.LEADING_EDGE_FLAPS_RIGHT_PERCENT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.AILERON_LEFT_DEFLECTION_PCT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.AILERON_RIGHT_DEFLECTION_PCT, new ValueEntry("Percent", 0) },
+            { TOGGLE_VALUE.AILERON_TRIM, new ValueEntry("Radians", 2) },
             { TOGGLE_VALUE.AILERON_TRIM_PCT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.RUDDER_DEFLECTION_PCT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.RUDDER_TRIM_PCT, new ValueEntry("Percent", 0) },
