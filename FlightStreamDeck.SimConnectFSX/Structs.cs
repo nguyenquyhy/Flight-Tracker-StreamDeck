@@ -68,7 +68,6 @@ namespace FlightStreamDeck.SimConnectFSX
         public string Model;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
         public string Title;
-        public double EstimatedCruiseSpeed;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

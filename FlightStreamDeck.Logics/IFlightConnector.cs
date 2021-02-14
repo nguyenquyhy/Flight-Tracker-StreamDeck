@@ -6,6 +6,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IFlightConnector
     {
+        event EventHandler<AircraftDataUpdatedEventArgs> AircraftDataUpdated;
         event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
         event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
         void ApOff();
@@ -48,6 +49,16 @@ namespace FlightStreamDeck.Logics
         void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
         void DeRegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
     }
+    public class AircraftDataUpdatedEventArgs : EventArgs
+    {
+        public AircraftDataUpdatedEventArgs(AircraftData aircraftData)
+        {
+            AircraftData = aircraftData;
+        }
+
+        public AircraftData AircraftData { get; }
+    }
+
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
     {
@@ -67,6 +78,13 @@ namespace FlightStreamDeck.Logics
         }
 
         public Dictionary<(TOGGLE_VALUE variable, string unit), double> GenericValueStatus { get; }
+    }
+
+    public class AircraftData
+    {
+        public string Type { get; set; }
+        public string Model { get; set; }
+        public string Title { get; set; }
     }
 
     public class AircraftStatus
