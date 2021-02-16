@@ -34,6 +34,15 @@ namespace FlightStreamDeck.AddOn
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.Hide();
+
+            if (Environment.GetCommandLineArgs().Length <= 1)
+            {
+                MessageBox.Show($"This plugin must be launched by Stream Deck software!\nPlease install it properly by double clicking the .streamDeckPlugin file or find it in Stream Deck's More Actions.",
+                    "Flight Tracker", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+                return;
+            }
+
             deckLogic.Initialize();
 
             // Initialize SimConnect
