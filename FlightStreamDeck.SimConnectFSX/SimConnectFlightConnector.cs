@@ -46,7 +46,7 @@ namespace FlightStreamDeck.SimConnectFSX
         // Simconnect client will send a win32 message when there is
         // a packet to process. ReceiveMessage must be called to
         // trigger the events. This model keeps simconnect processing on the main thread.
-        public IntPtr HandleSimConnectEvents(IntPtr hWnd, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
+        public IntPtr HandleSimConnectEvents(int message, ref bool isHandled)
         {
             isHandled = false;
 

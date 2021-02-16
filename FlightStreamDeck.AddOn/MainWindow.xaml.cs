@@ -44,7 +44,7 @@ namespace FlightStreamDeck.AddOn
                 // Create an event handle for the WPF window to listen for SimConnect events
                 Handle = new WindowInteropHelper(sender as Window).Handle; // Get handle of main WPF Window
                 var HandleSource = HwndSource.FromHwnd(Handle); // Get source of handle in order to add event handlers to it
-                HandleSource.AddHook(simConnect.HandleSimConnectEvents);
+                HandleSource.AddHook(HandleSimConnectHook);
 
                 //var viewModel = ServiceProvider.GetService<MainViewModel>();
 
@@ -79,6 +79,19 @@ namespace FlightStreamDeck.AddOn
 
                     App.Current.Shutdown(-1);
                 }
+            }
+        }
+
+        private IntPtr HandleSimConnectHook(IntPtr hWnd, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
+        {
+            try
+            {
+                (flightConnector as SimConnectFlightConnector).HandleSimConnectEvents(message, ref isHandled);
+                return IntPtr.Zero;
+            }
+            catch (BadImageFormatException)
+            {
+                return IntPtr.Zero;
             }
         }
 
