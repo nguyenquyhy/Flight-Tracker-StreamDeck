@@ -102,16 +102,24 @@ This button is very similar to Generic Toggle Button except from it does not hav
 
 ![Sample NAV/COM buttons](sample_custom_gauge.png)
 
-- `Minimal value` and `Maximum value` are compulsory, indicating the range of the `Display value`.
-- Having a `Minimal value` greater than the `Maximum value` will flip the way the value resolves on the graph (see two trim gauges above).
-- You may enter `Use Absolute Value for Value Text` on a `custom` type gauge, which will display the value without a negative if one would show up (right column trim gauges, for example).
-- The gauge may be cusom color coded, and knows basic colors from [system.drawing.colors](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-5.0#properties).
+There are 2 types of generic gauge at the moment: Simple and Custom. Simple allows you to display a value in an arc gauge while Custom allows you to display up to 2 values with customizable colors.
+
+###### Common Parameters
+
+- `Minimum` and `Maximum` indicate the range of the `Display value`. You can input a number or a SimConnect variable in those fields.
+
+###### Notes for Simple Gauge
+
+- `Sub value` shows a small number below the main display value.  In my example for Indicated Altitude, the inches of MG displayed by adding `KOHLSMAN_SETTING_HG` to this setting.
+
+###### Notes for Custom Gauge
+
+- Having a `Minimum` greater than the `Maximum value` will flip the way the value resolves on the graph (see two trim gauges above).
+- Setting `Display absolute value` to 'Yes' will display the value without a negative sign (e.g. right column trim gauges).
+- The gauge may be cusom color coded, and knows basic colors from [System.Drawing.Colors](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-5.0#properties).
   - The default custom gauge that displays is color coded like the fuel gauge and has all the properties in it for a generic 2 tank aircraft.
-- You can adjust the thickness of the bar by adjusting `Chart Thickness` in the custom 
-section.
-- You can adjust the chevron size by adjusting `Chart Chevron Size` in the custom section.
-- If you do not specify a header for a value in the top or bottom, it won't show that respective value or chevron.  If you want a blank chevron, simply put a blank space in, it will recognize that.
-- There is now a concept of a `Sub Display value`.  In my example for Indicated Altitude, the inches of MG displayed by adding `KOHLSMAN_SETTING_HG` to that setting.
+- `Chevron Size` and `Thickness` allows you to further customize the display.
+- If you do not input `Header` or `Bottom Header`, the respective value and chevron won't show up.  If you want a blank chevron, simply put a blank space in header fields.
 
 #### Custom Images
 
@@ -146,7 +154,7 @@ Here are the steps that you need to do to get access to the new events:
 7. There should now be a "MSFS2020-module" folder, open that folder.
 8. Copy the "mobiflight-event-module" folder to your MSFS community folder.
 9. Relaunch MSFS 2020
-10. Configure Flight-Stream-Deck with [newly supported events](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/blob/master/FlightStreamDeck.Core/Structs.cs#L1317), courtesy of MobiFlight!  They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
+10. Configure Flight-Stream-Deck with [newly supported events](/FlightStreamDeck.Core/Structs.cs#L1317), courtesy of MobiFlight!  They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
 
 We've included a quick GNS 530 example for the knobs and basic buttons [here](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/tree/master/Assets/Starter%20Profiles/MobiFlight-GNS-530.streamDeckProfile)
 

@@ -57,14 +57,16 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_EVENT? toggleEvent = null;
         private uint? toggleEventDataUInt = null;
         private TOGGLE_VALUE? toggleEventDataVariable = null;
-        private string toggleEventDataVariableValue = null;
+        private double? toggleEventDataVariableValue = null;
 
         private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
         private IExpression expression;
         private TOGGLE_VALUE? displayValue = null;
-        private ValueEntry displayValueEntry;
 
-        private string currentValue = "";
+        private string customUnit = null;
+        private int? customDecimals = null;
+
+        private double? currentValue = null;
         private bool currentStatus = false;
 
         public GenericToggleAction(ILogger<GenericToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
@@ -99,15 +101,15 @@ namespace FlightStreamDeck.Logics.Actions
             (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
 
-            short.TryParse(settings.DisplayValuePrecision, out short result);
-            ValueEntry newDisplayValueEntry = new ValueEntry()
+            if (int.TryParse(settings.DisplayValuePrecision, out int decimals))
             {
-                Unit = settings.DisplayValueUnit,
-                Decimals = result
-            };
+                customDecimals = decimals;
+            }
+            var newUnit = settings.DisplayValueUnit?.Trim();
+            if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
 
             if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue
-                || JsonConvert.SerializeObject(newDisplayValueEntry) != JsonConvert.SerializeObject(displayValueEntry)
+                || newUnit != customUnit
                 || newToggleEventDataVariable != toggleEventDataVariable
                 )
             {
@@ -118,7 +120,7 @@ namespace FlightStreamDeck.Logics.Actions
             feedbackVariables = newFeedbackVariables;
             expression = newExpression;
             displayValue = newDisplayValue;
-            displayValueEntry = newDisplayValueEntry;
+            customUnit = newUnit;
             toggleEventDataUInt = newToggleEventDataUInt;
             toggleEventDataVariable = newToggleEventDataVariable;
 
@@ -129,20 +131,21 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (StreamDeck == null) return;
 
-            var newStatus = expression != null && evaluator.Evaluate(e.GenericValueStatus, expression);
+            var valuesWithDefaultUnits = e.GenericValueStatus.Where(o => o.Key.unit == null).ToDictionary(o => o.Key.variable, o => o.Value);
+            var newStatus = expression != null && evaluator.Evaluate(valuesWithDefaultUnits, expression);
             var isUpdated = newStatus != currentStatus;
             currentStatus = newStatus;
 
-            if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
+            if (displayValue.HasValue && e.GenericValueStatus.ContainsKey((displayValue.Value, customUnit)))
             {
-                string newValue = e.GenericValueStatus[displayValue.Value];
+                var newValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
                 isUpdated |= newValue != currentValue;
                 currentValue = newValue;
             }
 
-            if (toggleEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey(toggleEventDataVariable.Value))
+            if (toggleEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey((toggleEventDataVariable.Value, null)))
             {
-                toggleEventDataVariableValue = e.GenericValueStatus[toggleEventDataVariable.Value];
+                toggleEventDataVariableValue = e.GenericValueStatus[(toggleEventDataVariable.Value, null)];
             }
 
             if (isUpdated)
@@ -248,16 +251,30 @@ namespace FlightStreamDeck.Logics.Actions
         private void RegisterValues()
         {
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
-            foreach (var feedbackVariable in feedbackVariables) flightConnector.RegisterSimValue(feedbackVariable);
-            if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value, displayValueEntry);
-            if (toggleEventDataVariable.HasValue) flightConnector.RegisterSimValue(toggleEventDataVariable.Value);
+
+            var values = new List<(TOGGLE_VALUE variables, string unit)>();
+            foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
+            if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
+            if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
+
+            if (values.Count > 0)
+            {
+                flightConnector.RegisterSimValues(values.ToArray());
+            }
         }
 
         private void DeRegisterValues()
         {
-            foreach (var feedbackVariable in feedbackVariables) flightConnector.DeRegisterSimValue(feedbackVariable);
-            if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value, displayValueEntry);
-            if (toggleEventDataVariable.HasValue) flightConnector.DeRegisterSimValue(toggleEventDataVariable.Value);
+            var values = new List<(TOGGLE_VALUE variables, string unit)>();
+            foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
+            if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
+            if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
+
+            if (values.Count > 0)
+            {
+                flightConnector.DeRegisterSimValues(values.ToArray());
+            }
+
             currentValue = null;
             toggleEventDataVariableValue = null;
         }
@@ -266,9 +283,9 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggleEvent.HasValue)
             {
-                if (!(toggleEventDataVariable is null) && double.TryParse(toggleEventDataVariableValue, out double parameterValue))
+                if (!(toggleEventDataVariable is null) && toggleEventDataVariableValue.HasValue)
                 {
-                    uint parameterForSimConnect = Convert.ToUInt32(Math.Round(parameterValue));
+                    uint parameterForSimConnect = Convert.ToUInt32(Math.Round(toggleEventDataVariableValue.Value));
                     flightConnector.Trigger(toggleEvent.Value, parameterForSimConnect);
                 }
                 else
@@ -297,7 +314,8 @@ namespace FlightStreamDeck.Logics.Actions
                     s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
                     imageOffBytes = Convert.FromBase64String(s);
                 }
-                await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus, currentValue,
+                await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus,
+                    value: (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "",
                     imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                     imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
             }

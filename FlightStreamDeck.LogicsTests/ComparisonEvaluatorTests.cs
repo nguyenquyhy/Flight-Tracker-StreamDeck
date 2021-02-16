@@ -7,7 +7,7 @@ namespace FlightStreamDeck.Logics.Tests
     [TestClass]
     public class ComparisonEvaluatorTests
     {
-        private void Workhorse(string currentValue, string comparisonValue, List<string> expectedTrueComparisons)
+        private void Workhorse(double currentValue, double comparisonValue, List<string> expectedTrueComparisons)
         {
             List<string> errors = new List<string>();
 
@@ -32,8 +32,8 @@ namespace FlightStreamDeck.Logics.Tests
         public void CompareValuesTest_Same_Value_Numeric()
         {
             //Arrange
-            string currentValue = "0";
-            string comparisonValue = "0";
+            var currentValue = 0;
+            var comparisonValue = 0;
             List<string> expectedTrueComparisons = new List<string> {
                 ComparisonEvaluator.OperatorEquals,
                 ComparisonEvaluator.OperatorGreaterOrEquals,
@@ -48,8 +48,8 @@ namespace FlightStreamDeck.Logics.Tests
         public void CompareValuesTest_Different_Value_Greater_Numeric()
         {
             //Arrange
-            string currentValue = "1";
-            string comparisonValue = "0";
+            var currentValue = 1;
+            var comparisonValue = 0;
             List<string> expectedTrueComparisons = new List<string> {
                 ComparisonEvaluator.OperatorNotEquals,
                 ComparisonEvaluator.OperatorGreaterOrEquals,
@@ -64,8 +64,8 @@ namespace FlightStreamDeck.Logics.Tests
         public void CompareValuesTest_Different_Value_Less_Numeric()
         {
             //Arrange
-            string currentValue = "-1";
-            string comparisonValue = "0";
+            var currentValue = -1;
+            var comparisonValue = 0;
             List<string> expectedTrueComparisons = new List<string> {
                 ComparisonEvaluator.OperatorNotEquals,
                 ComparisonEvaluator.OperatorLessOrEquals,
@@ -79,53 +79,53 @@ namespace FlightStreamDeck.Logics.Tests
 
         #region Alpha Comparison
 
-        [TestMethod]
-        public void CompareValuesTest_Same_Value_Alpha()
-        {
-            //Arrange
-            string currentValue = "m";
-            string comparisonValue = "m";
-            List<string> expectedTrueComparisons = new List<string> {
-                ComparisonEvaluator.OperatorEquals,
-                ComparisonEvaluator.OperatorGreaterOrEquals,
-                ComparisonEvaluator.OperatorLessOrEquals
-            };
+        //[TestMethod]
+        //public void CompareValuesTest_Same_Value_Alpha()
+        //{
+        //    //Arrange
+        //    string currentValue = "m";
+        //    string comparisonValue = "m";
+        //    List<string> expectedTrueComparisons = new List<string> {
+        //        ComparisonEvaluator.OperatorEquals,
+        //        ComparisonEvaluator.OperatorGreaterOrEquals,
+        //        ComparisonEvaluator.OperatorLessOrEquals
+        //    };
 
-            //Act
-            Workhorse(currentValue, comparisonValue, expectedTrueComparisons);
-        }
+        //    //Act
+        //    Workhorse(currentValue, comparisonValue, expectedTrueComparisons);
+        //}
 
-        [TestMethod]
-        public void CompareValuesTest_Different_Value_Greater_Alpha()
-        {
-            //Arrange
-            string currentValue = "n";
-            string comparisonValue = "m";
-            List<string> expectedTrueComparisons = new List<string> {
-                ComparisonEvaluator.OperatorNotEquals,
-                ComparisonEvaluator.OperatorGreaterOrEquals,
-                ComparisonEvaluator.OperatorGreater
-            };
+        //[TestMethod]
+        //public void CompareValuesTest_Different_Value_Greater_Alpha()
+        //{
+        //    //Arrange
+        //    string currentValue = "n";
+        //    string comparisonValue = "m";
+        //    List<string> expectedTrueComparisons = new List<string> {
+        //        ComparisonEvaluator.OperatorNotEquals,
+        //        ComparisonEvaluator.OperatorGreaterOrEquals,
+        //        ComparisonEvaluator.OperatorGreater
+        //    };
 
-            //Act
-            Workhorse(currentValue, comparisonValue, expectedTrueComparisons);
-        }
+        //    //Act
+        //    Workhorse(currentValue, comparisonValue, expectedTrueComparisons);
+        //}
 
-        [TestMethod]
-        public void CompareValuesTest_Different_Value_Less_Alpha()
-        {
-            //Arrange
-            string currentValue = "l";
-            string comparisonValue = "m";
-            List<string> expectedTrueComparisons = new List<string> {
-                ComparisonEvaluator.OperatorNotEquals,
-                ComparisonEvaluator.OperatorLessOrEquals,
-                ComparisonEvaluator.OperatorLess
-            };
+        //[TestMethod]
+        //public void CompareValuesTest_Different_Value_Less_Alpha()
+        //{
+        //    //Arrange
+        //    string currentValue = "l";
+        //    string comparisonValue = "m";
+        //    List<string> expectedTrueComparisons = new List<string> {
+        //        ComparisonEvaluator.OperatorNotEquals,
+        //        ComparisonEvaluator.OperatorLessOrEquals,
+        //        ComparisonEvaluator.OperatorLess
+        //    };
 
-            //Act
-            Workhorse(currentValue, comparisonValue, expectedTrueComparisons);
-        }
+        //    //Act
+        //    Workhorse(currentValue, comparisonValue, expectedTrueComparisons);
+        //}
 
         #endregion
     }

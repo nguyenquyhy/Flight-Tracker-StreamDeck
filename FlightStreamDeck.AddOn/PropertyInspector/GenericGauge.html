@@ -3,91 +3,103 @@
 <head>
     <meta charset="utf-8" />
     <title>Property Inspector</title>
-    <link rel="stylesheet" href="sdpi.css">
+    <link rel="stylesheet" href="css/sdpi.css">
 </head>
 <body>
     <div class="sdpi-wrapper">
         <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Header</div>
-            <input class="sdpi-item-value" id="Header" value="" placeholder="Throttle" onchange="updateData()">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div id="HideTopHeader" class="sdpi-item-label">Header Top Hide If Outside Min/Max</div>
-            <div id="HideHeader" class="sdpi-item-label">Header Hide If Outside Min/Max</div>
-            <input class="sdpi-item-value" id="HideLabelOutsideMinMaxTop" type="checkbox" onchange="updateData()">
-            <label for="HideLabelOutsideMinMaxTop"><span></span></label>
-        </div>
-        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Toggle value</div>
-            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="INDICATED_ALTITUDE" onchange="updateData()" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Sub Display value</div>
-            <input class="sdpi-item-value" id="SubDisplayValue" value="" placeholder="KOHLSMAN_SETTING_HG" onchange="updateData()" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Minimal value</div>
-            <input class="sdpi-item-value" id="MinValue" value="" placeholder="0" onchange="updateData()" pattern="[0-9.-]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Maximum value</div>
-            <input class="sdpi-item-value" id="MaxValue" value="" placeholder="100" onchange="updateData()" pattern="[0-9.-]">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Value Units</div>
-            <input class="sdpi-item-value" id="ValueUnit" value="" placeholder="empty for default units" onchange="updateData()" pattern="[A-Z0-9: ]*">
-        </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Value Precision</div>
-            <input class="sdpi-item-value" id="ValuePrecision" value="" placeholder="2" onchange="updateData()" pattern="[0-9]">
+            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Type</div>
             <select class="sdpi-item-value select" id="Type" onchange="updateData()">
-                <option value="Generic">Generic</option>
+                <option value="Generic">Simple</option>
                 <option value="Custom">Custom</option>
             </select>
         </div>
-        <div id="customFields">
-            <div class="sdpi-heading">Custom Gauge Settings</div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Header</div>
+            <input class="sdpi-item-value" id="Header" value="" placeholder="e.g. Throttle" onchange="updateData()">
+        </div>
+        <div id="WrapperHideLabelOutsideMinMaxTop">
             <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Chart Split by Percentage</div>
+                <div style="width: 94px; padding: 4px;"></div>
+                <input class="sdpi-item-value" id="HideLabelOutsideMinMaxTop" type="checkbox" onchange="updateData()">
+                <label for="HideLabelOutsideMinMaxTop"><span></span>Hide if outside Min/Max</label>
+            </div>
+        </div>
+        <div class="sdpi-item" type="field">
+            <div id="LabelDisplayValue" class="sdpi-item-label">Display value</div>
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="e.g. INDICATED_ALTITUDE" onchange="updateData()" pattern="[A-Z_]">
+        </div>
+        <div id="WrapperHeaderBottom">
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Bottom Header</div>
+                <input class="sdpi-item-value" id="HeaderBottom" placeholder="R" onchange="updateData()">
+            </div>
+        </div>
+        <div id="WrapperHideLabelOutsideMinMaxBottom">
+            <div class="sdpi-item" type="field">
+                <div style="width: 94px; padding: 4px;"></div>
+                <input class="sdpi-item-value" id="HideLabelOutsideMinMaxBottom" type="checkbox" onchange="updateData()">
+                <label for="HideLabelOutsideMinMaxBottom"><span></span>Hide If Outside Min/Max</label>
+            </div>
+        </div>
+        <div id="WrapperDisplayValueBottom">
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Bottom Display value</div>
+                <input class="sdpi-item-value" id="DisplayValueBottom" placeholder="FUEL_RIGHT_QUANTITY" onchange="updateData()" pattern="[A-Z_]">
+            </div>
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Minimum</div>
+            <input class="sdpi-item-value" id="MinValue" value="" placeholder="0" onchange="updateData()" pattern="[0-9.-]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Maximum</div>
+            <input class="sdpi-item-value" id="MaxValue" value="" placeholder="30" onchange="updateData()" pattern="[0-9.-]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Unit & Decimals</div>
+            <input class="sdpi-item-value" id="ValueUnit" value="" placeholder="Empty for default unit" onchange="updateData()" pattern="[A-Z0-9: ]*" style="margin-right: 0">
+            <input class="sdpi-item-value" id="ValuePrecision" value="" placeholder="Default decimals" onchange="updateData()" pattern="[0-9: ]*" style="max-width: 90px">
+        </div>
+        <div class="sdpi-item">
+            <details class="message caution">
+                <summary>Setting invalid unit affects the whole page.</summary>
+            </details>
+        </div>
+        <div id="simpleFields">
+            <div class="sdpi-heading">More Settings</div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Sub value</div>
+                <input class="sdpi-item-value" id="SubDisplayValue" value="" placeholder="e.g. KOHLSMAN_SETTING_HG" onchange="updateData()" pattern="[A-Z_]">
+            </div>
+        </div>
+        <div id="customFields">
+            <div class="sdpi-heading">More Settings</div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Color Split by Percentage</div>
                 <input class="sdpi-item-value" id="ChartSplitValue" placeholder="12:red,24:yellow,64:green" onchange="updateData()" pattern="[0-9,]*">
             </div>
             <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Chart Thickness</div>
+                <div class="sdpi-item-label">Thickness</div>
                 <input class="sdpi-item-value" id="ChartThicknessValue" placeholder="13" onchange="updateData()" pattern="[0-9]*">
             </div>
             <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Chart Chevron Size</div>
+                <div class="sdpi-item-label">Chevron Size</div>
                 <input class="sdpi-item-value" id="ChartChevronSizeValue" placeholder="3" onchange="updateData()" pattern="[0-9]*">
             </div>
             <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Header Bottom Hide If Outside Min/Max</div>
-                <input class="sdpi-item-value" id="HideLabelOutsideMinMaxBottom" type="checkbox" onchange="updateData()">
-                <label for="HideLabelOutsideMinMaxBottom"><span></span></label>
-            </div>
-            <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Header Bottom</div>
-                <input class="sdpi-item-value" id="HeaderBottom" placeholder="R" onchange="updateData()">
-            </div>
-            <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Display value Bottom</div>
-                <input class="sdpi-item-value" id="DisplayValueBottom" placeholder="FUEL_RIGHT_QUANTITY" onchange="updateData()" pattern="[A-Z_]">
-            </div>
-            <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Vertical Or Horizontal?</div>
+                <div class="sdpi-item-label">Orientation</div>
                 <select class="sdpi-item-value select" id="DisplayHorizontalValue" onchange="updateData()">
                     <option value="false">Vertical</option>
                     <option value="true">Horizontal</option>
                 </select>
             </div>
             <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Use Absolute Value for Value Text</div>
+                <div class="sdpi-item-label">Display absolute value</div>
                 <select class="sdpi-item-value select" id="AbsValText" onchange="updateData()">
                     <option value="false">No</option>
                     <option value="true">Yes</option>
@@ -95,7 +107,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="common.js"></script>
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
@@ -147,9 +159,21 @@
         }
 
         function CustomShow() {
-            document.getElementById("customFields").hidden = (Type.value != "Custom");
-            document.getElementById("HideTopHeader").hidden = (Type.value != "Custom");
-            document.getElementById("HideHeader").hidden = (Type.value == "Custom");
+            simpleFields.hidden = Type.value != "Generic";
+
+            customFields.hidden = Type.value != "Custom";
+            WrapperHideLabelOutsideMinMaxTop.hidden =
+                WrapperHeaderBottom.hidden =
+                WrapperHideLabelOutsideMinMaxBottom.hidden =
+                WrapperDisplayValueBottom.hidden =
+                Type.value != "Custom";
+            switch (Type.value) {
+                case "Generic":
+                    break;
+                case "Custom":
+
+                    break;
+            }
         }
     </script>
     <script src="init.js"></script>

@@ -14,9 +14,9 @@ namespace FlightStreamDeck.Logics
         string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
-        public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
-        public string GetGenericGaugeImage(string text, float value, float min, float max, string valuePrecision, float subValue = float.MinValue);
-        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision, bool hideHeaderTop, bool hideHeaderBottom);
+        public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
+        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string subValueText = null);
+        public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
     }
 
     public class ImageLogic : IImageLogic
@@ -170,7 +170,7 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees)
+        public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees)
         {
             //var font = SystemFonts.CreateFont("Arial", 10, FontStyle.Regular);
             //var valueFont = SystemFonts.CreateFont("Arial", 12, FontStyle.Regular);
@@ -184,7 +184,7 @@ namespace FlightStreamDeck.Logics
                     (int)Math.Round((float)-size.Width / 2 + 52),
                     (int)Math.Round((float)-size.Height / 2 + 52 - (pitchInDegrees * 2))
                     ), new GraphicsOptions());
-                ctx.Rotate(rollInDegrees);
+                ctx.Rotate((float)rollInDegrees);
             });
 
             using (var img = new Image<Rgba32>(WIDTH, WIDTH))
@@ -214,7 +214,7 @@ namespace FlightStreamDeck.Logics
             }
         }
 
-        public string GetGenericGaugeImage(string text, float value, float min, float max, string valuePrecision, float subValue = float.MinValue)
+        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string subValueText = null)
         {
             var font = SystemFonts.CreateFont("Arial", 22, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
@@ -256,12 +256,12 @@ namespace FlightStreamDeck.Logics
                     ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
                 }
 
-                var valueText = value.ToString(valuePrecision);
+                var valueText = value.ToString(valueFormat);
                 var sizeValue = TextMeasurer.Measure(valueText, new RendererOptions(font));
                 Color textColor = value > max ? Color.Red : Color.White;
                 ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
 
-                if (subValue != float.MinValue) ctx.DrawText(subValue.ToString("F2"), titleFont, textColor, new PointF(18, 20 + sizeValue.Height + size.Height));
+                if (!string.IsNullOrWhiteSpace(subValueText)) ctx.DrawText(subValueText, titleFont, textColor, new PointF(18, 20 + sizeValue.Height + size.Height));
             });
 
             using var memoryStream = new MemoryStream();
@@ -272,7 +272,7 @@ namespace FlightStreamDeck.Logics
         }
 
 
-        public string GetCustomGaugeImage(string textTop, string textBottom, string valueTop, string valueBottom, float min, float max, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize, bool absoluteValueText, string valuePrecision, bool hideHeaderTop, bool hideHeaderBottom)
+        public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize, bool displayAbsoluteValue,  bool hideHeaderTop, bool hideHeaderBottom)
         {
             var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
@@ -330,16 +330,14 @@ namespace FlightStreamDeck.Logics
                 }
 
                 //topValue
-                float.TryParse(valueTop, out float floatValueTop);
-                var ratio = (floatValueTop - (min < max ? min : max)) / range;
-                valueTop = absoluteValueText ? Math.Abs(floatValueTop).ToString(valuePrecision) : valueTop;
-                setupValue(true, textTop, valueTop, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx, hideHeaderTop);
+                var ratio = (valueTop - (min < max ? min : max)) / range;
+                var valueTopText = (displayAbsoluteValue ? Math.Abs(valueTop) : valueTop).ToString(valueFormat);
+                setupValue(true, textTop, valueTopText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderTop);
 
                 //bottomValue
-                float.TryParse(valueBottom, out float floatValueBottom);
-                ratio = (floatValueBottom - (min < max ? min : max)) / range;
-                valueBottom = absoluteValueText ? Math.Abs(floatValueBottom).ToString(valuePrecision) : valueBottom;
-                setupValue(false, textBottom, valueBottom, ratio, img_width, chevronSize, width_margin, chartWidth, min, max, ctx, hideHeaderBottom);
+                ratio = (valueBottom - (min < max ? min : max)) / range;
+                var valueBottomText = (displayAbsoluteValue ? Math.Abs(valueBottom) : valueBottom).ToString(valueFormat);
+                setupValue(false, textBottom, valueBottomText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderBottom);
 
                 if (!horizontal) ctx.Rotate(-90);
             });

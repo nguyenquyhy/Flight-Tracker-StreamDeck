@@ -694,7 +694,7 @@ textarea {
     border: none;
     margin-top: 2px;
     margin-bottom: 2px;
-    min-width: 219px;
+    min-width: 80px;
 }
 
     textarea + label {
@@ -1136,7 +1136,7 @@ input::-webkit-datetime-edit-fields-wrapper {
 }
 */
 
-/* 
+/*
 input[type="date"] {
   background-color: red;
   outline: none;
@@ -1222,7 +1222,7 @@ input:required:valid {
   left: 8px;
   display: none;
   color: #fff;
-  border: 8px solid transparent;	
+  border: 8px solid transparent;
   border-bottom: 8px solid #000;
 }
 
@@ -1240,7 +1240,7 @@ input:required:valid {
     opacity: 1;
     position: absolute;
     height: auto;
-  
+
     text-align: center;
     bottom: 2px;
     z-index: 100;
@@ -1307,7 +1307,7 @@ input[type=range] {
     overflow: visible;
 }
 
-/* 
+/*
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   background-color: var(--sdpi-color);

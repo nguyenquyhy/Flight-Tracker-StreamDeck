@@ -57,7 +57,7 @@ namespace FlightStreamDeck.Logics.Tests
 
             try
             {
-                images.GetCustomGaugeImage("T", "B", "2000", "-2000", 1, 1, false, new string[] { "100:green" }, 5, 3, false, "2", false, false);
+                images.GetCustomGaugeImage("T", "B", 2000, -2000, 1, 1, "F2", false, new string[] { "100:green" }, 5, 3, false, false, false);
             }
             catch (Exception e)
             {

@@ -22,8 +22,8 @@ namespace FlightStreamDeck.Logics
             public string FeedbackComparisonStringValue { get; }
             public string FeedbackComparisonOperator { get; }
 
-            public string PreviousFeedbackValue { get; set; }
-            public string PreviousFeedbackComparisonValue { get; set; }
+            public double? PreviousFeedbackValue { get; set; }
+            public double? PreviousFeedbackComparisonValue { get; set; }
             public bool PreviousResult { get; set; }
         }
 
@@ -45,12 +45,12 @@ namespace FlightStreamDeck.Logics
             return (list, new Expression(feedbackVariable, feedbackComparisonVariable, feedbackComparisonStringValue, feedbackComparisonOperator));
         }
 
-        public bool Evaluate(Dictionary<TOGGLE_VALUE, string> values, IExpression expression)
+        public bool Evaluate(Dictionary<TOGGLE_VALUE, double> values, IExpression expression)
         {
             if (expression is Expression compareExpression)
             {
-                string feedbackValue = string.Empty;
-                string comparisonFeedbackValue = string.Empty;
+                double? feedbackValue = null;
+                double? comparisonFeedbackValue = null;
 
                 if (compareExpression.FeedbackVariable.HasValue && values.ContainsKey(compareExpression.FeedbackVariable.Value))
                 {
@@ -59,7 +59,16 @@ namespace FlightStreamDeck.Logics
 
                 if (compareExpression.FeedbackComparisonVariable.HasValue && values.ContainsKey(compareExpression.FeedbackComparisonVariable.Value))
                 {
+                    // Compare to a variable
                     comparisonFeedbackValue = values[compareExpression.FeedbackComparisonVariable.Value];
+                }
+                else
+                {
+                    // Compare to a number
+                    if (double.TryParse(compareExpression.FeedbackComparisonStringValue, out var number))
+                    {
+                        comparisonFeedbackValue = number;
+                    }
                 }
 
                 if (feedbackValue == compareExpression.PreviousFeedbackValue
@@ -71,11 +80,9 @@ namespace FlightStreamDeck.Logics
                 compareExpression.PreviousFeedbackValue = feedbackValue;
                 compareExpression.PreviousFeedbackComparisonValue = comparisonFeedbackValue;
 
-                if (!string.IsNullOrEmpty(feedbackValue) &&
-                    (!string.IsNullOrEmpty(comparisonFeedbackValue) || !string.IsNullOrEmpty(compareExpression.FeedbackComparisonStringValue)))
+                if (feedbackValue.HasValue && comparisonFeedbackValue.HasValue)
                 {
-                    compareExpression.PreviousResult = CompareValues(feedbackValue,
-                        !string.IsNullOrEmpty(comparisonFeedbackValue) ? comparisonFeedbackValue : compareExpression.FeedbackComparisonStringValue, compareExpression.FeedbackComparisonOperator);
+                    compareExpression.PreviousResult = CompareValues(feedbackValue.Value, comparisonFeedbackValue.Value, compareExpression.FeedbackComparisonOperator);
                     return compareExpression.PreviousResult;
                 }
                 return false;
@@ -111,7 +118,7 @@ namespace FlightStreamDeck.Logics
                 return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(result, null, "0", "!=");
             }
             else
-            { 
+            {
                 IEnumerable<string> comparisonAttempt = AllowedComparisons.Where((string allowedComp) => value.Contains(allowedComp));
 
                 if (comparisonAttempt.Count() >= 1)
@@ -135,48 +142,33 @@ namespace FlightStreamDeck.Logics
                     }
                 }
 
-               return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
+                return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
             }
         }
 
-        public bool CompareValues(string currentValue, string comparisonValue, string operatorValue)
+        public bool CompareValues(double currentValue, double comparisonValue, string operatorValue)
         {
             bool output = false;
-
-            bool successCurrent = int.TryParse(currentValue, out int currentValueInt);
-            bool successComparison = int.TryParse(comparisonValue, out int comparisonValueInt);
 
             switch (operatorValue)
             {
                 case OperatorEquals:
-                    output = successCurrent && successComparison ?
-                        currentValueInt == comparisonValueInt :
-                        currentValue == comparisonValue;
+                    output = currentValue == comparisonValue;
                     break;
                 case OperatorNotEquals:
-                    output = successCurrent && successComparison ?
-                        currentValueInt != comparisonValueInt :
-                        currentValue != comparisonValue;
+                    output = currentValue != comparisonValue;
                     break;
                 case OperatorGreater:
-                    output = successCurrent && successComparison ?
-                        currentValueInt > comparisonValueInt :
-                        string.Compare(currentValue, comparisonValue) > 0;
+                    output = currentValue > comparisonValue;
                     break;
                 case OperatorLess:
-                    output = successCurrent && successComparison ?
-                        currentValueInt < comparisonValueInt :
-                        string.Compare(currentValue, comparisonValue) < 0;
+                    output = currentValue < comparisonValue;
                     break;
                 case OperatorGreaterOrEquals:
-                    output = successCurrent && successComparison ?
-                        currentValueInt >= comparisonValueInt :
-                        string.Compare(currentValue, comparisonValue) >= 0;
+                    output = currentValue >= comparisonValue;
                     break;
                 case OperatorLessOrEquals:
-                    output = successCurrent && successComparison ?
-                        currentValueInt <= comparisonValueInt :
-                        string.Compare(currentValue, comparisonValue) <= 0;
+                    output = currentValue <= comparisonValue;
                     break;
             }
 

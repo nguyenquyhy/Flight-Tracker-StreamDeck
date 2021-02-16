@@ -124,7 +124,7 @@ function prepareDOMElements(baseElement) {
                     };
                 }
             );
-            /** Just in case the found HTML element already has an input or change - event attached, 
+            /** Just in case the found HTML element already has an input or change - event attached,
              * we clone it, and call it in the callback, right before the freshly attached event
             */
             const cloneEvt = el[evt];
@@ -175,7 +175,7 @@ function prepareDOMElements(baseElement) {
 }
 
 function handleSdpiItemChange(e, idx) {
-    
+
     /** Following items are containers, so we won't handle clicks on them */
 
     if (['OL', 'UL', 'TABLE'].includes(e.tagName)) {
@@ -277,5 +277,5 @@ function handleSdpiItemChange(e, idx) {
         setFileLabel(sdpiItem, returnValue.value, IsEmbedding.value === "true");
     }
 
-    if (handleItemChanged) handleItemChanged(e, returnValue);
+    if (window["handleItemChanged"]) handleItemChanged(e, returnValue);
 }

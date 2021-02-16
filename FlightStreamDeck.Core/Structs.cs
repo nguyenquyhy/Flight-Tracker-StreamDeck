@@ -1653,16 +1653,4 @@
             return input.ToString().Replace("MOBIFLIGHT_", "MobiFlight.");
         }
     }
-
-    public struct ValueEntry
-    {
-        public ValueEntry(string unit, short decimals)
-        {
-            Unit = unit;
-            Decimals = decimals;
-        }
-
-        public string Unit;
-        public short Decimals;
-    }
 }

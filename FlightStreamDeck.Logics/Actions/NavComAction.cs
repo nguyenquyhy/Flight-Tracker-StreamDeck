@@ -178,24 +178,24 @@ namespace FlightStreamDeck.Logics.Actions
                 bool dependant = true;
                 bool showMainOnly = false;
 
-                if (dependantOnBatt != null && e.GenericValueStatus.ContainsKey(dependantOnBatt.Value))
+                if (dependantOnBatt != null && e.GenericValueStatus.ContainsKey((dependantOnBatt.Value, null)))
                 {
-                    dependant = e.GenericValueStatus[dependantOnBatt.Value] != "0";
+                    dependant = e.GenericValueStatus[(dependantOnBatt.Value, null)] != 0;
                 }
-                if (dependantOnAvionics != null && e.GenericValueStatus.ContainsKey(dependantOnAvionics.Value))
+                if (dependantOnAvionics != null && e.GenericValueStatus.ContainsKey((dependantOnAvionics.Value, null)))
                 {
-                    dependant = dependant && e.GenericValueStatus[dependantOnAvionics.Value] != "0";
+                    dependant = dependant && e.GenericValueStatus[(dependantOnAvionics.Value, null)] != 0;
                 }
 
-                if (active != null && e.GenericValueStatus.ContainsKey(active.Value))
+                if (active != null && e.GenericValueStatus.ContainsKey((active.Value, null)))
                 {
                     showMainOnly = true;
-                    value1 = dependant ? e.GenericValueStatus[active.Value] : string.Empty;
+                    value1 = dependant ? e.GenericValueStatus[(active.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(active.Value)) : string.Empty;
                     if (settings.Type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
                 }
-                if (standby != null && e.GenericValueStatus.ContainsKey(standby.Value))
+                if (standby != null && e.GenericValueStatus.ContainsKey((standby.Value, null)))
                 {
-                    value2 = dependant ? e.GenericValueStatus[standby.Value] : string.Empty;
+                    value2 = dependant ? e.GenericValueStatus[(standby.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(active.Value)) : string.Empty;
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 
@@ -211,14 +211,14 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void SwitchTo(string type)
         {
-            var existing = new List<TOGGLE_VALUE>();
+            var existing = new List<(TOGGLE_VALUE variables, string unit)>();
             if (active != null)
             {
-                existing.Add(active.Value);
+                existing.Add((active.Value, null));
             }
             if (standby != null)
             {
-                existing.Add(standby.Value);
+                existing.Add((standby.Value, null));
             }
             if (existing.Count > 0)
             {
@@ -270,9 +270,11 @@ namespace FlightStreamDeck.Logics.Actions
                     lastValue2 = null;
                     break;
             }
+            var values = new List<(TOGGLE_VALUE variable, string unit)>();
             if (type != null)
             {
-                flightConnector.RegisterSimValues(active.Value, standby.Value);
+                values.Add((active.Value, null));
+                values.Add((standby.Value, null));
             }
             if (toggle != null)
             {
@@ -284,11 +286,15 @@ namespace FlightStreamDeck.Logics.Actions
             }
             if (dependantOnAvionics != null)
             {
-                flightConnector.RegisterSimValues(dependantOnAvionics.Value);
+                values.Add((dependantOnAvionics.Value, null));
             }
             if (dependantOnBatt != null)
             {
-                flightConnector.RegisterSimValues(dependantOnBatt.Value);
+                values.Add((dependantOnBatt.Value, null));
+            }
+            if (values.Count > 0)
+            {
+                flightConnector.RegisterSimValues(values.ToArray());
             }
         }
 

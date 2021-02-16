@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8" />
     <title>Property Inspector</title>
-    <link rel="stylesheet" href="sdpi.css">
+    <link rel="stylesheet" href="css/sdpi.css">
 </head>
 <body>
     <div class="sdpi-wrapper">
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Header</div>
-            <input class="sdpi-item-value" id="Header" value="" placeholder="YD">
+            <input class="sdpi-item-value" id="e.g. Header" value="" placeholder="YD">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Toggle event</div>
@@ -25,15 +25,17 @@
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty for toggle button" pattern="[A-Z0-9: ]*">
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty to show no number" pattern="[A-Z0-9: ]*">
         </div>
         <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Display Value Units</div>
-            <input class="sdpi-item-value" id="DisplayValueUnit" value="" placeholder="empty for default units" pattern="[A-Z0-9: ]*">
+            <div class="sdpi-item-label">Unit & Decimals</div>
+            <input class="sdpi-item-value" id="DisplayValueUnit" value="" placeholder="Empty for default unit" pattern="[A-Z0-9: ]*" style="margin-right: 0">
+            <input class="sdpi-item-value" id="DisplayValuePrecision" value="" placeholder="Default decimals" pattern="[0-9: ]*" style="max-width: 90px">
         </div>
-        <div class="sdpi-item" type="field">
-            <div class="sdpi-item-label">Display Value Precision</div>
-            <input class="sdpi-item-value" id="DisplayValuePrecision" value="" placeholder="Empty for default precision" pattern="[A-Z0-9: ]*">
+        <div class="sdpi-item">
+            <details class="message caution">
+                <summary>Setting invalid unit affects the whole page.</summary>
+            </details>
         </div>
         <div type="group" class="sdpi-item" id="messagegroup">
             <div class="sdpi-item-label">Custom ON/OFF images</div>
