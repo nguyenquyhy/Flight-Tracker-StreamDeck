@@ -356,6 +356,10 @@ namespace FlightStreamDeck.Core
             { TOGGLE_VALUE.PROP_THRUST__2, new ValueEntry("Pounds", 2) },
             { TOGGLE_VALUE.PROP_THRUST__3, new ValueEntry("Pounds", 2) },
             { TOGGLE_VALUE.PROP_THRUST__4, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_RPM__1, new ValueEntry("Rpm", 1) },
+            { TOGGLE_VALUE.PROP_RPM__2, new ValueEntry("Rpm", 1) },
+            { TOGGLE_VALUE.PROP_RPM__3, new ValueEntry("Rpm", 1) },
+            { TOGGLE_VALUE.PROP_RPM__4, new ValueEntry("Rpm", 1) },
         };
 
         public static string GetUnit(this TOGGLE_VALUE value, string unit)

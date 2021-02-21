@@ -588,6 +588,10 @@
         PROP_THRUST__2,
         PROP_THRUST__3,
         PROP_THRUST__4,
+        PROP_RPM__1,
+        PROP_RPM__2,
+        PROP_RPM__3,
+        PROP_RPM__4,
     }
 
     public enum TOGGLE_EVENT
