@@ -1644,6 +1644,7 @@
         MOBIFLIGHT_Transponder4,
         MOBIFLIGHT_Transponder5,
         MOBIFLIGHT_Transponder6,
+        MOBIFLIGHT_Transponder7,
     }
 
     public static class EventExtensions
