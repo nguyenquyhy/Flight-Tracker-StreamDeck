@@ -49,7 +49,7 @@ namespace FlightStreamDeck.Logics
             Image img;
             if (active)
             {
-                if (imageOnBytes != null)
+                if (imageOnBytes != null && imageOnBytes.Length > 0)
                 {
                     img = Image.Load(imageOnBytes, new PngDecoder());
                 }
@@ -64,7 +64,7 @@ namespace FlightStreamDeck.Logics
             }
             else
             {
-                if (imageOffBytes != null)
+                if (imageOffBytes != null && imageOffBytes.Length > 0)
                 {
                     img = Image.Load(imageOffBytes, new PngDecoder());
                 }
