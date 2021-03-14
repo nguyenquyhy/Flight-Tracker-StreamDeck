@@ -20,6 +20,16 @@
             <input class="sdpi-item-value" id="ToggleValueData" value="" placeholder="">
         </div>
         <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Hold event</div>
+            <input class="sdpi-item-value" id="HoldValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE" pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Hold parameter</div>
+            <input class="sdpi-item-value" id="HoldValueData" value="" placeholder="">
+            <input class="sdpi-item-value" id="HoldValueRepeat" type="checkbox">
+            <label for="HoldValueRepeat"><span></span>Repeat</label>
+        </div>
+        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Feedback value</div>
             <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="e.g. AUTOPILOT YAW DAMPER" pattern="[A-Z0-9: ]*">
         </div>
@@ -71,6 +81,9 @@
             if (settings['Header']) { Header.value = settings['Header'] };
             if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
             if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
+            if (settings['HoldValue']) { HoldValue.value = settings['HoldValue'] };
+            if (settings['HoldValueData']) { HoldValueData.value = settings['HoldValueData'] };
+            if (settings['HoldValueRepeat']) { HoldValueData.checked = settings['HoldValueRepeat'] };
             if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
