@@ -7,6 +7,7 @@ using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
 using System.IO;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -353,56 +354,63 @@ namespace FlightStreamDeck.Logics.Actions
                     imageOffBytes = Convert.FromBase64String(s);
                 }
 
-                switch (settings.Type)
+                try
                 {
-                    case PresetFunction.Avionics:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                    switch (settings.Type)
+                    {
+                        case PresetFunction.Avionics:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn,
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
 
-                    case PresetFunction.ApMaster:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                        case PresetFunction.ApMaster:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn,
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
 
-                    case PresetFunction.Heading:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(),
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                        case PresetFunction.Heading:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(),
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
 
-                    case PresetFunction.Nav:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                        case PresetFunction.Nav:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn,
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
 
-                    case PresetFunction.Altitude:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(),
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                        case PresetFunction.Altitude:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(),
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
 
-                    case PresetFunction.VerticalSpeed:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(),
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                        case PresetFunction.VerticalSpeed:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(),
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
 
-                    case PresetFunction.FLC:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn,
-                            value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                        case PresetFunction.FLC:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn,
+                                value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null,
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
 
-                    case PresetFunction.Approach:
-                        await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                        case PresetFunction.Approach:
+                            await SetImageAsync(imageLogic.GetImage(settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn,
+                                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                            break;
+                    }
+                }
+                catch (WebSocketException)
+                {
+                    // Ignore as we can't really do anything here
                 }
             }
         }

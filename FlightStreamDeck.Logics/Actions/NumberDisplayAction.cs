@@ -1,7 +1,7 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
-using System;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -35,7 +35,14 @@ namespace FlightStreamDeck.Logics.Actions
                     value = value.Insert(decIndex, ".");
                 }
 
-                await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value));
+                try
+                {
+                    await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value));
+                }
+                catch (WebSocketException)
+                {
+                    // Ignore as we can't really do anything here
+                }
             }
         }
 

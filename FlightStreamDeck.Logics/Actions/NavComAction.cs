@@ -8,6 +8,7 @@ using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -87,7 +88,14 @@ namespace FlightStreamDeck.Logics.Actions
             var settings = args.Payload.GetSettings<NavComSettings>();
             InitializeSettings(settings);
 
-            await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
+            try
+            {
+                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
+            }
+            catch (WebSocketException)
+            {
+                // Ignore as we can't really do anything here
+            }
 
             if (initializationTcs != null)
             {
@@ -146,7 +154,14 @@ namespace FlightStreamDeck.Logics.Actions
             var settings = args.Payload.ToObject<NavComSettings>();
             InitializeSettings(settings);
 
-            await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
+            try
+            {
+                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
+            }
+            catch (WebSocketException)
+            {
+                // Ignore as we can't really do anything here
+            }
         }
 
         private void InitializeSettings(NavComSettings settings)
@@ -204,7 +219,14 @@ namespace FlightStreamDeck.Logics.Actions
                     lastValue1 = value1;
                     lastValue2 = value2;
                     lastDependant = dependant;
-                    await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly));
+                    try
+                    {
+                        await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly));
+                    }
+                    catch (WebSocketException)
+                    {
+                        // Ignore as we can't really do anything here
+                    }
                 }
             }
         }

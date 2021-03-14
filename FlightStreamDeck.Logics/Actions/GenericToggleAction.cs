@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -379,10 +380,17 @@ namespace FlightStreamDeck.Logics.Actions
                     s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
                     imageOffBytes = Convert.FromBase64String(s);
                 }
-                await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus,
-                    value: (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "",
-                    imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                try
+                {
+                    await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus,
+                        value: (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "",
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                }
+                catch (WebSocketException)
+                {
+                    // Ignore as we can't really do anything here
+                }
             }
         }
     }

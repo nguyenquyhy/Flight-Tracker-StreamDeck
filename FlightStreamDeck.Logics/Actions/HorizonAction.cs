@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -90,7 +91,14 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage()
         {
-            await SetImageAsync(imageLogic.GetHorizonImage(currentPitchValue, currentBankValue, currentHeadingValue));
+            try
+            {
+                await SetImageAsync(imageLogic.GetHorizonImage(currentPitchValue, currentBankValue, currentHeadingValue));
+            }
+            catch (WebSocketException)
+            {
+                // Ignore as we can't really do anything here
+            }
         }
     }
 }
