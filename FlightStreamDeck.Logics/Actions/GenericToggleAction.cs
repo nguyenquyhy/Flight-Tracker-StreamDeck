@@ -165,8 +165,8 @@ namespace FlightStreamDeck.Logics.Actions
                 var newValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
                 isUpdated |= newValue != currentValue;
 
-                if (displayValue.Value.ToString().Equals("ZULU_TIME", StringComparison.InvariantCultureIgnoreCase) 
-                    || displayValue.Value.ToString().Equals("LOCAL_TIME", StringComparison.InvariantCultureIgnoreCase))
+                if (displayValue.Value == TOGGLE_VALUE.ZULU_TIME
+                    || displayValue.Value == TOGGLE_VALUE.LOCAL_TIME)
                 {
                     string hours = Math.Floor(newValue / 3600).ToString().PadLeft(2, '0');
                     newValue = newValue % 3600;
@@ -179,11 +179,11 @@ namespace FlightStreamDeck.Logics.Actions
                     switch (customDecimals)
                     {
                         case 0: //HH:MM:SS
-                            currentValueTime = $"{hours}:{minutes}:{seconds}{(displayValue.Value.ToString().Equals("ZULU_TIME", StringComparison.InvariantCultureIgnoreCase) ? "Z" : String.Empty)}";
+                            currentValueTime = $"{hours}:{minutes}:{seconds}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
                             currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
                             break;
                         case 1: //HH:MM
-                            currentValueTime = $"{hours}:{minutes}{(displayValue.Value.ToString().Equals("ZULU_TIME", StringComparison.InvariantCultureIgnoreCase) ? "Z" : String.Empty)}";
+                            currentValueTime = $"{hours}:{minutes}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
                             currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
                             break;
                         default:
