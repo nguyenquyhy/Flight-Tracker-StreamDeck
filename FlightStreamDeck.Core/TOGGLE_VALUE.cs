@@ -597,5 +597,7 @@
         PROP_RPM__3,
         PROP_RPM__4,
         COM_SPACING_MODE,
+        ZULU_TIME,
+        LOCAL_TIME,
     }
 }
