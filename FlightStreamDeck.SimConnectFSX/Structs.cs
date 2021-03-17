@@ -119,6 +119,10 @@ namespace FlightStreamDeck.SimConnectFSX
         public double Nav1OBS;
         public double Nav2OBS;
         public double ADFCard;
+        public int ADFActive1;
+        public int ADFStandby1;
+        public int ADFActive2;
+        public int ADFStandby2;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

@@ -25,6 +25,7 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
     public class NavComAction : StreamDeckAction<NavComSettings>
     {
+        private AircraftStatus status;
         private const int HOLD_DURATION_MILLISECONDS = 1000;
         private const string minNavVal = "10800";
         private const string maxNavVal = "11795";
@@ -84,6 +85,7 @@ namespace FlightStreamDeck.Logics.Actions
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
+            flightConnector.AircraftStatusUpdated += new EventHandler<AircraftStatusUpdatedEventArgs>(async (s, e) => await FlightConnector_AircraftStatusUpdatedAsync(s, e));
 
             var settings = args.Payload.GetSettings<NavComSettings>();
             InitializeSettings(settings);
@@ -107,6 +109,7 @@ namespace FlightStreamDeck.Logics.Actions
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated -= FlightConnector_GenericValuesUpdated;
+            flightConnector.AircraftStatusUpdated -= new EventHandler<AircraftStatusUpdatedEventArgs>(async (s, e) => await FlightConnector_AircraftStatusUpdatedAsync(s, e));
             SwitchTo(null);
 
             return Task.CompletedTask;
@@ -177,11 +180,60 @@ namespace FlightStreamDeck.Logics.Actions
             SwitchTo(settings.Type);
         }
 
-        string lastValue1 = null;
+        private string _lastValue1;
+        string lastValue1
+        {
+            get
+            {
+                return _lastValue1;
+            }
+            set
+            {
+                _lastValue1 = value;
+            }
+        }
+
+
         string lastValue2 = null;
         bool lastDependant = false;
+        bool forceRegen = false;
 
         private TaskCompletionSource<bool> initializationTcs;
+
+
+
+        private async Task FlightConnector_AircraftStatusUpdatedAsync(object sender, AircraftStatusUpdatedEventArgs e)
+        {
+            status = e.AircraftStatus;
+            //do this here in aircraft update since ADF frequencies aren't easily "converted" with mhz/khz/hz from simconnect
+            if (settings.Type.StartsWith("ADF"))
+            {
+                string active = settings.Type.Equals("ADF1") ? status?.ADFActiveFrequency1.ToString() : status?.ADFActiveFrequency2.ToString();
+                string standby = settings.Type.Equals("ADF1") ? status?.ADFStandbyFrequency1.ToString() : status?.ADFStandbyFrequency2.ToString();
+
+                if (!string.IsNullOrEmpty(active) || !string.IsNullOrEmpty(standby))
+                {
+                    int lenValue = (int)(active.Length);
+                    int lenLastvalue = (int)(standby.Length);
+                    string value = lastDependant ? active.Substring(0, lenValue - 3) : string.Empty;
+                    string lastValue = lastDependant ? standby.Substring(0, lenLastvalue - 3) : string.Empty;
+                    if (forceRegen || lastValue1 != value || lastValue2 != lastValue)
+                    {
+                        forceRegen = false;
+                        lastValue1 = value;
+                        lastValue2 = lastValue;
+                        try
+                        {
+                            await SetImageAsync(imageLogic.GetNavComImage(settings.Type, lastDependant, value, lastValue, showMainOnly: false));
+                        }
+                        catch (WebSocketException)
+                        {
+                            // Ignore as we can't really do anything here
+                        }
+                    }
+                }
+            }
+        }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
@@ -214,7 +266,7 @@ namespace FlightStreamDeck.Logics.Actions
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 
-                if (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant)
+                if (!settings.Type.StartsWith("ADF") && (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant))
                 {
                     lastValue1 = value1;
                     lastValue2 = value2;
@@ -227,6 +279,9 @@ namespace FlightStreamDeck.Logics.Actions
                     {
                         // Ignore as we can't really do anything here
                     }
+                } else if (settings.Type.StartsWith("ADF") && lastDependant != dependant) {
+                    forceRegen = true;
+                    lastDependant = dependant;
                 }
             }
         }
@@ -293,7 +348,7 @@ namespace FlightStreamDeck.Logics.Actions
                     break;
             }
             var values = new List<(TOGGLE_VALUE variable, string unit)>();
-            if (type != null)
+            if (type != null && !type.StartsWith("ADF"))
             {
                 values.Add((active.Value, null));
                 values.Add((standby.Value, null));
