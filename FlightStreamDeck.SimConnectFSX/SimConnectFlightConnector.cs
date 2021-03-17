@@ -558,6 +558,30 @@ namespace FlightStreamDeck.SimConnectFSX
                 SIMCONNECT_DATATYPE.FLOAT64,
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "ADF ACTIVE FREQUENCY:1",
+                "Hz",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "ADF STANDBY FREQUENCY:1",
+                "Hz",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "ADF ACTIVE FREQUENCY:2",
+                "Hz",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "ADF STANDBY FREQUENCY:2",
+                "Hz",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
 
             // IMPORTANT: register it with the simconnect managed wrapper marshaller
             // if you skip this step, you will only receive a uint in the .dwData field.
@@ -615,6 +639,10 @@ namespace FlightStreamDeck.SimConnectFSX
                                     Nav1OBS = flightStatus.Value.Nav1OBS,
                                     Nav2OBS = flightStatus.Value.Nav2OBS,
                                     ADFCard = flightStatus.Value.ADFCard,
+                                    ADFActiveFrequency1 = flightStatus.Value.ADFActive1,
+                                    ADFStandbyFrequency1 = flightStatus.Value.ADFStandby1,
+                                    ADFActiveFrequency2 = flightStatus.Value.ADFActive2,
+                                    ADFStandbyFrequency2 = flightStatus.Value.ADFStandby2,
                                 }));
                         }
                         else
