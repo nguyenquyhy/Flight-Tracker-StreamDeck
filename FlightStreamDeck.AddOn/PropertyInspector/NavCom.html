@@ -9,7 +9,7 @@
     <div class="sdpi-wrapper">
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Type</div>
-            <select class="sdpi-item-value select" id="Type" onchange="updateData()">
+            <select class="sdpi-item-value select" id="Type">
                 <option value="COM1">COM1</option>
                 <option value="COM2">COM2</option>
                 <option value="NAV1">NAV1</option>
@@ -19,7 +19,7 @@
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Tap/Hold functions</div>
-            <select class="sdpi-item-value select" id="HoldFunction" onchange="updateData()">
+            <select class="sdpi-item-value select" id="HoldFunction">
                 <option value="Numpad">Swap/Numpad</option>
                 <option value="Swap">Numpad/Swap</option>
             </select>
@@ -29,41 +29,48 @@
             <div class="sdpi-item-group">
                 <div class="sdpi-item" type="field">
                     <div class="sdpi-item-label">BATT MASTER</div>
-                    <select class="sdpi-item-value select" id="BattMasterValue" onchange="updateData()">
+                    <select class="sdpi-item-value select" id="BattMasterValue">
                         <option value="">Ignore</option>
                         <option value="ELECTRICAL_MASTER_BATTERY">Must be ON</option>
                     </select>
                 </div>
                 <div class="sdpi-item" type="field">
                     <div class="sdpi-item-label">AV MASTER</div>
-                    <select class="sdpi-item-value select" id="AvionicsValue" onchange="updateData()">
+                    <select class="sdpi-item-value select" id="AvionicsValue">
                         <option value="">Ignore</option>
                         <option value="AVIONICS_MASTER_SWITCH">Must be ON</option>
                     </select>
                 </div>
             </div>
         </div>
+        <div type="group" class="sdpi-item" id="messagegroup">
+            <div class="sdpi-item-label">Custom Image</div>
+            <div class="sdpi-item-group">
+                <div class="sdpi-item" id="background_image_file_selector">
+                    <div class="sdpi-item-label">Background image</div>
+                    <div class="sdpi-item-group file">
+                        <input class="sdpi-item-value" type="file" id="ImageBackground" accept=".jpg, .jpeg, .png">
+                        <label class="sdpi-file-info">no file...</label>
+                        <label class="sdpi-file-label" data-for="ImageBackground" onclick="handleEmbed(this)">Embed</label>
+                        <label class="sdpi-file-label" data-for="ImageBackground" onclick="handleLink(this)">Link</label>
+                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageBackground">Clear</label>
+                    </div>
+                </div>
+                <input type="hidden" id="IsEmbedding" />
+            </div>
+        </div>
     </div>
     <script src="common.js"></script>
+    <script src="embedimages.js"></script>
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
             if (settings['Type']) { Type.value = settings['Type'] };
             if (settings['HoldFunction']) { Type.value = settings['HoldFunction'] };
             if (settings['BattMasterValue']) { BattMasterValue.value = settings['BattMasterValue'] };
             if (settings['AvionicsValue']) { AvionicsValue.value = settings['AvionicsValue'] };
-        }
-
-        function updateData() {
-            console.log('update data');
-            const payload = {
-                "Type": Type.value,
-                "HoldFunction": HoldFunction.value,
-                "BattMasterValue": BattMasterValue.value,
-                "AvionicsValue": AvionicsValue.value,
+            if (settings['ImageBackground']) {
+                setFileLabel(background_image_file_selector, settings['ImageBackground'], !!settings['ImageBackground_base64']);
             };
-
-            sendValueToPlugin(payload);
-            setSettings(payload);
         }
     </script>
     <script src="init.js"></script>

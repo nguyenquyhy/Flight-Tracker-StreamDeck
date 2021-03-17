@@ -1,5 +1,7 @@
 ﻿using FlightStreamDeck.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Enums;
@@ -7,6 +9,7 @@ using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -20,6 +23,10 @@ namespace FlightStreamDeck.Logics.Actions
         public string HoldFunction { get; set; }
         public string AvionicsValue { get; set; }
         public string BattMasterValue { get; set; }
+        [JsonProperty(nameof(ImageBackground))]
+        public string ImageBackground { get; set; }
+        [JsonProperty(nameof(ImageBackground_base64))]
+        public string ImageBackground_base64 { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
@@ -88,14 +95,7 @@ namespace FlightStreamDeck.Logics.Actions
             var settings = args.Payload.GetSettings<NavComSettings>();
             InitializeSettings(settings);
 
-            try
-            {
-                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
-            }
-            catch (WebSocketException)
-            {
-                // Ignore as we can't really do anything here
-            }
+            await UpdateImage(dependant: false, value1: null, value2: null, showMainOnly: false);
 
             if (initializationTcs != null)
             {
@@ -151,17 +151,24 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            var settings = args.Payload.ToObject<NavComSettings>();
-            InitializeSettings(settings);
 
-            try
+            if (args.Payload.TryGetValue("convertToEmbed", out JToken fileKeyObject))
             {
-                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
+                var fileKey = fileKeyObject.Value<string>();
+                await ConvertLinkToEmbed(fileKey);
             }
-            catch (WebSocketException)
+            else if (args.Payload.TryGetValue("convertToLink", out fileKeyObject))
             {
-                // Ignore as we can't really do anything here
+                var fileKey = fileKeyObject.Value<string>();
+
+                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
             }
+            else
+            {
+                InitializeSettings(args.Payload.ToObject<NavComSettings>());
+            }
+
+            await UpdateImage(dependant: false, value1: null, value2: null, showMainOnly: false);
         }
 
         private void InitializeSettings(NavComSettings settings)
@@ -219,16 +226,35 @@ namespace FlightStreamDeck.Logics.Actions
                     lastValue1 = value1;
                     lastValue2 = value2;
                     lastDependant = dependant;
-                    try
-                    {
-                        await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly));
-                    }
-                    catch (WebSocketException)
-                    {
-                        // Ignore as we can't really do anything here
-                    }
+                    await UpdateImage(dependant, value1, value2, showMainOnly);
                 }
             }
+        }
+
+        private async Task UpdateImage(bool dependant, string value1, string value2, Boolean showMainOnly)
+        {
+            try
+            {
+                
+                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly, settings.ImageBackground, getImageBytes()));
+            }
+            catch (WebSocketException)
+            {
+                // Ignore as we can't really do anything here
+            }
+        }
+
+        private byte[] getImageBytes()
+        {
+            byte[] imageBackgroundBytes = null;
+            if (settings.ImageBackground_base64 != null)
+            {
+                var s = settings.ImageBackground_base64;
+                s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                imageBackgroundBytes = Convert.FromBase64String(s);
+            }
+
+            return imageBackgroundBytes;
         }
 
         private void SwitchTo(string type)
@@ -355,7 +381,9 @@ namespace FlightStreamDeck.Logics.Actions
                         "XPDR" => maxXpdrVal,
                         _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
                     },
-                    mask
+                    mask,
+                    settings.ImageBackground,
+                    getImageBytes()
                 );
                 DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
 
@@ -396,6 +424,64 @@ namespace FlightStreamDeck.Logics.Actions
                     }
                 }
             }
+        }
+
+        private async Task ConvertLinkToEmbed(string fileKey)
+        {
+            switch (fileKey)
+            {
+                case "ImageBackground":
+                    settings.ImageBackground_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageBackground));
+                    break;
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
+        }
+
+        private async Task ConvertEmbedToLink(string fileKey)
+        {
+            var dialog = new SaveFileDialog
+            {
+                FileName = fileKey switch
+                {
+                    "ImageBackground" => Path.GetFileName(settings.ImageBackground),
+                    _ => "image.png"
+                },
+                Filter = "Images|*.jpg;*.jpeg;*.png"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                var bytes = fileKey switch
+                {
+                    "ImageBackground" => Convert.FromBase64String(settings.ImageBackground_base64),
+                    _ => null
+                };
+                if (bytes != null)
+                {
+                    File.WriteAllBytes(dialog.FileName, bytes);
+                }
+                switch (fileKey)
+                {
+                    case "ImageOn":
+                        settings.ImageBackground_base64 = null;
+                        settings.ImageBackground = dialog.FileName.Replace("\\", "/");
+                        break;
+                }
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
         }
     }
 }

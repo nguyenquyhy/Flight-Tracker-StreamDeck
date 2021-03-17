@@ -37,7 +37,7 @@ namespace FlightStreamDeck.Logics.Actions
 
                 try
                 {
-                    await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value));
+                    await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value, imageOnFilePath: DeckLogic.NumpadParams.ImageBackgroundFilePath, imageOnBytes: DeckLogic.NumpadParams.ImageBackground_base64));
                 }
                 catch (WebSocketException)
                 {

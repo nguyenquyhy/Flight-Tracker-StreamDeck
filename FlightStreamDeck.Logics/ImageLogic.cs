@@ -13,7 +13,7 @@ namespace FlightStreamDeck.Logics
     {
         string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null);
         string GetNumberImage(int number);
-        string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
+        string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
         public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string subValueText = null);
         public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
@@ -79,6 +79,8 @@ namespace FlightStreamDeck.Logics
 
             }
 
+            img.Mutate(x => x.Resize(WIDTH, WIDTH)); //force image to rescale to our button size, otherwise text gets super small if it is bigger.
+
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
@@ -133,12 +135,42 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false)
+        private void drawChevron(IImageProcessingContext ctx, int arrowStartY)
         {
-            var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
-            var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 13, FontStyle.Regular);
+            int width_margin = 2;
+            int img_width = WIDTH - (width_margin * 2);
+            int chart_width = img_width;
+            int chevronSize = 2;
+            var pen = new Pen(Color.Yellow, chevronSize + 1);
+
+            var arrowStartX = 7;
+            var arrowAddY = arrowStartY - ((chevronSize * 2));
+
+            var startPoint = new PointF(arrowStartX, arrowStartY);
+            var up = new PointF(arrowStartX, arrowAddY - chevronSize);
+            var over = new PointF(arrowStartX + chevronSize, arrowAddY + (chevronSize / 2));
+
+            PointF[] needle = { startPoint, up, over, startPoint };
+            ctx.DrawPolygon(pen, needle);
+        }
+
+        public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null)
+        {
+            var font = SystemFonts.CreateFont("Arial", 18, FontStyle.Bold);
+            var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
 
             Image img = defaultBackground;
+            if (imageOnBytes != null && imageOnBytes.Length > 0)
+            {
+                img = Image.Load(imageOnBytes, new PngDecoder());
+            }
+            else if (!string.IsNullOrEmpty(imageOnFilePath) && File.Exists(imageOnFilePath))
+            {
+                img = Image.Load(imageOnFilePath);
+            }
+
+            img.Mutate(x => x.Resize(WIDTH, WIDTH)); //force image to rescale to our button size, otherwise text gets super small if it is bigger.
+
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
@@ -147,20 +179,23 @@ namespace FlightStreamDeck.Logics
                 {
                     var size = TextMeasurer.Measure(type, new RendererOptions(font));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
-                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 15));
                 }
 
                 if (!string.IsNullOrWhiteSpace(value1))
                 {
                     var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.Yellow : Color.LightGray;
-                    ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
+                    var xAdjust = (size1.Width * (showMainOnly ? .5 : .45));
+                    var yAdjust = (showMainOnly ? 2 : 3);
+                    ctx.DrawText(value1, valueFont, displayColor, new PointF((float)(imgSize.Width / 2 - xAdjust), imgSize.Height / yAdjust));
+                    if (!showMainOnly) drawChevron(ctx, (int)((imgSize.Height / 3) + (size1.Height * .75)));
                 }
                 if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
                     var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
-                    ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));
+                    ctx.DrawText(value2, valueFont, displayColor, new PointF((float)(imgSize.Width / 2 - (size2.Width * .45)), imgSize.Height / 3 + size2.Height + 2));
                 }
             });
             using var memoryStream = new MemoryStream();
