@@ -164,6 +164,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 var newValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
                 isUpdated |= newValue != currentValue;
+                currentValue = newValue;
 
                 if (displayValue.Value == TOGGLE_VALUE.ZULU_TIME
                     || displayValue.Value == TOGGLE_VALUE.LOCAL_TIME)
