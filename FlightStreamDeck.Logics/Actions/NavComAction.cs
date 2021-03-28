@@ -210,8 +210,8 @@ namespace FlightStreamDeck.Logics.Actions
         private async Task FlightConnector_AircraftStatusUpdatedAsync(object sender, AircraftStatusUpdatedEventArgs e)
         {
             status = e.AircraftStatus;
-            //do this here in aircraft update since ADF frequencies aren't easily "converted" with mhz/khz/hz from simconnect
-            if (settings.Type.StartsWith("ADF"))
+            // Update ADF image here since ADF frequencies aren't easily "converted" with mhz/khz/hz from simconnect
+            if (settings.Type != null && settings.Type.StartsWith("ADF"))
             {
                 string active = settings.Type.Equals("ADF1") ? status?.ADFActiveFrequency1.ToString() : status?.ADFActiveFrequency2.ToString();
                 string standby = settings.Type.Equals("ADF1") ? status?.ADFStandbyFrequency1.ToString() : status?.ADFStandbyFrequency2.ToString();
@@ -264,17 +264,24 @@ namespace FlightStreamDeck.Logics.Actions
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 
-                if (!settings.Type.StartsWith("ADF") && (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant))
+                if (settings.Type != null && settings.Type.StartsWith("ADF"))
                 {
-                    lastValue1 = value1;
-                    lastValue2 = value2;
-                    lastDependant = dependant;
-                    await UpdateImage(dependant, value1, value2, showMainOnly);
+                    // For ADF, the update happens in FlightConnector_AircraftStatusUpdatedAsync
+                    if (lastDependant != dependant)
+                    {
+                        forceRegen = true;
+                        lastDependant = dependant;
+                    }
                 }
-                else if (settings.Type.StartsWith("ADF") && lastDependant != dependant)
+                else
                 {
-                    forceRegen = true;
-                    lastDependant = dependant;
+                    if (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant)
+                    {
+                        lastValue1 = value1;
+                        lastValue2 = value2;
+                        lastDependant = dependant;
+                        await UpdateImage(dependant, value1, value2, showMainOnly);
+                    }
                 }
             }
         }
