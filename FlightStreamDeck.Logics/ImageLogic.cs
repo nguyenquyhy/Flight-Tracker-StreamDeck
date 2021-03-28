@@ -13,7 +13,7 @@ namespace FlightStreamDeck.Logics
     {
         string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null);
         string GetNumberImage(int number);
-        string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
+        string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
         public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string subValueText = null);
         public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
@@ -79,6 +79,8 @@ namespace FlightStreamDeck.Logics
 
             }
 
+            img.Mutate(x => x.Resize(WIDTH, WIDTH)); //force image to rescale to our button size, otherwise text gets super small if it is bigger.
+
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
@@ -133,12 +135,23 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false)
+        public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
-            var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 13, FontStyle.Regular);
+            var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
 
             Image img = defaultBackground;
+            if (imageOnBytes != null && imageOnBytes.Length > 0)
+            {
+                img = Image.Load(imageOnBytes, new PngDecoder());
+            }
+            else if (!string.IsNullOrEmpty(imageOnFilePath) && File.Exists(imageOnFilePath))
+            {
+                img = Image.Load(imageOnFilePath);
+            }
+
+            img.Mutate(x => x.Resize(WIDTH, WIDTH)); //force image to rescale to our button size, otherwise text gets super small if it is bigger.
+
             using var img2 = img.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
@@ -147,20 +160,20 @@ namespace FlightStreamDeck.Logics
                 {
                     var size = TextMeasurer.Measure(type, new RendererOptions(font));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
-                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, showMainOnly ? imgSize.Height / 4 : imgSize.Height / 6));
                 }
 
                 if (!string.IsNullOrWhiteSpace(value1))
                 {
                     var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.Yellow : Color.LightGray;
-                    ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, imgSize.Height / 2));
+                    ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, showMainOnly ? (imgSize.Height / 2) : (imgSize.Height / 6 + imgSize.Height / 4)));
                 }
                 if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
                     var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
-                    ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 2 + size2.Height + 2));
+                    ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 6 + imgSize.Height / 4 + size2.Height));
                 }
             });
             using var memoryStream = new MemoryStream();
@@ -332,12 +345,12 @@ namespace FlightStreamDeck.Logics
                 //topValue
                 var ratio = (valueTop - (min < max ? min : max)) / range;
                 var valueTopText = (displayAbsoluteValue ? Math.Abs(valueTop) : valueTop).ToString(valueFormat);
-                setupValue(true, textTop, valueTopText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderTop);
+                SetupValue(true, textTop, valueTopText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderTop);
 
                 //bottomValue
                 ratio = (valueBottom - (min < max ? min : max)) / range;
                 var valueBottomText = (displayAbsoluteValue ? Math.Abs(valueBottom) : valueBottom).ToString(valueFormat);
-                setupValue(false, textBottom, valueBottomText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderBottom);
+                SetupValue(false, textBottom, valueBottomText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderBottom);
 
                 if (!horizontal) ctx.Rotate(-90);
             });
@@ -349,7 +362,7 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        private void setupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)
+        private void SetupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)
         {
 
             float.TryParse(value, out float floatValue);

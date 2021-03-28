@@ -35,6 +35,8 @@ namespace FlightStreamDeck.Logics.Actions
         public string HoldValueData { get; set; }
         [JsonProperty(nameof(HoldValueRepeat))]
         public bool HoldValueRepeat { get; set; }
+        [JsonProperty(nameof(HoldValueSuppressToggle))]
+        public bool HoldValueSuppressToggle { get; set; }
 
         [JsonProperty(nameof(FeedbackValue))]
         public string FeedbackValue { get; set; }
@@ -86,6 +88,8 @@ namespace FlightStreamDeck.Logics.Actions
         private double? currentValue = null;
         private string? currentValueTime = null;
         private bool currentStatus = false;
+
+        private bool holdEventTriggerred = false;
 
         public GenericToggleAction(ILogger<GenericToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
             IEvaluator evaluator, EnumConverter enumConverter)
@@ -343,13 +347,11 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue)
+            holdEventTriggerred = false;
+
+            if (!holdEvent.HasValue || !settings.HoldValueSuppressToggle)
             {
-                flightConnector.Trigger(toggleEvent.Value,
-                    !(toggleEventDataVariable is null) && toggleEventDataVariableValue.HasValue ?
-                        Convert.ToUInt32(Math.Round(toggleEventDataVariableValue.Value)) :
-                        (toggleEventDataUInt ?? 0)
-                );
+                TriggerToggleEvent();
             }
 
             if (holdEvent.HasValue)
@@ -358,11 +360,17 @@ namespace FlightStreamDeck.Logics.Actions
                 timer.Elapsed += Timer_Elapsed;
                 timer.Start();
             }
+
             return Task.CompletedTask;
         }
 
         protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
         {
+            if (settings.HoldValueSuppressToggle && !holdEventTriggerred)
+            {
+                TriggerToggleEvent();
+            }
+
             var localTimer = timer;
             if (localTimer != null)
             {
@@ -378,6 +386,8 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (holdEvent.HasValue)
             {
+                holdEventTriggerred = true;
+
                 flightConnector.Trigger(holdEvent.Value,
                     !(holdEventDataVariable is null) && holdEventDataVariableValue.HasValue ?
                         Convert.ToUInt32(Math.Round(holdEventDataVariableValue.Value)) :
@@ -389,6 +399,18 @@ namespace FlightStreamDeck.Logics.Actions
                     timer?.Stop();
                     timer = null;
                 }
+            }
+        }
+
+        private void TriggerToggleEvent()
+        {
+            if (toggleEvent.HasValue)
+            {
+                flightConnector.Trigger(toggleEvent.Value,
+                    !(toggleEventDataVariable is null) && toggleEventDataVariableValue.HasValue ?
+                        Convert.ToUInt32(Math.Round(toggleEventDataVariableValue.Value)) :
+                        (toggleEventDataUInt ?? 0)
+                );
             }
         }
 

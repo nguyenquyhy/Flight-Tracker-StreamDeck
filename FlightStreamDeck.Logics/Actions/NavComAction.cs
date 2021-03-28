@@ -1,5 +1,7 @@
 ﻿using FlightStreamDeck.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Enums;
@@ -7,6 +9,7 @@ using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -20,11 +23,16 @@ namespace FlightStreamDeck.Logics.Actions
         public string HoldFunction { get; set; }
         public string AvionicsValue { get; set; }
         public string BattMasterValue { get; set; }
+        [JsonProperty(nameof(ImageBackground))]
+        public string ImageBackground { get; set; }
+        [JsonProperty(nameof(ImageBackground_base64))]
+        public string ImageBackground_base64 { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
     public class NavComAction : StreamDeckAction<NavComSettings>
     {
+        private AircraftStatus status;
         private const int HOLD_DURATION_MILLISECONDS = 1000;
         private const string minNavVal = "10800";
         private const string maxNavVal = "11795";
@@ -84,18 +92,12 @@ namespace FlightStreamDeck.Logics.Actions
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
+            flightConnector.AircraftStatusUpdated += new EventHandler<AircraftStatusUpdatedEventArgs>(async (s, e) => await FlightConnector_AircraftStatusUpdatedAsync(s, e));
 
             var settings = args.Payload.GetSettings<NavComSettings>();
             InitializeSettings(settings);
 
-            try
-            {
-                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
-            }
-            catch (WebSocketException)
-            {
-                // Ignore as we can't really do anything here
-            }
+            await UpdateImage(dependant: false, value1: null, value2: null, showMainOnly: false);
 
             if (initializationTcs != null)
             {
@@ -107,6 +109,7 @@ namespace FlightStreamDeck.Logics.Actions
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated -= FlightConnector_GenericValuesUpdated;
+            flightConnector.AircraftStatusUpdated -= new EventHandler<AircraftStatusUpdatedEventArgs>(async (s, e) => await FlightConnector_AircraftStatusUpdatedAsync(s, e));
             SwitchTo(null);
 
             return Task.CompletedTask;
@@ -151,17 +154,24 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
         {
-            var settings = args.Payload.ToObject<NavComSettings>();
-            InitializeSettings(settings);
 
-            try
+            if (args.Payload.TryGetValue("convertToEmbed", out JToken fileKeyObject))
             {
-                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, false));
+                var fileKey = fileKeyObject.Value<string>();
+                await ConvertLinkToEmbed(fileKey);
             }
-            catch (WebSocketException)
+            else if (args.Payload.TryGetValue("convertToLink", out fileKeyObject))
             {
-                // Ignore as we can't really do anything here
+                var fileKey = fileKeyObject.Value<string>();
+
+                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
             }
+            else
+            {
+                InitializeSettings(args.Payload.ToObject<NavComSettings>());
+            }
+
+            await UpdateImage(dependant: false, value1: null, value2: null, showMainOnly: false);
         }
 
         private void InitializeSettings(NavComSettings settings)
@@ -177,11 +187,51 @@ namespace FlightStreamDeck.Logics.Actions
             SwitchTo(settings.Type);
         }
 
-        string lastValue1 = null;
+        private string _lastValue1;
+        string lastValue1
+        {
+            get
+            {
+                return _lastValue1;
+            }
+            set
+            {
+                _lastValue1 = value;
+            }
+        }
+
+
         string lastValue2 = null;
         bool lastDependant = false;
+        bool forceRegen = false;
 
         private TaskCompletionSource<bool> initializationTcs;
+
+        private async Task FlightConnector_AircraftStatusUpdatedAsync(object sender, AircraftStatusUpdatedEventArgs e)
+        {
+            status = e.AircraftStatus;
+            //do this here in aircraft update since ADF frequencies aren't easily "converted" with mhz/khz/hz from simconnect
+            if (settings.Type.StartsWith("ADF"))
+            {
+                string active = settings.Type.Equals("ADF1") ? status?.ADFActiveFrequency1.ToString() : status?.ADFActiveFrequency2.ToString();
+                string standby = settings.Type.Equals("ADF1") ? status?.ADFStandbyFrequency1.ToString() : status?.ADFStandbyFrequency2.ToString();
+
+                if (!string.IsNullOrEmpty(active) || !string.IsNullOrEmpty(standby))
+                {
+                    int lenValue = (int)(active.Length);
+                    int lenLastvalue = (int)(standby.Length);
+                    string value = lastDependant ? active.Substring(0, lenValue - 3) : string.Empty;
+                    string lastValue = lastDependant ? standby.Substring(0, lenLastvalue - 3) : string.Empty;
+                    if (forceRegen || lastValue1 != value || lastValue2 != lastValue)
+                    {
+                        forceRegen = false;
+                        lastValue1 = value;
+                        lastValue2 = lastValue;
+                        await UpdateImage(lastDependant, value, lastValue, false);
+                    }
+                }
+            }
+        }
 
         private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
         {
@@ -214,21 +264,44 @@ namespace FlightStreamDeck.Logics.Actions
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 
-                if (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant)
+                if (!settings.Type.StartsWith("ADF") && (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant))
                 {
                     lastValue1 = value1;
                     lastValue2 = value2;
                     lastDependant = dependant;
-                    try
-                    {
-                        await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly));
-                    }
-                    catch (WebSocketException)
-                    {
-                        // Ignore as we can't really do anything here
-                    }
+                    await UpdateImage(dependant, value1, value2, showMainOnly);
+                }
+                else if (settings.Type.StartsWith("ADF") && lastDependant != dependant)
+                {
+                    forceRegen = true;
+                    lastDependant = dependant;
                 }
             }
+        }
+
+        private async Task UpdateImage(bool dependant, string value1, string value2, bool showMainOnly)
+        {
+            try
+            {
+                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly, settings.ImageBackground, GetImageBytes()));
+            }
+            catch (WebSocketException)
+            {
+                // Ignore as we can't really do anything here
+            }
+        }
+
+        private byte[] GetImageBytes()
+        {
+            byte[] imageBackgroundBytes = null;
+            if (settings.ImageBackground_base64 != null)
+            {
+                var s = settings.ImageBackground_base64;
+                s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                imageBackgroundBytes = Convert.FromBase64String(s);
+            }
+
+            return imageBackgroundBytes;
         }
 
         private void SwitchTo(string type)
@@ -293,7 +366,7 @@ namespace FlightStreamDeck.Logics.Actions
                     break;
             }
             var values = new List<(TOGGLE_VALUE variable, string unit)>();
-            if (type != null)
+            if (type != null && !type.StartsWith("ADF"))
             {
                 values.Add((active.Value, null));
                 values.Add((standby.Value, null));
@@ -355,7 +428,9 @@ namespace FlightStreamDeck.Logics.Actions
                         "XPDR" => maxXpdrVal,
                         _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
                     },
-                    mask
+                    mask,
+                    settings.ImageBackground,
+                    GetImageBytes()
                 );
                 DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
 
@@ -396,6 +471,64 @@ namespace FlightStreamDeck.Logics.Actions
                     }
                 }
             }
+        }
+
+        private async Task ConvertLinkToEmbed(string fileKey)
+        {
+            switch (fileKey)
+            {
+                case "ImageBackground":
+                    settings.ImageBackground_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageBackground));
+                    break;
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
+        }
+
+        private async Task ConvertEmbedToLink(string fileKey)
+        {
+            var dialog = new SaveFileDialog
+            {
+                FileName = fileKey switch
+                {
+                    "ImageBackground" => Path.GetFileName(settings.ImageBackground),
+                    _ => "image.png"
+                },
+                Filter = "Images|*.jpg;*.jpeg;*.png"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                var bytes = fileKey switch
+                {
+                    "ImageBackground" => Convert.FromBase64String(settings.ImageBackground_base64),
+                    _ => null
+                };
+                if (bytes != null)
+                {
+                    File.WriteAllBytes(dialog.FileName, bytes);
+                }
+                switch (fileKey)
+                {
+                    case "ImageOn":
+                        settings.ImageBackground_base64 = null;
+                        settings.ImageBackground = dialog.FileName.Replace("\\", "/");
+                        break;
+                }
+            }
+
+            await SetSettingsAsync(settings);
+            await SendToPropertyInspectorAsync(new
+            {
+                Action = "refresh",
+                Settings = settings
+            });
+            InitializeSettings(settings);
         }
     }
 }
