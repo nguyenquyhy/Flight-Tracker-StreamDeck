@@ -605,5 +605,7 @@
         ADF_STANDBY_FREQUENCY__1,
         ADF_ACTIVE_FREQUENCY__2,
         ADF_STANDBY_FREQUENCY__2,
+        ZULU_TIME,
+        LOCAL_TIME,
     }
 }

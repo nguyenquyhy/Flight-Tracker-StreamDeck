@@ -86,6 +86,7 @@ namespace FlightStreamDeck.Logics.Actions
         private int? customDecimals = null;
 
         private double? currentValue = null;
+        private string? currentValueTime = null;
         private bool currentStatus = false;
 
         private bool holdEventTriggerred = false;
@@ -168,6 +169,34 @@ namespace FlightStreamDeck.Logics.Actions
                 var newValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
                 isUpdated |= newValue != currentValue;
                 currentValue = newValue;
+
+                if (displayValue.Value == TOGGLE_VALUE.ZULU_TIME
+                    || displayValue.Value == TOGGLE_VALUE.LOCAL_TIME)
+                {
+                    string hours = Math.Floor(newValue / 3600).ToString().PadLeft(2, '0');
+                    newValue = newValue % 3600;
+
+                    string minutes = Math.Floor(newValue / 60).ToString().PadLeft(2, '0');
+                    newValue = newValue % 60;
+
+                    string seconds = Math.Floor(newValue).ToString().PadLeft(2, '0');
+
+                    switch (customDecimals)
+                    {
+                        case 0: //HH:MM:SS
+                            currentValueTime = $"{hours}:{minutes}:{seconds}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
+                            currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                            break;
+                        case 1: //HH:MM
+                            currentValueTime = $"{hours}:{minutes}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
+                            currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                            break;
+                        default:
+                            currentValueTime = string.Empty;
+                            currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                            break;
+                    }
+                }
             }
 
             if (toggleEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey((toggleEventDataVariable.Value, null)))
@@ -311,6 +340,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
 
             currentValue = null;
+            currentValueTime = string.Empty;
             toggleEventDataVariableValue = null;
             holdEventDataVariableValue = null;
         }
@@ -404,8 +434,11 @@ namespace FlightStreamDeck.Logics.Actions
                 }
                 try
                 {
+                    var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
+                        currentValueTime :
+                        (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "";
                     await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus,
-                        value: (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "",
+                        value: valueToShow,
                         imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                         imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                 }
