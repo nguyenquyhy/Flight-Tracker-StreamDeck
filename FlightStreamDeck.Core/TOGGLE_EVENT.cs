@@ -529,6 +529,7 @@
         GPS_MSG_BUTTON_UP,
         GPS_OBS_INC,
         GPS_OBS_DEC,
+        GPS_OBS_SET,
         GPS_FLIGHTPLAN_BUTTON,
         GPS_TERRAIN_BUTTON,
         GPS_PROCEDURE_BUTTON,
