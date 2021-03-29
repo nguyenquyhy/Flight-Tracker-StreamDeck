@@ -35,9 +35,27 @@ namespace FlightStreamDeck.Logics.Tests
             var currentValue = 0;
             var comparisonValue = 0;
             List<string> expectedTrueComparisons = new List<string> {
+                ComparisonEvaluator.OperatorTruncatedEquals,
                 ComparisonEvaluator.OperatorEquals,
                 ComparisonEvaluator.OperatorGreaterOrEquals,
                 ComparisonEvaluator.OperatorLessOrEquals
+            };
+
+            //Act
+            Workhorse(currentValue, comparisonValue, expectedTrueComparisons);
+        }
+
+        [TestMethod]
+        public void CompareValuesTest_Same_Truncated_Value_Numeric()
+        {
+            //Arrange
+            var currentValue = 1.7;
+            var comparisonValue = 1;
+            List<string> expectedTrueComparisons = new List<string> {
+                ComparisonEvaluator.OperatorTruncatedEquals,
+                ComparisonEvaluator.OperatorNotEquals,
+                ComparisonEvaluator.OperatorGreaterOrEquals,
+                ComparisonEvaluator.OperatorGreater
             };
 
             //Act

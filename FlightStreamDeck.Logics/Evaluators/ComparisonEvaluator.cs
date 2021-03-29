@@ -91,6 +91,7 @@ namespace FlightStreamDeck.Logics
         }
 
         public const string OperatorEquals = "==";
+        public const string OperatorTruncatedEquals = "~";
         public const string OperatorNotEquals = "!=";
         public const string OperatorGreaterOrEquals = ">=";
         public const string OperatorLessOrEquals = "<=";
@@ -99,6 +100,7 @@ namespace FlightStreamDeck.Logics
 
         public static readonly List<string> AllowedComparisons = new List<string> {
             OperatorEquals,
+            OperatorTruncatedEquals,
             OperatorNotEquals,
             OperatorGreaterOrEquals,
             OperatorLessOrEquals,
@@ -154,6 +156,9 @@ namespace FlightStreamDeck.Logics
             {
                 case OperatorEquals:
                     output = currentValue == comparisonValue;
+                    break;
+                case OperatorTruncatedEquals:
+                    output = (long)currentValue == (long)comparisonValue;
                     break;
                 case OperatorNotEquals:
                     output = currentValue != comparisonValue;
