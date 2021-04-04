@@ -308,16 +308,30 @@ namespace FlightStreamDeck.Logics
         {
             if (imageBytes != null && imageBytes.Length > 0)
             {
-                return Image.Load(imageBytes, new PngDecoder());
+                try
+                {
+                    return Image.Load(imageBytes, new PngDecoder());
+                }
+                catch (InvalidImageContentException)
+                {
+                    // Let it fall through to default image
+                    // TODO: maybe show a warning background
+                }
             }
             else if (!string.IsNullOrEmpty(imageFilePath) && File.Exists(imageFilePath))
             {
-                return Image.Load(imageFilePath);
+                try
+                {
+                    return Image.Load(imageFilePath);
+                }
+                catch (InvalidImageContentException)
+                {
+                    // Let it fall through to default image
+                    // TODO: maybe show a warning background
+                }
             }
-            else
-            {
-                return imageDefault;
-            }
+
+            return imageDefault;
         }
 
         private string ToBase64PNG(Image image)
