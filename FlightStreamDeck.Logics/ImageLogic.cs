@@ -235,9 +235,15 @@ namespace FlightStreamDeck.Logics
         {
             var font = SystemFonts.CreateFont("Arial", 25, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
-            var pen = new Pen(Color.DarkRed, 5);
-            var range = Math.Abs(max - min);
-            range = (range == 0 ? 1 : range);
+
+            if (max < min)
+            {
+                // Swap max and min
+                var temp = max; max = min; min = temp;
+            }
+
+            var range = max - min;
+            range = range == 0 ? 1 : range;
 
             using var img = defaultBackground.Clone(ctx =>
             {
@@ -289,14 +295,14 @@ namespace FlightStreamDeck.Logics
                 }
 
                 //topValue
-                var ratio = (valueTop - (min < max ? min : max)) / range;
+                var ratio = (valueTop - min) / range;
                 var valueTopText = (displayAbsoluteValue ? Math.Abs(valueTop) : valueTop).ToString(valueFormat);
-                SetupValue(true, textTop, valueTopText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderTop);
+                DrawCustomGauge(true, textTop, valueTopText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderTop);
 
                 //bottomValue
-                ratio = (valueBottom - (min < max ? min : max)) / range;
+                ratio = (valueBottom - min) / range;
                 var valueBottomText = (displayAbsoluteValue ? Math.Abs(valueBottom) : valueBottom).ToString(valueFormat);
-                SetupValue(false, textBottom, valueBottomText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderBottom);
+                DrawCustomGauge(false, textBottom, valueBottomText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderBottom);
 
                 if (!horizontal) ctx.Rotate(-90);
             });
@@ -343,12 +349,11 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        private void SetupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)
+        private void DrawCustomGauge(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)
         {
-
             float.TryParse(value, out float floatValue);
             bool missingHeaderLabel = (labelText?.Length ?? 0) == 0;
-            bool writeValueHeaderAndChevron = !hideHeader || (hideHeader && !(floatValue < min || floatValue > max));
+            bool writeValueHeaderAndChevron = !hideHeader || (floatValue >= min && floatValue <= max);
 
             if (writeValueHeaderAndChevron && !missingHeaderLabel)
             {
@@ -365,7 +370,7 @@ namespace FlightStreamDeck.Logics
                 PointF[] needle = { startPoint, right, left, startPoint };
 
                 var valueText = value.ToString();
-                Color textColor = (floatValue > max && min < max) ? Color.Red : Color.White;
+                var textColor = (floatValue > max || floatValue < min) ? Color.Red : Color.White;
                 var font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
 
                 var size = TextMeasurer.Measure(valueText, new RendererOptions(font));
