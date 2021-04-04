@@ -7,7 +7,6 @@ using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 using EnumConverter = FlightStreamDeck.Core.EnumConverter;
 
@@ -58,7 +57,7 @@ namespace FlightStreamDeck.Logics.Actions
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
-    public class GenericGaugeAction : StreamDeckAction<GenericGaugeSettings>
+    public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
     {
         private readonly ILogger<GenericGaugeAction> logger;
         private readonly IFlightConnector flightConnector;
@@ -312,31 +311,25 @@ namespace FlightStreamDeck.Logics.Actions
                             int chartThickness = settings.ChartThicknessValue.ConvertTo<int>(DefaultSettings.ChartThicknessValue);
                             float chartChevronSize = settings.ChartChevronSizeValue.ConvertTo<int>(DefaultSettings.ChartChevronSizeValue);
                             int modifier = currentMinValue.Value > currentMaxValue.Value ? -1 : 1;
-                            try
-                            {
-                                await SetImageAsync(
-                                    imageLogic.GetCustomGaugeImage(
-                                        settings.Header,
-                                        settings.HeaderBottom,
-                                        currentValue * modifier,
-                                        currentValueBottom * modifier,
-                                        currentMinValue.Value,
-                                        currentMaxValue.Value,
-                                        numberFormat,
-                                        settings.DisplayHorizontalValue,
-                                        chartSplit?.Split(','),
-                                        chartThickness,
-                                        chartChevronSize,
-                                        absValueText,
-                                        settings.HideLabelOutsideMinMaxTop,
-                                        settings.HideLabelOutsideMinMaxBottom
-                                    )
-                                );
-                            }
-                            catch (WebSocketException)
-                            {
-                                // Ignore as we can't really do anything here
-                            }
+
+                            await SetImageSafeAsync(
+                                imageLogic.GetCustomGaugeImage(
+                                    settings.Header,
+                                    settings.HeaderBottom,
+                                    currentValue * modifier,
+                                    currentValueBottom * modifier,
+                                    currentMinValue.Value,
+                                    currentMaxValue.Value,
+                                    numberFormat,
+                                    settings.DisplayHorizontalValue,
+                                    chartSplit?.Split(','),
+                                    chartThickness,
+                                    chartChevronSize,
+                                    absValueText,
+                                    settings.HideLabelOutsideMinMaxTop,
+                                    settings.HideLabelOutsideMinMaxBottom
+                                )
+                            );
                         }
                         break;
                     default:
@@ -344,23 +337,17 @@ namespace FlightStreamDeck.Logics.Actions
                         {
                             var numberFormat = "F" + (displayValue.HasValue ? EventValueLibrary.GetDecimals(displayValue.Value, customDecimals) : 2);
                             var subValueText = subDisplayValue.HasValue ? currentSubValue.ToString("F" + EventValueLibrary.GetDecimals(subDisplayValue.Value)) : null;
-                            try
-                            {
-                                await SetImageAsync(
-                                    imageLogic.GetGenericGaugeImage(
-                                        settings.Header,
-                                        currentValue,
-                                        currentMinValue.Value,
-                                        currentMaxValue.Value,
-                                        numberFormat,
-                                        subValueText
-                                    )
-                                );
-                            }
-                            catch (WebSocketException)
-                            {
-                                // Ignore as we can't really do anything here
-                            }
+
+                            await SetImageSafeAsync(
+                                imageLogic.GetGenericGaugeImage(
+                                    settings.Header,
+                                    currentValue,
+                                    currentMinValue.Value,
+                                    currentMaxValue.Value,
+                                    numberFormat,
+                                    subValueText
+                                )
+                            );
                         }
 
                         break;

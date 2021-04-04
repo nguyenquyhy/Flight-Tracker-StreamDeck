@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -57,7 +56,7 @@ namespace FlightStreamDeck.Logics.Actions
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
-    public class GenericToggleAction : StreamDeckAction<GenericToggleSettings>
+    public class GenericToggleAction : BaseAction<GenericToggleSettings>
     {
         private readonly ILogger<GenericToggleAction> logger;
         private readonly IFlightConnector flightConnector;
@@ -432,20 +431,15 @@ namespace FlightStreamDeck.Logics.Actions
                     s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
                     imageOffBytes = Convert.FromBase64String(s);
                 }
-                try
-                {
-                    var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
-                        currentValueTime :
-                        (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "";
-                    await SetImageAsync(imageLogic.GetImage(settings.Header, currentStatus,
-                        value: valueToShow,
-                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                }
-                catch (WebSocketException)
-                {
-                    // Ignore as we can't really do anything here
-                }
+
+                var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
+                    currentValueTime :
+                    (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "";
+
+                await SetImageSafeAsync(imageLogic.GetImage(settings.Header, currentStatus,
+                    value: valueToShow,
+                    imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
             }
         }
     }

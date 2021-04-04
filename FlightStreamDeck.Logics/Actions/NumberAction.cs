@@ -1,7 +1,6 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -33,14 +32,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (DeckLogic.NumpadParams?.Type == "XPDR")
             {
-                try
-                {
-                    await SetImageAsync(null);
-                }
-                catch (WebSocketException)
-                {
-                    // Ignore as we can't really do anything here
-                }
+                await SetImageSafeAsync(null);
             }
             else
             {
@@ -57,14 +49,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (DeckLogic.NumpadParams?.Type == "XPDR")
             {
-                try
-                {
-                    await SetImageAsync(null);
-                }
-                catch (WebSocketException)
-                {
-                    // Ignore as we can't really do anything here
-                }
+                await SetImageSafeAsync(null);
             }
             else
             {
@@ -75,7 +60,7 @@ namespace FlightStreamDeck.Logics.Actions
 
     #endregion
 
-    public class NumberAction : StreamDeckAction
+    public class NumberAction : BaseAction
     {
         private readonly IImageLogic imageLogic;
 
@@ -88,14 +73,8 @@ namespace FlightStreamDeck.Logics.Actions
         {
             var tokens = args.Action.Split(".");
             var number = int.Parse(tokens[^1]);
-            try
-            {
-                await SetImageAsync(imageLogic.GetNumberImage(number));
-            }
-            catch (WebSocketException)
-            {
-                // Ignore as we can't really do anything here
-            }
+
+            await SetImageSafeAsync(imageLogic.GetNumberImage(number));
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)

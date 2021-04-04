@@ -1,14 +1,13 @@
 ﻿using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions
 {
     [StreamDeckAction("tech.flighttracker.streamdeck.number.display")]
-    public class NumberDisplayAction : StreamDeckAction
+    public class NumberDisplayAction : BaseAction
     {
         private readonly Timer timer;
         private readonly IImageLogic imageLogic;
@@ -35,14 +34,7 @@ namespace FlightStreamDeck.Logics.Actions
                     value = value.Insert(decIndex, ".");
                 }
 
-                try
-                {
-                    await SetImageAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value, imageOnFilePath: DeckLogic.NumpadParams.ImageBackgroundFilePath, imageOnBytes: DeckLogic.NumpadParams.ImageBackground_base64));
-                }
-                catch (WebSocketException)
-                {
-                    // Ignore as we can't really do anything here
-                }
+                await SetImageSafeAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value, imageOnFilePath: DeckLogic.NumpadParams.ImageBackgroundFilePath, imageOnBytes: DeckLogic.NumpadParams.ImageBackground_base64));
             }
         }
 

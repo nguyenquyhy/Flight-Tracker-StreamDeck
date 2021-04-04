@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -30,7 +29,7 @@ namespace FlightStreamDeck.Logics.Actions
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
-    public class NavComAction : StreamDeckAction<NavComSettings>
+    public class NavComAction : BaseAction<NavComSettings>
     {
         private AircraftStatus status;
         private const int HOLD_DURATION_MILLISECONDS = 1000;
@@ -276,14 +275,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage(bool dependant, string value1, string value2, bool showMainOnly)
         {
-            try
-            {
-                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly, settings.ImageBackground, GetImageBytes()));
-            }
-            catch (WebSocketException)
-            {
-                // Ignore as we can't really do anything here
-            }
+            await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly, settings.ImageBackground, GetImageBytes()));
         }
 
         private byte[] GetImageBytes()
