@@ -200,21 +200,19 @@ namespace FlightStreamDeck.Logics.Actions
             // Update ADF image here since ADF frequencies aren't easily "converted" with mhz/khz/hz from simconnect
             if (settings.Type != null && settings.Type.StartsWith("ADF"))
             {
-                string active = settings.Type.Equals("ADF1") ? status?.ADFActiveFrequency1.ToString() : status?.ADFActiveFrequency2.ToString();
-                string standby = settings.Type.Equals("ADF1") ? status?.ADFStandbyFrequency1.ToString() : status?.ADFStandbyFrequency2.ToString();
+                string active = FormatFrequency(settings.Type.Equals("ADF1") ? status?.ADFActiveFrequency1 : status?.ADFActiveFrequency2);
+                string standby = FormatFrequency(settings.Type.Equals("ADF1") ? status?.ADFStandbyFrequency1 : status?.ADFStandbyFrequency2);
 
                 if (!string.IsNullOrEmpty(active) || !string.IsNullOrEmpty(standby))
                 {
-                    int lenValue = (int)(active.Length);
-                    int lenLastvalue = (int)(standby.Length);
-                    string value = lastDependant ? active.Substring(0, lenValue - 3) : string.Empty;
-                    string lastValue = lastDependant ? standby.Substring(0, lenLastvalue - 3) : string.Empty;
-                    if (forceRegen || lastValue1 != value || lastValue2 != lastValue)
+                    string value = lastDependant ? active : string.Empty;
+                    string value2 = lastDependant ? standby : string.Empty;
+                    if (forceRegen || lastValue1 != value || lastValue2 != value2)
                     {
                         forceRegen = false;
                         lastValue1 = value;
-                        lastValue2 = lastValue;
-                        await UpdateImage(lastDependant, value, lastValue, false);
+                        lastValue2 = value2;
+                        await UpdateImage(lastDependant, value, value2, false);
                     }
                 }
             }
@@ -524,5 +522,7 @@ namespace FlightStreamDeck.Logics.Actions
             });
             InitializeSettings(settings);
         }
+
+        private string FormatFrequency(int? frequency) => (frequency == null) ? null : (frequency.Value / 1000).ToString();
     }
 }
