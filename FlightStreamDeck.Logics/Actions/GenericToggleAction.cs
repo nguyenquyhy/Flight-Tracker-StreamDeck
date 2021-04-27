@@ -107,8 +107,6 @@ namespace FlightStreamDeck.Logics.Actions
 
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
-            RegisterValues();
-
             await UpdateImage();
         }
 

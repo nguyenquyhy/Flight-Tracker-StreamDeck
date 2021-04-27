@@ -114,11 +114,9 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            InitializeSettings(args.Payload.GetSettings<GenericGaugeSettings>());
+            await InitializeSettings(args.Payload.GetSettings<GenericGaugeSettings>());
 
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
-
-            RegisterValues();
 
             await UpdateImage();
         }
