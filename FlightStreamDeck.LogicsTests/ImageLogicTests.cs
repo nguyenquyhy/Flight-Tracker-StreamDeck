@@ -29,6 +29,21 @@ namespace FlightStreamDeck.Logics.Tests
         }
 
         [TestMethod()]
+        public void GetHorizonImageBoundaryTest()
+        {
+            ImageLogic images = new ImageLogic();
+
+            images.GetHorizonImage(-1000, 20, 359);
+            images.GetHorizonImage(1000, 20, 359);
+
+            images.GetHorizonImage(-10, 2000, 359);
+            images.GetHorizonImage(10, -2000, 359);
+
+            images.GetHorizonImage(-10, 20, 3000);
+            images.GetHorizonImage(10, -20, -3000);
+        }
+
+        [TestMethod()]
         public void GetGaugeImageTest()
         {
             ImageLogic images = new ImageLogic();

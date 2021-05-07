@@ -148,7 +148,7 @@ namespace FlightStreamDeck.Logics
                 var size = horizon.Size();
                 ctx.DrawImage(horizon, new Point(
                     (int)Math.Round((float)-size.Width / 2 + 52),
-                    (int)Math.Round((float)-size.Height / 2 + 52 - (pitchInDegrees * 2))
+                    Math.Clamp((int)Math.Round((float)-size.Height / 2 + 52 - (pitchInDegrees * 2)), -size.Height + 50, 55)
                     ), new GraphicsOptions());
                 ctx.Rotate((float)rollInDegrees);
             });
