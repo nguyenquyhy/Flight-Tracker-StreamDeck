@@ -245,7 +245,7 @@ namespace FlightStreamDeck.Logics.Actions
                 }
                 if (standby != null && e.GenericValueStatus.ContainsKey((standby.Value, null)))
                 {
-                    value2 = dependant ? e.GenericValueStatus[(standby.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(active.Value)) : string.Empty;
+                    value2 = dependant ? e.GenericValueStatus[(standby.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(standby.Value)) : string.Empty;
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 
