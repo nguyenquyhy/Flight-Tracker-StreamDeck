@@ -1,4 +1,5 @@
 ﻿using SharpDeck;
+using System;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -21,6 +22,10 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 // Ignore as we can't really do anything here
             }
+            catch (ObjectDisposedException)
+            {
+                // Ignore
+            }
         }
     }
     public abstract class BaseAction : StreamDeckAction
@@ -38,6 +43,10 @@ namespace FlightStreamDeck.Logics.Actions
             catch (WebSocketException)
             {
                 // Ignore as we can't really do anything here
+            }
+            catch (ObjectDisposedException)
+            {
+                // Ignore
             }
         }
     }
