@@ -368,6 +368,22 @@ namespace FlightStreamDeck.Core
             { TOGGLE_VALUE.PROP_RPM__2, new ValueEntry("Rpm", 1) },
             { TOGGLE_VALUE.PROP_RPM__3, new ValueEntry("Rpm", 1) },
             { TOGGLE_VALUE.PROP_RPM__4, new ValueEntry("Rpm", 1) },
+            { TOGGLE_VALUE.ENG_CYLINDER_HEAD_TEMPERATURE__1, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.ENG_CYLINDER_HEAD_TEMPERATURE__2, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.ENG_CYLINDER_HEAD_TEMPERATURE__3, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.ENG_CYLINDER_HEAD_TEMPERATURE__4, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_CYLINDER_HEAD_TEMPERATURE__1, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_CYLINDER_HEAD_TEMPERATURE__2, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_CYLINDER_HEAD_TEMPERATURE__3, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_CYLINDER_HEAD_TEMPERATURE__4, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.ENG_OIL_TEMPERATURE__1, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.ENG_OIL_TEMPERATURE__2, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.ENG_OIL_TEMPERATURE__3, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.ENG_OIL_TEMPERATURE__4, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.GENERAL_ENG_OIL_TEMPERATURE__1, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.GENERAL_ENG_OIL_TEMPERATURE__2, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.GENERAL_ENG_OIL_TEMPERATURE__3, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.GENERAL_ENG_OIL_TEMPERATURE__4, new ValueEntry("Celsius", 0) },
         };
 
         public static string GetUnit(this TOGGLE_VALUE value, string unit)
