@@ -636,5 +636,8 @@
         GENERAL_ENG_OIL_TEMPERATURE__3,
         GENERAL_ENG_OIL_TEMPERATURE__4,
         ANGLE_OF_ATTACK_INDICATOR,
+        //Local var
+        L_PlaneBattAnnuciator,
+        L_dc6_077_obj,
     }
 }

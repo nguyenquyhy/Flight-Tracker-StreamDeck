@@ -1406,6 +1406,18 @@
         MOBIFLIGHT_A32NX_OH_STROBES_TOG_OFF,
         MOBIFLIGHT_A32NX_OH_STROBES_TOG_AUTO,
         MOBIFLIGHT_A32NX_OH_STROBES_TOG_ON,
+
+        //C172
+        MOBIFLIGHT_C172_BATTERY_ON,
+        MOBIFLIGHT_C172_BATTERY_OFF,
+        MOBIFLIGHT_C172_ALTERNATOR_ON,
+        MOBIFLIGHT_C172_ALTERNATOR_OFF,
+
+        /* ROTOR BRAKE for PMDG
+         * 8201 = Battery toggle 
+         * 7801 = Ground power toggle
+         */
+        ROTOR_BRAKE,
     }
 
     public static class EventExtensions
