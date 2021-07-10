@@ -874,7 +874,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.EventToSimConnectEvent());
         }
 
-        public void RegisterSimValues(params (ToggleValue toggleValue)[] simValues)
+        public void RegisterSimValues(List<ToggleValue> simValues)
         {
             var changed = false;
             lock (lockLists)
@@ -882,7 +882,7 @@ namespace FlightStreamDeck.SimConnectFSX
                 logger.LogInformation("Registering {values}", string.Join(", ", simValues));
                 foreach (var simValue in simValues)
                 {
-                    if (genericValues.Contains(simValue.toggleValue))
+                    if (genericValues.ContainsKey(simValue))
                     {
                         genericValues[simValue]++;
                     }
@@ -899,7 +899,7 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        public void DeRegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues)
+        public void DeRegisterSimValues(List<ToggleValue> simValues)
         {
             var changed = false;
             lock (lockLists)
@@ -971,7 +971,7 @@ namespace FlightStreamDeck.SimConnectFSX
                     {
                         var log = "Registering generic data structure:";
 
-                        foreach ((TOGGLE_VALUE simValue, string unit) in genericValues.Keys)
+                        foreach (ToggleValue simValue in genericValues.Keys)
                         {
                             if (simValue.ToString().StartsWith("L_"))
                             {
@@ -1001,7 +1001,7 @@ namespace FlightStreamDeck.SimConnectFSX
                             else
                             {
                                 string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
-                                var simUnit = EventValueLibrary.GetUnit(simValue, unit);
+                                var simUnit = simValue.Unit;
                                 log += string.Format("\n- {0} {1} {2}", simValue, value, simUnit);
 
                                 simconnect.AddToDataDefinition(
