@@ -25,7 +25,10 @@ namespace FlightStreamDeck.SimConnectFSX
         /// <summary>
         /// This is a reference counter to make sure we do not deregister variables that are still in use.
         /// </summary>
-        private readonly Dictionary<(TOGGLE_VALUE variables, string unit), int> genericValues = new Dictionary<(TOGGLE_VALUE variables, string unit), int>();
+        /// 
+        //private readonly Dictionary<(TOGGLE_VALUE variables, string unit), int> genericValues = new Dictionary<(TOGGLE_VALUE variables, string unit), int>();
+        private readonly Dictionary<ToggleValue, int> genericValues = new Dictionary<ToggleValue, int>();
+
 
         private readonly object lockLists = new object();
 
@@ -871,7 +874,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.EventToSimConnectEvent());
         }
 
-        public void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues)
+        public void RegisterSimValues(params (ToggleValue toggleValue)[] simValues)
         {
             var changed = false;
             lock (lockLists)
@@ -879,7 +882,7 @@ namespace FlightStreamDeck.SimConnectFSX
                 logger.LogInformation("Registering {values}", string.Join(", ", simValues));
                 foreach (var simValue in simValues)
                 {
-                    if (genericValues.ContainsKey(simValue))
+                    if (genericValues.Contains(simValue.toggleValue))
                     {
                         genericValues[simValue]++;
                     }
