@@ -71,7 +71,6 @@ namespace FlightStreamDeck.AddOn
             services.AddTransient(typeof(MainWindow));
             services.AddSingleton<IImageLogic, ImageLogic>();
             services.AddTransient<IEvaluator, ComparisonEvaluator>();
-            services.AddTransient<EnumConverter>();
         }
     }
 }

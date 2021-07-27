@@ -10,7 +10,7 @@ namespace FlightStreamDeck.Logics.Tests
         [TestMethod()]
         public void GetHorizonImageTest()
         {
-            ImageLogic images = new ImageLogic();
+            ImageLogic images = new();
 
             string result = images.GetHorizonImage(-10, 20, 359);
 
@@ -21,17 +21,15 @@ namespace FlightStreamDeck.Logics.Tests
                 File.Delete(path);
             }
 
-            using (FileStream fs = File.Create(path))
-            {
-                var bytes = Convert.FromBase64String(result.Substring(23));
-                fs.Write(bytes, 0, bytes.Length);
-            }
+            using FileStream fs = File.Create(path);
+            var bytes = Convert.FromBase64String(result[23..]);
+            fs.Write(bytes, 0, bytes.Length);
         }
 
         [TestMethod()]
         public void GetHorizonImageBoundaryTest()
         {
-            ImageLogic images = new ImageLogic();
+            ImageLogic images = new();
 
             images.GetHorizonImage(-1000, 20, 359);
             images.GetHorizonImage(1000, 20, 359);
@@ -46,7 +44,7 @@ namespace FlightStreamDeck.Logics.Tests
         [TestMethod()]
         public void GetGaugeImageTest()
         {
-            ImageLogic images = new ImageLogic();
+            ImageLogic images = new();
 
             string result = images.GetGenericGaugeImage("TRQ", 50, 0, 100, "F2");
 
@@ -57,17 +55,15 @@ namespace FlightStreamDeck.Logics.Tests
                 File.Delete(path);
             }
 
-            using (FileStream fs = File.Create(path))
-            {
-                var bytes = Convert.FromBase64String(result.Substring(23));
-                fs.Write(bytes, 0, bytes.Length);
-            }
+            using FileStream fs = File.Create(path);
+            var bytes = Convert.FromBase64String(result[23..]);
+            fs.Write(bytes, 0, bytes.Length);
         }
 
         [TestMethod()]
         public void GetCustomImageTest_NoCoordinateRangeError()
         {
-            ImageLogic images = new ImageLogic();
+            ImageLogic images = new();
             bool hitError = false;
 
             try

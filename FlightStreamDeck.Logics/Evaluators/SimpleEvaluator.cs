@@ -11,35 +11,29 @@ namespace FlightStreamDeck.Logics
     {
         public class Expression : IExpression
         {
-            public Expression(TOGGLE_VALUE variable)
+            public Expression(ToggleValue variable)
             {
                 Variable = variable;
             }
-            public TOGGLE_VALUE Variable { get; }
+            public ToggleValue Variable { get; }
         }
 
-        private readonly EnumConverter enumConverter;
 
-        public SimpleEvaluator(EnumConverter enumConverter)
+        public (IEnumerable<ToggleValue>, IExpression) Parse(string feedbackValue)
         {
-            this.enumConverter = enumConverter;
+            var variable = new ToggleValue(feedbackValue);
+            if (variable == null) return (new List<ToggleValue>(), null);
+
+            return (new List<ToggleValue> {  variable }, new Expression(variable));
         }
 
-        public (IEnumerable<TOGGLE_VALUE>, IExpression) Parse(string feedbackValue)
-        {
-            var variable = enumConverter.GetVariableEnum(feedbackValue);
-            if (variable == null) return (new List<TOGGLE_VALUE>(), null);
-
-            return (new List<TOGGLE_VALUE> { variable.Value }, new Expression(variable.Value));
-        }
-
-        public bool Evaluate(Dictionary<TOGGLE_VALUE, double> values, IExpression expression)
+        public bool Evaluate(List<ToggleValue> values, IExpression expression)
         {
             if (expression is Expression simpleExpression)
             {
-                if (values.ContainsKey(simpleExpression.Variable))
+                if (values.Contains(simpleExpression.Variable))
                 {
-                    return values[simpleExpression.Variable] != 0;
+                    return values.Find(x => x.Name == simpleExpression.Variable.Name).Value != 0;
                 }
                 return false;
             }

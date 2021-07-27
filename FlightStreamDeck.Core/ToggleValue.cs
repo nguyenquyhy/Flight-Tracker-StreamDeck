@@ -2,8 +2,8 @@
 {
     public class ToggleValue
     {
-        const string DEFAULT_UNIT = "number";
-        const int DEFAULT_DECIMALS = 0;
+        private const string DEFAULT_UNIT = "number";
+        private const int DEFAULT_DECIMALS = 0;
         public ToggleValue(string name, string unit, int decimals)
         {
             Name = name;
@@ -14,20 +14,25 @@
         public ToggleValue(string name): this(name, DEFAULT_UNIT, DEFAULT_DECIMALS)
         {
         }
+        public ToggleValue(string name, string unit) : this(name, unit, DEFAULT_DECIMALS)
+        {
+        }
 
+
+        private string _name;
         public string Name
         {
-            get;
-            set;
+            get => _name ??= string.Empty;
+            set => _name = value;
         }
 
-        public string Value
+        public double Value
         {
             get;
             set;
         }
 
-        public int Decimals
+        public int? Decimals
         {
             get;
             set;

@@ -62,24 +62,23 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly IEvaluator evaluator;
-        private readonly EnumConverter enumConverter;
 
         private Timer timer = null;
 
         private GenericToggleSettings settings = null;
 
-        private TOGGLE_EVENT? toggleEvent = null;
+        private ToggleEvent toggleEvent = null;
         private uint? toggleEventDataUInt = null;
-        private TOGGLE_VALUE? toggleEventDataVariable = null;
+        private ToggleValue toggleEventDataVariable = null;
         private double? toggleEventDataVariableValue = null;
-        private TOGGLE_EVENT? holdEvent = null;
+        private ToggleEvent holdEvent = null;
         private uint? holdEventDataUInt = null;
-        private TOGGLE_VALUE? holdEventDataVariable = null;
+        private ToggleValue holdEventDataVariable = null;
         private double? holdEventDataVariableValue = null;
 
-        private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
+        private IEnumerable<ToggleValue> feedbackVariables = new List<ToggleValue>();
         private IExpression expression;
-        private TOGGLE_VALUE? displayValue = null;
+        private ToggleValue displayValue = null;
 
         private string customUnit = null;
         private int? customDecimals = null;
@@ -91,13 +90,12 @@ namespace FlightStreamDeck.Logics.Actions
         private bool holdEventTriggerred = false;
 
         public GenericToggleAction(ILogger<GenericToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
-            IEvaluator evaluator, EnumConverter enumConverter)
+            IEvaluator evaluator)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
             this.evaluator = evaluator;
-            this.enumConverter = enumConverter;
         }
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -114,13 +112,23 @@ namespace FlightStreamDeck.Logics.Actions
         {
             this.settings = settings;
 
-            TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
-            (var newToggleEventDataUInt, var newToggleEventDataVariable) = enumConverter.GetUIntOrVariable(settings.ToggleValueData);
-            TOGGLE_EVENT? newHoldEvent = enumConverter.GetEventEnum(settings.HoldValue);
-            (var newHoldEventDataUInt, var newHoldEventDataVariable) = enumConverter.GetUIntOrVariable(settings.HoldValueData);
-
+            ToggleEvent newToggleEvent = new(settings.ToggleValue);
+            ToggleValue newToggleEventDataVariable = null;
+            ToggleValue newHoldEventDataVariable = null;
+            
+            bool isToggleEventUint = uint.TryParse(settings.ToggleValueData, out uint newToggleEventDataUInt);
+            bool isHoldEventUint = uint.TryParse(settings.HoldValueData, out uint newHoldEventDataUInt);
+            if (!isToggleEventUint)
+            {
+                newToggleEventDataVariable = new ToggleValue(settings.ToggleValueData);
+            }
+            if (!isHoldEventUint)
+            {
+                newHoldEventDataVariable = new ToggleValue(settings.HoldValueData);
+            }
+            ToggleEvent newHoldEvent = new(settings.HoldValue);
             (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
-            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
+            ToggleValue newDisplayValue = new(settings.DisplayValue);
 
             if (int.TryParse(settings.DisplayValuePrecision, out int decimals))
             {
@@ -156,54 +164,54 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (StreamDeck == null) return;
 
-            var valuesWithDefaultUnits = e.GenericValueStatus.Where(o => o.Key.unit == null).ToDictionary(o => o.Key.variable, o => o.Value);
+            List<ToggleValue> valuesWithDefaultUnits = e.GenericValueStatus.Where(o => o.Unit == "number").ToList();
             var newStatus = expression != null && evaluator.Evaluate(valuesWithDefaultUnits, expression);
             var isUpdated = newStatus != currentStatus;
             currentStatus = newStatus;
 
-            if (displayValue.HasValue && e.GenericValueStatus.ContainsKey((displayValue.Value, customUnit)))
+            if (displayValue != null && e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit) != null)
             {
-                var newValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
-                isUpdated |= newValue != currentValue;
-                currentValue = newValue;
+                var newValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit);
+                isUpdated |= newValue.Value != currentValue;
+                currentValue = newValue.Value;
 
-                if (displayValue.Value == TOGGLE_VALUE.ZULU_TIME
-                    || displayValue.Value == TOGGLE_VALUE.LOCAL_TIME)
+                if (displayValue.Name == "ZULU_TIME"
+                    || displayValue.Name == "LOCAL_TIME")
                 {
-                    string hours = Math.Floor(newValue / 3600).ToString().PadLeft(2, '0');
-                    newValue = newValue % 3600;
+                    string hours = Math.Floor(newValue.Value / 3600).ToString().PadLeft(2, '0');
+                    newValue.Value %= newValue.Value % 3600;
 
-                    string minutes = Math.Floor(newValue / 60).ToString().PadLeft(2, '0');
-                    newValue = newValue % 60;
+                    string minutes = Math.Floor(newValue.Value / 60).ToString().PadLeft(2, '0');
+                    newValue.Value %= newValue.Value % 60;
 
-                    string seconds = Math.Floor(newValue).ToString().PadLeft(2, '0');
+                    string seconds = Math.Floor(newValue.Value).ToString().PadLeft(2, '0');
 
                     switch (customDecimals)
                     {
                         case 0: //HH:MM:SS
-                            currentValueTime = $"{hours}:{minutes}:{seconds}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
-                            currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                            currentValueTime = $"{hours}:{minutes}:{seconds}{(displayValue.Name == "ZULU_TIME" ? "Z" : String.Empty)}";
+                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit).Value;
                             break;
                         case 1: //HH:MM
-                            currentValueTime = $"{hours}:{minutes}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
-                            currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                            currentValueTime = $"{hours}:{minutes}{(displayValue.Name == "ZULU_TIME" ? "Z" : String.Empty)}";
+                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit).Value;
                             break;
                         default:
                             currentValueTime = string.Empty;
-                            currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit).Value;
                             break;
                     }
                 }
             }
 
-            if (toggleEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey((toggleEventDataVariable.Value, null)))
+            if (toggleEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)) != null)
             {
-                toggleEventDataVariableValue = e.GenericValueStatus[(toggleEventDataVariable.Value, null)];
+                toggleEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)).Value;
             }
 
-            if (holdEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey((holdEventDataVariable.Value, null)))
+            if (holdEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)) != null)
             {
-                holdEventDataVariableValue = e.GenericValueStatus[(holdEventDataVariable.Value, null)];
+                holdEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)).Value;
             }
 
             if (isUpdated)
@@ -230,7 +238,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 var fileKey = fileKeyObject.Value<string>();
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
+                await System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
             }
             else
             {
@@ -308,14 +316,14 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void RegisterValues()
         {
-            if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
-            if (holdEvent.HasValue) flightConnector.RegisterToggleEvent(holdEvent.Value);
+            if (toggleEvent != null) flightConnector.RegisterToggleEvent(toggleEvent);
+            if (holdEvent != null) flightConnector.RegisterToggleEvent(holdEvent);
 
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
-            foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
-            if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-            if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
-            if (holdEventDataVariable.HasValue) values.Add((holdEventDataVariable.Value, null));
+            var values = new List<ToggleValue>();
+            foreach (var feedbackVariable in feedbackVariables) values.Add(feedbackVariable);
+            if (displayValue != null) values.Add(new ToggleValue(displayValue.Name, customUnit));
+            if (toggleEventDataVariable != null) values.Add(new ToggleValue(toggleEventDataVariable.Name));
+            if (holdEventDataVariable != null) values.Add(new ToggleValue(holdEventDataVariable.Name));
 
             if (values.Count > 0)
             {
@@ -325,11 +333,11 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void DeRegisterValues()
         {
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
-            foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
-            if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-            if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
-            if (holdEventDataVariable.HasValue) values.Add((holdEventDataVariable.Value, null));
+            var values = new List<ToggleValue>();
+            foreach (var feedbackVariable in feedbackVariables) values.Add(feedbackVariable);
+            if (displayValue != null) values.Add(new ToggleValue(displayValue.Name, customUnit));
+            if (toggleEventDataVariable != null) values.Add(new ToggleValue(toggleEventDataVariable.Name));
+            if (holdEventDataVariable != null) values.Add(new ToggleValue(holdEventDataVariable.Name));
 
             if (values.Count > 0)
             {
@@ -346,12 +354,12 @@ namespace FlightStreamDeck.Logics.Actions
         {
             holdEventTriggerred = false;
 
-            if (!holdEvent.HasValue || !settings.HoldValueSuppressToggle)
+            if (holdEvent != null || !settings.HoldValueSuppressToggle)
             {
                 TriggerToggleEvent();
             }
 
-            if (holdEvent.HasValue)
+            if (holdEvent != null)
             {
                 timer = new Timer { Interval = settings.HoldValueRepeat ? 400 : 1000 };
                 timer.Elapsed += Timer_Elapsed;
@@ -381,11 +389,11 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (holdEvent.HasValue)
+            if (holdEvent != null)
             {
                 holdEventTriggerred = true;
 
-                flightConnector.Trigger(holdEvent.Value,
+                flightConnector.Trigger(holdEvent,
                     !(holdEventDataVariable is null) && holdEventDataVariableValue.HasValue ?
                         Convert.ToUInt32(Math.Round(holdEventDataVariableValue.Value)) :
                         (holdEventDataUInt ?? 0)
@@ -401,9 +409,9 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void TriggerToggleEvent()
         {
-            if (toggleEvent.HasValue)
+            if (toggleEvent != null)
             {
-                flightConnector.Trigger(toggleEvent.Value,
+                flightConnector.Trigger(toggleEvent,
                     !(toggleEventDataVariable is null) && toggleEventDataVariableValue.HasValue ?
                         Convert.ToUInt32(Math.Round(toggleEventDataVariableValue.Value)) :
                         (toggleEventDataUInt ?? 0)
@@ -432,7 +440,7 @@ namespace FlightStreamDeck.Logics.Actions
 
                 var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
                     currentValueTime :
-                    (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "";
+                    (displayValue != null && currentValue.HasValue) ? currentValue.Value.ToString("F" + displayValue.Decimals) : "";
 
                 await SetImageSafeAsync(imageLogic.GetImage(settings.Header, currentStatus,
                     value: valueToShow,

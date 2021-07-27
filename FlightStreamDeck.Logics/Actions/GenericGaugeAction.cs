@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using EnumConverter = FlightStreamDeck.Core.EnumConverter;
 
 namespace FlightStreamDeck.Logics.Actions
 {
@@ -62,14 +61,13 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly ILogger<GenericGaugeAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
-        private readonly EnumConverter enumConverter;
 
-        private TOGGLE_EVENT? toggleEvent = null;
-        private TOGGLE_VALUE? displayValue = null;
-        private TOGGLE_VALUE? subDisplayValue = null;
-        private TOGGLE_VALUE? displayValueBottom = null;
-        private TOGGLE_VALUE? minValue = null;
-        private TOGGLE_VALUE? maxValue = null;
+        private ToggleEvent toggleEvent = null;
+        private ToggleValue displayValue = null;
+        private ToggleValue subDisplayValue = null;
+        private ToggleValue displayValueBottom = null;
+        private ToggleValue minValue = null;
+        private ToggleValue maxValue = null;
         private string customUnit = null;
         private int? customDecimals = null;
 
@@ -80,7 +78,7 @@ namespace FlightStreamDeck.Logics.Actions
         private double? currentMinValue = null;
         private double? currentMaxValue = null;
 
-        private static readonly GenericGaugeSettings DefaultSettings = new GenericGaugeSettings()
+        private static readonly GenericGaugeSettings DefaultSettings = new()
         {
             Type = "Generic",
             DisplayHorizontalValue = true,
@@ -88,7 +86,7 @@ namespace FlightStreamDeck.Logics.Actions
             ChartThicknessValue = "13",
             ChartChevronSizeValue = "3",
             Header = "L",
-            DisplayValue = TOGGLE_VALUE.FUEL_LEFT_QUANTITY.ToString(),
+            DisplayValue = "FUEL_LEFT_QUANTITY",
             HeaderBottom = string.Empty,
             DisplayValueBottom = string.Empty,
             MinValue = "0",
@@ -109,7 +107,6 @@ namespace FlightStreamDeck.Logics.Actions
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
-            this.enumConverter = enumConverter;
         }
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -130,7 +127,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue) flightConnector.Trigger(toggleEvent.Value);
+            if (toggleEvent != null) flightConnector.Trigger(toggleEvent);
             return Task.CompletedTask;
         }
 
@@ -160,13 +157,13 @@ namespace FlightStreamDeck.Logics.Actions
                 this.settings = settings;
             }
 
-            TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(this.settings.ToggleValue);
-            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(this.settings.DisplayValue);
-            TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(this.settings.SubDisplayValue);
-            TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(this.settings.DisplayValueBottom);
+            ToggleEvent newToggleEvent = new(this.settings.ToggleValue);
+            ToggleValue newDisplayValue = new(this.settings.DisplayValue);
+            ToggleValue newSubDisplayValue = new(this.settings.SubDisplayValue);
+            ToggleValue newDisplayValueBottom = new(this.settings.DisplayValueBottom);
 
-            TOGGLE_VALUE? newMinValue = enumConverter.GetVariableEnum(this.settings.MinValue);
-            TOGGLE_VALUE? newMaxValue = enumConverter.GetVariableEnum(this.settings.MaxValue);
+            ToggleValue newMinValue = new(this.settings.MinValue);
+            ToggleValue newMaxValue = new(this.settings.MaxValue);
 
             if (double.TryParse(string.IsNullOrWhiteSpace(settings.MinValue) ? DefaultSettings.MinValue : settings.MinValue, out var min))
             {
@@ -211,15 +208,15 @@ namespace FlightStreamDeck.Logics.Actions
             await this.SendToPropertyInspectorAsync(this.settings);
         }
 
-        private bool SetFromGenericValueStatus(Dictionary<(TOGGLE_VALUE variable, string unit), double> genericValueStatus, TOGGLE_VALUE? variable, string unit, ref double currentValue)
+        private static bool SetFromGenericValueStatus(List<ToggleValue> genericValueStatus, ToggleValue variable, ref double currentValue)
         {
             bool isUpdated = false;
-            if (variable.HasValue)
+            if (variable != null)
             {
-                var tuple = (variable.Value, unit);
-                if (genericValueStatus.ContainsKey(tuple))
+                var tuple = variable;
+                if (genericValueStatus.Find(x => x.Name == tuple.Name) != null)
                 {
-                    var newValue = genericValueStatus[tuple];
+                    var newValue = genericValueStatus.Find(x => x.Name == tuple.Name).Value;
                     isUpdated = currentValue != newValue;
                     currentValue = newValue;
                 }
@@ -233,17 +230,17 @@ namespace FlightStreamDeck.Logics.Actions
 
             bool isUpdated = false;
 
-            isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValue, customUnit, ref currentValue);
-            isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValueBottom, customUnit, ref currentValueBottom);
-            isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, subDisplayValue, null, ref currentSubValue);
+            isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValue, ref currentValue);
+            isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValueBottom, ref currentValueBottom);
+            isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, subDisplayValue, ref currentSubValue);
             double min = 0;
-            if (SetFromGenericValueStatus(e.GenericValueStatus, minValue, null, ref min))
+            if (SetFromGenericValueStatus(e.GenericValueStatus, minValue, ref min))
             {
                 currentMinValue = min;
                 isUpdated = true;
             }
             double max = 0;
-            if (SetFromGenericValueStatus(e.GenericValueStatus, maxValue, null, ref max))
+            if (SetFromGenericValueStatus(e.GenericValueStatus, maxValue, ref max))
             {
                 currentMaxValue = max;
                 isUpdated = true;
@@ -257,14 +254,14 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void RegisterValues()
         {
-            if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
+            if (toggleEvent != null) flightConnector.RegisterToggleEvent(toggleEvent);
 
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
-            if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-            if (subDisplayValue.HasValue) values.Add((subDisplayValue.Value, customUnit));
-            if (displayValueBottom.HasValue) values.Add((displayValueBottom.Value, customUnit));
-            if (minValue.HasValue) values.Add((minValue.Value, null));
-            if (maxValue.HasValue) values.Add((maxValue.Value, null));
+            var values = new List<ToggleValue>();
+            if (displayValue != null) values.Add((new ToggleValue(displayValue.Name, customUnit)));
+            if (subDisplayValue != null) values.Add(new ToggleValue(subDisplayValue.Name, customUnit));
+            if (displayValueBottom != null) values.Add(new ToggleValue(displayValueBottom.Name, customUnit));
+            if (minValue != null) values.Add(new ToggleValue(minValue.Name));
+            if (maxValue != null) values.Add(new ToggleValue(maxValue.Name));
 
             if (values.Count > 0)
             {
@@ -274,12 +271,12 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void DeRegisterValues()
         {
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
-            if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-            if (subDisplayValue.HasValue) values.Add((subDisplayValue.Value, customUnit));
-            if (displayValueBottom.HasValue) values.Add((displayValueBottom.Value, customUnit));
-            if (minValue.HasValue) values.Add((minValue.Value, null));
-            if (maxValue.HasValue) values.Add((maxValue.Value, null));
+            var values = new List<ToggleValue>();
+            if (displayValue != null) values.Add(new ToggleValue(displayValue.Name, customUnit));
+            if (subDisplayValue != null) values.Add(new ToggleValue(subDisplayValue.Name, customUnit));
+            if (displayValueBottom != null) values.Add(new ToggleValue(displayValueBottom.Name, customUnit));
+            if (minValue != null) values.Add(new ToggleValue(minValue.Name));
+            if (maxValue != null) values.Add(new ToggleValue(maxValue.Name));
 
             if (values.Count > 0)
             {
@@ -299,42 +296,43 @@ namespace FlightStreamDeck.Logics.Actions
                 switch (settings.Type)
                 {
                     case "Custom":
-                        if (displayValue.HasValue || displayValueBottom.HasValue)
+                        if (displayValue != null || displayValueBottom != null)
                         {
                             var chartSplit = string.IsNullOrEmpty(settings.ChartSplitValue) ? DefaultSettings.ChartSplitValue : settings.ChartSplitValue;
-                            var numberFormat = $"F{EventValueLibrary.GetDecimals(displayValue ?? displayValueBottom.Value, customDecimals)}";
-
-                            bool.TryParse(settings.AbsValText, out bool absValueText);
+                            var numberFormat = $"F{displayValue.Decimals ?? displayValueBottom.Decimals : customDecimals}";
 
                             int chartThickness = settings.ChartThicknessValue.ConvertTo<int>(DefaultSettings.ChartThicknessValue);
                             float chartChevronSize = settings.ChartChevronSizeValue.ConvertTo<int>(DefaultSettings.ChartChevronSizeValue);
                             int modifier = currentMinValue.Value > currentMaxValue.Value ? -1 : 1;
-
-                            await SetImageSafeAsync(
-                                imageLogic.GetCustomGaugeImage(
-                                    settings.Header,
-                                    settings.HeaderBottom,
-                                    currentValue * modifier,
-                                    currentValueBottom * modifier,
-                                    currentMinValue.Value,
-                                    currentMaxValue.Value,
-                                    numberFormat,
-                                    settings.DisplayHorizontalValue,
-                                    chartSplit?.Split(','),
-                                    chartThickness,
-                                    chartChevronSize,
-                                    absValueText,
-                                    settings.HideLabelOutsideMinMaxTop,
-                                    settings.HideLabelOutsideMinMaxBottom
-                                )
-                            );
+                            
+                            if (bool.TryParse(settings.AbsValText, out bool absValueText))
+                            {
+                                await SetImageSafeAsync(
+                                    imageLogic.GetCustomGaugeImage(
+                                        settings.Header,
+                                        settings.HeaderBottom,
+                                        currentValue * modifier,
+                                        currentValueBottom * modifier,
+                                        currentMinValue.Value,
+                                        currentMaxValue.Value,
+                                        numberFormat,
+                                        settings.DisplayHorizontalValue,
+                                        chartSplit?.Split(','),
+                                        chartThickness,
+                                        chartChevronSize,
+                                        absValueText,
+                                        settings.HideLabelOutsideMinMaxTop,
+                                        settings.HideLabelOutsideMinMaxBottom
+                                    )
+                                );
+                            }
                         }
                         break;
                     default:
-                        if (displayValue.HasValue || displayValueBottom.HasValue)
+                        if (displayValue != null || displayValueBottom != null)
                         {
-                            var numberFormat = "F" + (displayValue.HasValue ? EventValueLibrary.GetDecimals(displayValue.Value, customDecimals) : 2);
-                            var subValueText = subDisplayValue.HasValue ? currentSubValue.ToString("F" + EventValueLibrary.GetDecimals(subDisplayValue.Value)) : null;
+                            var numberFormat = "F" + (displayValue != null ? displayValue.Decimals : 2);
+                            var subValueText = subDisplayValue != null ? currentSubValue.ToString("F" + subDisplayValue.Decimals) : null;
 
                             await SetImageSafeAsync(
                                 imageLogic.GetGenericGaugeImage(
@@ -378,7 +376,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
             catch (Exception)
             {
-                return default(T);
+                return default;
             }
         }
     }

@@ -41,12 +41,12 @@ namespace FlightStreamDeck.Logics
 
         void AvMasterToggle(uint state);
 
-        void Trigger(TOGGLE_EVENT setAction, uint data = 0);
+        void Trigger(ToggleEvent setAction, uint data = 0);
 
-        void RegisterToggleEvent(TOGGLE_EVENT toggleAction);
+        void RegisterToggleEvent(ToggleEvent toggleAction);
 
-        void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
-        void DeRegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
+        void RegisterSimValues(params ToggleValue[] simValues);
+        void DeRegisterSimValues(params ToggleValue[] simValues);
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
@@ -61,12 +61,12 @@ namespace FlightStreamDeck.Logics
 
     public class ToggleValueUpdatedEventArgs : EventArgs
     {
-        public ToggleValueUpdatedEventArgs(Dictionary<(TOGGLE_VALUE variable, string unit), double> genericValueStatus)
+        public ToggleValueUpdatedEventArgs(List<ToggleValue> genericValueStatus)
         {
             GenericValueStatus = genericValueStatus;
         }
 
-        public Dictionary<(TOGGLE_VALUE variable, string unit), double> GenericValueStatus { get; }
+        public List<ToggleValue> GenericValueStatus { get; }
     }
 
     public class AircraftStatus
