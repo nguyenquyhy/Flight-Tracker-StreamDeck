@@ -10,13 +10,13 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.artificial.horizon")]
     public class HorizonAction : BaseAction
     {
-        private readonly ILogger<HorizonAction> logger;
+        private readonly ILogger<HorizonAction> Logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
 
-        private TOGGLE_VALUE bankValue = TOGGLE_VALUE.PLANE_BANK_DEGREES;
-        private TOGGLE_VALUE pitchValue = TOGGLE_VALUE.PLANE_PITCH_DEGREES;
-        private TOGGLE_VALUE headingValue = TOGGLE_VALUE.PLANE_HEADING_DEGREES_MAGNETIC;
+        private ToggleValue bankValue = new("PLANE_BANK_DEGREES");
+        private readonly ToggleValue pitchValue = new("PLANE_PITCH_DEGREES");
+        private readonly ToggleValue headingValue = new("PLANE_HEADING_DEGREES_MAGNETIC");
 
         private double currentHeadingValue = 0;
         private double currentBankValue = 0;
@@ -24,7 +24,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         public HorizonAction(ILogger<HorizonAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
-            this.logger = logger;
+            Logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
         }
@@ -42,19 +42,19 @@ namespace FlightStreamDeck.Logics.Actions
         {
             bool isUpdated = false;
 
-            if (e.GenericValueStatus.ContainsKey((bankValue, null)) && currentBankValue != e.GenericValueStatus[(bankValue, null)])
+            if (e.GenericValueStatus.Find(x => x.Name == bankValue.Name && string.IsNullOrEmpty(x.Unit)) != null && currentBankValue != e.GenericValueStatus.Find(x => x.Name == bankValue.Name && string.IsNullOrEmpty(x.Unit)).Value)
             {
-                currentBankValue = e.GenericValueStatus[(bankValue, null)];
+                currentBankValue = e.GenericValueStatus.Find(x => x.Name == bankValue.Name && string.IsNullOrEmpty(x.Unit)).Value;
                 isUpdated = true;
             }
-            if (e.GenericValueStatus.ContainsKey((headingValue, null)) && currentHeadingValue != e.GenericValueStatus[(headingValue, null)])
+            if (e.GenericValueStatus.Find(x => x.Name == headingValue.Name && string.IsNullOrEmpty(x.Unit)) != null && currentHeadingValue != e.GenericValueStatus.Find(x => x.Name == headingValue.Name && string.IsNullOrEmpty(x.Unit)).Value)
             {
-                currentHeadingValue = e.GenericValueStatus[(headingValue, null)];
+                currentHeadingValue = e.GenericValueStatus.Find(x => x.Name == headingValue.Name && string.IsNullOrEmpty(x.Unit)).Value;
                 isUpdated = true;
             }
-            if (e.GenericValueStatus.ContainsKey((pitchValue, null)) && currentPitchValue != e.GenericValueStatus[(pitchValue, null)])
+            if (e.GenericValueStatus.Find(x => x.Name == pitchValue.Name && string.IsNullOrEmpty(x.Unit)) != null && currentHeadingValue != e.GenericValueStatus.Find(x => x.Name == pitchValue.Name && string.IsNullOrEmpty(x.Unit)).Value)
             {
-                currentPitchValue = e.GenericValueStatus[(pitchValue, null)];
+                currentPitchValue = e.GenericValueStatus.Find(x => x.Name == pitchValue.Name && string.IsNullOrEmpty(x.Unit)).Value;
                 isUpdated = true;
             }
 
@@ -73,17 +73,17 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void RegisterValues()
         {
-            flightConnector.RegisterSimValues((bankValue, null), (pitchValue, null));
+            flightConnector.RegisterSimValues(bankValue, pitchValue);
         }
 
         private void DeRegisterValues()
         {
-            flightConnector.DeRegisterSimValues((bankValue, null), (pitchValue, null));
+            flightConnector.DeRegisterSimValues(bankValue, pitchValue);
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            bankValue = 0;
+            bankValue = null;
             _ = UpdateImage();
             return Task.CompletedTask;
         }
