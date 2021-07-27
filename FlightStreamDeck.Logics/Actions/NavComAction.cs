@@ -44,7 +44,6 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly ILogger<NavComAction> logger;
         private readonly IImageLogic imageLogic;
         private readonly IFlightConnector flightConnector;
-        private readonly EnumConverter enumConverter;
 
         private readonly Timer timer;
 
@@ -52,13 +51,13 @@ namespace FlightStreamDeck.Logics.Actions
 
         private NavComSettings settings;
 
-        private TOGGLE_VALUE? dependantOnAvionics;
-        private TOGGLE_VALUE? dependantOnBatt;
+        private ToggleValue dependantOnAvionics;
+        private ToggleValue dependantOnBatt;
 
-        private TOGGLE_VALUE? active;
-        private TOGGLE_VALUE? standby;
-        private TOGGLE_EVENT? toggle;
-        private TOGGLE_EVENT? set;
+        private ToggleValue active;
+        private ToggleValue standby;
+        private ToggleEvent toggle;
+        private ToggleEvent set;
         private string mask;
 
         string lastValue1 = null;
@@ -68,14 +67,13 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TaskCompletionSource<bool> initializationTcs;
 
-        public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector, EnumConverter enumConverter)
+        public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector)
         {
             registration = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]);
 
             this.logger = logger;
             this.imageLogic = imageLogic;
             this.flightConnector = flightConnector;
-            this.enumConverter = enumConverter;
             timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
             timer.Elapsed += Timer_Elapsed;
         }
@@ -171,7 +169,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 var fileKey = fileKeyObject.Value<string>();
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
+                await System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
             }
             else
             {
@@ -184,8 +182,8 @@ namespace FlightStreamDeck.Logics.Actions
         private void InitializeSettings(NavComSettings settings)
         {
             this.settings = settings;
-            dependantOnAvionics = enumConverter.GetVariableEnum(settings.AvionicsValue);
-            dependantOnBatt = enumConverter.GetVariableEnum(settings.BattMasterValue);
+            dependantOnAvionics = new ToggleValue(settings.AvionicsValue);
+            dependantOnBatt = new ToggleValue(settings.BattMasterValue);
 
             lastDependant = !lastDependant;
             lastValue1 = null;
@@ -228,24 +226,24 @@ namespace FlightStreamDeck.Logics.Actions
                 bool dependant = true;
                 bool showMainOnly = false;
 
-                if (dependantOnBatt != null && e.GenericValueStatus.ContainsKey((dependantOnBatt.Value, null)))
+                if (dependantOnBatt != null && (e.GenericValueStatus.Find(x => x.Name == dependantOnBatt.Name) != null))
                 {
-                    dependant = e.GenericValueStatus[(dependantOnBatt.Value, null)] != 0;
+                    dependant = string.IsNullOrEmpty(e.GenericValueStatus.Find(x => x.Name == dependantOnBatt.Name).Name);
                 }
-                if (dependantOnAvionics != null && e.GenericValueStatus.ContainsKey((dependantOnAvionics.Value, null)))
+                if (dependantOnBatt != null && (e.GenericValueStatus.Find(x => x.Name == dependantOnAvionics.Name) != null))
                 {
-                    dependant = dependant && e.GenericValueStatus[(dependantOnAvionics.Value, null)] != 0;
+                    dependant = string.IsNullOrEmpty(e.GenericValueStatus.Find(x => x.Name == dependantOnAvionics.Name).Name);
                 }
 
-                if (active != null && e.GenericValueStatus.ContainsKey((active.Value, null)))
+                if (active != null && (e.GenericValueStatus.Find(x => x.Name == active.Name) != null))
                 {
                     showMainOnly = true;
-                    value1 = dependant ? e.GenericValueStatus[(active.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(active.Value)) : string.Empty;
+                    value1 = dependant ? e.GenericValueStatus.Find(x => x.Name == active.Name).Value.ToString("F" + active.Decimals.ToString()) : string.Empty;
                     if (settings.Type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
                 }
-                if (standby != null && e.GenericValueStatus.ContainsKey((standby.Value, null)))
+                if (standby != null && (e.GenericValueStatus.Find(x => x.Name == standby.Name) != null))
                 {
-                    value2 = dependant ? e.GenericValueStatus[(standby.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(standby.Value)) : string.Empty;
+                    value2 = dependant ? e.GenericValueStatus.Find(x => x.Name == standby.Name).Value.ToString("F" + standby.Decimals.ToString()) : string.Empty;
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 
@@ -291,14 +289,14 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void SwitchTo(string type)
         {
-            var existing = new List<(TOGGLE_VALUE variables, string unit)>();
+            var existing = new List<ToggleValue>();
             if (active != null)
             {
-                existing.Add((active.Value, null));
+                existing.Add(new ToggleValue(active.Name));
             }
             if (standby != null)
             {
-                existing.Add((standby.Value, null));
+                existing.Add(new ToggleValue(standby.Name));
             }
             if (existing.Count > 0)
             {
@@ -307,38 +305,38 @@ namespace FlightStreamDeck.Logics.Actions
             switch (type)
             {
                 case "NAV1":
-                    active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__1;
-                    standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__1;
-                    toggle = TOGGLE_EVENT.NAV1_RADIO_SWAP;
-                    set = TOGGLE_EVENT.NAV1_STBY_SET;
+                    active = new ToggleValue("NAV_ACTIVE_FREQUENCY__1");
+                    standby = new ToggleValue("NAV_STANDBY_FREQUENCY__1");
+                    toggle = new ToggleEvent("NAV1_RADIO_SWAP");
+                    set = new ToggleEvent("NAV1_STBY_SET");
                     mask = "108.00";
                     break;
                 case "NAV2":
-                    active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2;
-                    standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2;
-                    toggle = TOGGLE_EVENT.NAV2_RADIO_SWAP;
-                    set = TOGGLE_EVENT.NAV2_STBY_SET;
+                    active = new ToggleValue("NAV_ACTIVE_FREQUENCY__2");
+                    standby = new ToggleValue("NAV_STANDBY_FREQUENCY__2");
+                    toggle = new ToggleEvent("NAV2_RADIO_SWAP");
+                    set = new ToggleEvent("NAV2_STBY_SET");
                     mask = "108.00";
                     break;
                 case "COM1":
-                    active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1;
-                    standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1;
-                    toggle = TOGGLE_EVENT.COM_STBY_RADIO_SWAP;
-                    set = TOGGLE_EVENT.COM_STBY_RADIO_SET;
+                    active = new ToggleValue("COM_ACTIVE_FREQUENCY__1");
+                    standby = new ToggleValue("COM_STANDBY_FREQUENCY__1");
+                    toggle = new ToggleEvent("COM_STBY_RADIO_SWAP");
+                    set = new ToggleEvent("COM_STBY_RADIO_SET");
                     mask = "118.00";
                     break;
                 case "COM2":
-                    active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2;
-                    standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2;
-                    toggle = TOGGLE_EVENT.COM2_RADIO_SWAP;
-                    set = TOGGLE_EVENT.COM2_STBY_RADIO_SET;
+                    active = new ToggleValue("COM_ACTIVE_FREQUENCY__2");
+                    standby = new ToggleValue("COM_STANDBY_FREQUENCY__2");
+                    toggle = new ToggleEvent("COM2_RADIO_SWAP");
+                    set = new ToggleEvent("COM2_STBY_RADIO_SET");
                     mask = "118.00";
                     break;
                 case "XPDR":
-                    active = TOGGLE_VALUE.TRANSPONDER_CODE__1;
-                    standby = TOGGLE_VALUE.TRANSPONDER_CODE__1;
+                    active = new ToggleValue("TRANSPONDER_CODE__1");
+                    standby = new ToggleValue("TRANSPONDER_CODE__1");
                     toggle = null;
-                    set = TOGGLE_EVENT.XPNDR_SET;
+                    set = new ToggleEvent("XPNDR_SET");
                     mask = "1200";
                     break;
                 default:
@@ -350,27 +348,27 @@ namespace FlightStreamDeck.Logics.Actions
                     lastValue2 = null;
                     break;
             }
-            var values = new List<(TOGGLE_VALUE variable, string unit)>();
+            var values = new List<ToggleValue>();
             if (type != null && !type.StartsWith("ADF"))
             {
-                values.Add((active.Value, null));
-                values.Add((standby.Value, null));
+                values.Add(new ToggleValue(active.Name));
+                values.Add(new ToggleValue(standby.Name));
             }
             if (toggle != null)
             {
-                flightConnector.RegisterToggleEvent(toggle.Value);
+                flightConnector.RegisterToggleEvent(toggle);
             }
             if (set != null)
             {
-                flightConnector.RegisterToggleEvent(set.Value);
+                flightConnector.RegisterToggleEvent(set);
             }
             if (dependantOnAvionics != null)
             {
-                values.Add((dependantOnAvionics.Value, null));
+                values.Add(new ToggleValue(dependantOnAvionics.Name));
             }
             if (dependantOnBatt != null)
             {
-                values.Add((dependantOnBatt.Value, null));
+                values.Add(new ToggleValue(dependantOnBatt.Name));
             }
             if (values.Count > 0)
             {
@@ -382,7 +380,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggle != null)
             {
-                flightConnector.Trigger(toggle.Value);
+                flightConnector.Trigger(toggle);
             }
         }
 
@@ -442,7 +440,7 @@ namespace FlightStreamDeck.Logics.Actions
                     if (value.Length < min.Length)
                     {
                         // Add the default mask
-                        value += min.Substring(value.Length);
+                        value += min[value.Length..];
                     }
 
                     if (settings.Type == "NAV1" || settings.Type == "NAV2" || settings.Type == "COM1" || settings.Type == "COM2")
@@ -458,12 +456,12 @@ namespace FlightStreamDeck.Logics.Actions
                         uint digit = (byte)value[i] - (uint)48;
                         data = data * 16 + digit;
                     }
-                    flightConnector.Trigger(set.Value, data);
+                    flightConnector.Trigger(set, data);
 
                     if (toggle != null && swap)
                     {
                         await Task.Delay(500);
-                        flightConnector.Trigger(toggle.Value);
+                        flightConnector.Trigger(toggle);
                     }
                 }
             }
@@ -527,6 +525,6 @@ namespace FlightStreamDeck.Logics.Actions
             InitializeSettings(settings);
         }
 
-        private string FormatFrequency(int? frequency) => (frequency == null) ? null : (frequency.Value / 1000).ToString();
+        private static string FormatFrequency(int? frequency) => (frequency == null) ? null : (frequency.Value / 1000).ToString();
     }
 }

@@ -9,7 +9,7 @@ namespace FlightStreamDeck.Logics
     {
         public class Expression : IExpression
         {
-            public Expression(TOGGLE_VALUE? feedbackVariable, TOGGLE_VALUE? feedbackComparisonVariable, string feedbackComparisonStringValue, string feedbackComparisonOperator)
+            public Expression(ToggleValue feedbackVariable, ToggleValue feedbackComparisonVariable, string feedbackComparisonStringValue, string feedbackComparisonOperator)
             {
                 FeedbackVariable = feedbackVariable;
                 FeedbackComparisonVariable = feedbackComparisonVariable;
@@ -17,8 +17,8 @@ namespace FlightStreamDeck.Logics
                 FeedbackComparisonOperator = feedbackComparisonOperator;
             }
 
-            public TOGGLE_VALUE? FeedbackVariable { get; }
-            public TOGGLE_VALUE? FeedbackComparisonVariable { get; }
+            public ToggleValue FeedbackVariable { get; }
+            public ToggleValue FeedbackComparisonVariable { get; }
             public string FeedbackComparisonStringValue { get; }
             public string FeedbackComparisonOperator { get; }
 
@@ -27,40 +27,33 @@ namespace FlightStreamDeck.Logics
             public bool PreviousResult { get; set; }
         }
 
-        private readonly EnumConverter enumConverter;
-
-        public ComparisonEvaluator(EnumConverter enumConverter)
-        {
-            this.enumConverter = enumConverter;
-        }
-
-        public (IEnumerable<TOGGLE_VALUE>, IExpression) Parse(string feedbackValue)
+        public (IEnumerable<ToggleValue>, IExpression) Parse(string feedbackValue)
         {
             (var feedbackVariable, var feedbackComparisonVariable, var feedbackComparisonStringValue, var feedbackComparisonOperator) =
                    GetValueValueComparison(feedbackValue);
 
-            var list = new List<TOGGLE_VALUE>();
-            if (feedbackVariable != null) list.Add(feedbackVariable.Value);
-            if (feedbackComparisonVariable != null) list.Add(feedbackComparisonVariable.Value);
+            var list = new List<ToggleValue>();
+            if (feedbackVariable != null) list.Add(new ToggleValue(feedbackVariable.Name));
+            if (feedbackComparisonVariable != null) list.Add(new ToggleValue(feedbackComparisonVariable.Name));
             return (list, new Expression(feedbackVariable, feedbackComparisonVariable, feedbackComparisonStringValue, feedbackComparisonOperator));
         }
 
-        public bool Evaluate(Dictionary<TOGGLE_VALUE, double> values, IExpression expression)
+        public bool Evaluate(List<ToggleValue> values, IExpression expression)
         {
             if (expression is Expression compareExpression)
             {
                 double? feedbackValue = null;
                 double? comparisonFeedbackValue = null;
 
-                if (compareExpression.FeedbackVariable.HasValue && values.ContainsKey(compareExpression.FeedbackVariable.Value))
+                if (compareExpression.FeedbackVariable != null && values.Find(x => x.Name == compareExpression.FeedbackVariable.Name) != null)
                 {
-                    feedbackValue = values[compareExpression.FeedbackVariable.Value];
+                    feedbackValue = values.Find(x => x.Name == compareExpression.FeedbackVariable.Name).Value;
                 }
 
-                if (compareExpression.FeedbackComparisonVariable.HasValue && values.ContainsKey(compareExpression.FeedbackComparisonVariable.Value))
+                if (compareExpression.FeedbackComparisonVariable != null && values.Find(x => x.Name == compareExpression.FeedbackComparisonVariable.Name) != null)
                 {
                     // Compare to a variable
-                    comparisonFeedbackValue = values[compareExpression.FeedbackComparisonVariable.Value];
+                    comparisonFeedbackValue = values.Find(x => x.Name == compareExpression.FeedbackComparisonVariable.Name).Value;
                 }
                 else
                 {
@@ -98,7 +91,7 @@ namespace FlightStreamDeck.Logics
         public const string OperatorGreater = ">";
         public const string OperatorLess = "<";
 
-        public static readonly List<string> AllowedComparisons = new List<string> {
+        public static readonly List<string> AllowedComparisons = new() {
             OperatorEquals,
             OperatorTruncatedEquals,
             OperatorNotEquals,
@@ -108,26 +101,26 @@ namespace FlightStreamDeck.Logics
             OperatorLess
         };
 
-        public Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string> GetValueValueComparison(string value)
+        public static Tuple<ToggleValue, ToggleValue, string, string> GetValueValueComparison(string value)
         {
-            if (string.IsNullOrEmpty(value)) return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
+            if (string.IsNullOrEmpty(value)) return new Tuple<ToggleValue, ToggleValue, string, string>(null, null, string.Empty, string.Empty);
 
-            TOGGLE_VALUE? result = enumConverter.GetVariableEnum(value);
+            ToggleValue result = new(value);
 
             if (result != null)
             {
                 // Old behavior
-                return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(result, null, "0", "!=");
+                return new Tuple<ToggleValue, ToggleValue, string, string>(result, null, "0", "!=");
             }
             else
             {
                 IEnumerable<string> comparisonAttempt = AllowedComparisons.Where((string allowedComp) => value.Contains(allowedComp));
 
-                if (comparisonAttempt.Count() >= 1)
+                if (comparisonAttempt.Any())
                 {
                     IEnumerable<string> splitInput = value.Split(comparisonAttempt.First());
-                    TOGGLE_VALUE? leftSideEnum = enumConverter.GetVariableEnum(splitInput.First());
-                    TOGGLE_VALUE? rightSideEnum = int.TryParse(splitInput.Last(), out int temp) ? null : enumConverter.GetVariableEnum(splitInput.Last());
+                    ToggleValue leftSideEnum = new(splitInput.First());
+                    ToggleValue rightSideEnum = int.TryParse(splitInput.Last(), out int temp) ? null : new ToggleValue(splitInput.Last());
                     string rightSideString = rightSideEnum == null ? splitInput.Last() : null;
 
                     if (
@@ -135,7 +128,7 @@ namespace FlightStreamDeck.Logics
                         (leftSideEnum != null && !string.IsNullOrEmpty(rightSideString))
                     )
                     {
-                        return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(
+                        return new Tuple<ToggleValue, ToggleValue, string, string>(
                                 leftSideEnum,
                                 rightSideEnum,
                                 rightSideString,
@@ -144,11 +137,11 @@ namespace FlightStreamDeck.Logics
                     }
                 }
 
-                return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
+                return new Tuple<ToggleValue, ToggleValue, string, string>(null, null, string.Empty, string.Empty);
             }
         }
 
-        public bool CompareValues(double currentValue, double comparisonValue, string operatorValue)
+        public static bool CompareValues(double currentValue, double comparisonValue, string operatorValue)
         {
             bool output = false;
 

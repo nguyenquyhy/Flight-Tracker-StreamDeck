@@ -179,7 +179,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 var fileKey = fileKeyObject.Value<string>();
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
+                await System .Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
             }
             else
             {

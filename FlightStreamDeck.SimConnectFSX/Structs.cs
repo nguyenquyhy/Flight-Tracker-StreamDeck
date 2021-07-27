@@ -10,11 +10,27 @@ namespace FlightStreamDeck.SimConnectFSX
         MAX = 1,
     };
 
+    public enum SIMCONNECT_DEFINE_ID
+    {
+        Dummy
+    }
+    public enum SIMCONNECT_REQUEST_ID
+    {
+        Dummy
+    }
+
+    public enum SIMCONNECT_CLIENT_DATA_ID
+    {
+        MOBIFLIGHT_LVARS,
+        MOBIFLIGHT_CMD,
+        MOBIFLIGHT_RESPONSE
+    }
+
     enum DEFINITIONS
     {
         AircraftData,
         FlightStatus,
-        GenericData
+        GenericData,
     }
 
     internal enum DATA_REQUESTS
@@ -25,7 +41,7 @@ namespace FlightStreamDeck.SimConnectFSX
         FLIGHT_STATUS,
         ENVIRONMENT_DATA,
         FLIGHT_PLAN,
-        TOGGLE_VALUE_DATA
+        TOGGLE_VALUE_DATA,
     }
 
     public enum EVENTS
@@ -135,4 +151,32 @@ namespace FlightStreamDeck.SimConnectFSX
             return Data[index];
         }
     }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct ClientDataValue
+    {
+        public float data;
+    }
+
+    public struct ResponseString
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string Data;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct ClientDataString
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+        public byte[] data;
+
+        public ClientDataString(string strData)
+        {
+            byte[] bytes = System.Text.Encoding.ASCII.GetBytes(strData);
+            byte[] destinationArray = new byte[256];
+            Array.Copy(bytes, destinationArray, bytes.Length);
+            data = destinationArray;
+        }
+    }
+
 }
