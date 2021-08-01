@@ -385,11 +385,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 holdEventTriggerred = true;
 
-                flightConnector.Trigger(holdEvent.Value,
-                    !(holdEventDataVariable is null) && holdEventDataVariableValue.HasValue ?
-                        Convert.ToUInt32(Math.Round(holdEventDataVariableValue.Value)) :
-                        (holdEventDataUInt ?? 0)
-                );
+                flightConnector.Trigger(holdEvent.Value, CalculateEventParam(holdEventDataVariable, holdEventDataVariableValue, holdEventDataUInt));
 
                 if (!settings.HoldValueRepeat && timer != null)
                 {
@@ -403,12 +399,18 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggleEvent.HasValue)
             {
-                flightConnector.Trigger(toggleEvent.Value,
-                    !(toggleEventDataVariable is null) && toggleEventDataVariableValue.HasValue ?
-                        Convert.ToUInt32(Math.Round(toggleEventDataVariableValue.Value)) :
-                        (toggleEventDataUInt ?? 0)
-                );
+                flightConnector.Trigger(toggleEvent.Value, CalculateEventParam(toggleEventDataVariable, toggleEventDataVariableValue, toggleEventDataUInt));
             }
+        }
+
+        private uint CalculateEventParam(TOGGLE_VALUE? variable, double? variableValue, uint? inputValue)
+        {
+            if (variable is not null && variableValue.HasValue)
+            {
+                var rounded = Math.Round(variableValue.Value);// - 360;
+                return rounded < 0 ? unchecked((uint)(int)rounded) : (uint)rounded;
+            }
+            return inputValue ?? 0;
         }
 
         private async Task UpdateImage()
