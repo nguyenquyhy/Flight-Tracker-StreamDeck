@@ -300,7 +300,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
             if (existing.Count > 0)
             {
-                flightConnector.DeRegisterSimValues(existing.ToArray());
+                flightConnector.DeRegisterSimValues(existing);
             }
             switch (type)
             {
@@ -372,7 +372,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
             if (values.Count > 0)
             {
-                flightConnector.RegisterSimValues(values.ToArray());
+                flightConnector.RegisterSimValues(values);
             }
         }
 

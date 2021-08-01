@@ -80,7 +80,7 @@ namespace FlightStreamDeck.Logics.Actions
         private IExpression expression;
         private ToggleValue displayValue = null;
 
-        private string customUnit = null;
+        private readonly string customUnit = null;
         private int? customDecimals = null;
 
         private double? currentValue = null;
@@ -112,33 +112,31 @@ namespace FlightStreamDeck.Logics.Actions
         {
             this.settings = settings;
 
-            ToggleEvent newToggleEvent = new(settings.ToggleValue);
-            ToggleValue newToggleEventDataVariable = null;
-            ToggleValue newHoldEventDataVariable = null;
-            
+            ToggleEvent newToggleEvent = string.IsNullOrWhiteSpace(settings.ToggleValue) ? null : new(settings.ToggleValue);
+            ToggleEvent newHoldEvent = string.IsNullOrWhiteSpace(settings.HoldValue) ? null : new(settings.HoldValue);
+
+            ToggleValue newToggleEventDataVariable = null, newHoldEventDataVariable = null;
+
+            var newUnit = settings.DisplayValueUnit?.Trim();
+            if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
+            var valueLibrary = EventValueLibrary.AvailableValues.Find(x => string.IsNullOrWhiteSpace(settings.DisplayValue) && x.Name == settings.DisplayValue);
+            ToggleValue newDisplayValue = valueLibrary ?? (string.IsNullOrWhiteSpace(settings.DisplayValue) ? null : new(settings.DisplayValue, newUnit));
+
             bool isToggleEventUint = uint.TryParse(settings.ToggleValueData, out uint newToggleEventDataUInt);
             bool isHoldEventUint = uint.TryParse(settings.HoldValueData, out uint newHoldEventDataUInt);
             if (!isToggleEventUint)
             {
-                newToggleEventDataVariable = new ToggleValue(settings.ToggleValueData);
+                newToggleEventDataVariable = string.IsNullOrWhiteSpace(settings.ToggleValueData) ? null : new(settings.ToggleValueData);
             }
             if (!isHoldEventUint)
             {
-                newHoldEventDataVariable = new ToggleValue(settings.HoldValueData);
+                newHoldEventDataVariable = string.IsNullOrWhiteSpace(settings.HoldValueData) ? null : new(settings.HoldValueData);
             }
-            ToggleEvent newHoldEvent = new(settings.HoldValue);
-            (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
-            ToggleValue newDisplayValue = new(settings.DisplayValue);
 
-            if (int.TryParse(settings.DisplayValuePrecision, out int decimals))
-            {
-                customDecimals = decimals;
-            }
-            var newUnit = settings.DisplayValueUnit?.Trim();
-            if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
+            (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
+            customDecimals = int.TryParse(settings.DisplayValuePrecision, out int decimals) ? decimals : 0;
 
             if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue
-                || newUnit != customUnit
                 || newToggleEventDataVariable != toggleEventDataVariable
                 || newHoldEventDataVariable != holdEventDataVariable
                 )
@@ -155,7 +153,6 @@ namespace FlightStreamDeck.Logics.Actions
             feedbackVariables = newFeedbackVariables;
             expression = newExpression;
             displayValue = newDisplayValue;
-            customUnit = newUnit;
 
             RegisterValues();
         }
@@ -164,14 +161,14 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (StreamDeck == null) return;
 
-            List<ToggleValue> valuesWithDefaultUnits = e.GenericValueStatus.Where(o => o.Unit == "number").ToList();
+            List<ToggleValue> valuesWithDefaultUnits = e.GenericValueStatus.Where(o => o.Unit == ToggleValue.DEFAULT_UNIT).ToList();
             var newStatus = expression != null && evaluator.Evaluate(valuesWithDefaultUnits, expression);
             var isUpdated = newStatus != currentStatus;
             currentStatus = newStatus;
 
-            if (displayValue != null && e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit) != null)
+            if (displayValue != null && e.GenericValueStatus.Find(x => x.Name == displayValue.Name) != null)
             {
-                var newValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit);
+                var newValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name);
                 isUpdated |= newValue.Value != currentValue;
                 currentValue = newValue.Value;
 
@@ -204,14 +201,14 @@ namespace FlightStreamDeck.Logics.Actions
                 }
             }
 
-            if (toggleEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)) != null)
+            if (toggleEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)) != null)
             {
-                toggleEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)).Value;
+                toggleEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)).Value;
             }
 
-            if (holdEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)) != null)
+            if (holdEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)) != null)
             {
-                holdEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrEmpty(x.Unit)).Value;
+                holdEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)).Value;
             }
 
             if (isUpdated)
@@ -321,13 +318,13 @@ namespace FlightStreamDeck.Logics.Actions
 
             var values = new List<ToggleValue>();
             foreach (var feedbackVariable in feedbackVariables) values.Add(feedbackVariable);
-            if (displayValue != null) values.Add(new ToggleValue(displayValue.Name, customUnit));
-            if (toggleEventDataVariable != null) values.Add(new ToggleValue(toggleEventDataVariable.Name));
-            if (holdEventDataVariable != null) values.Add(new ToggleValue(holdEventDataVariable.Name));
+            if (displayValue != null) values.Add(displayValue);
+            if (toggleEventDataVariable != null) values.Add(toggleEventDataVariable);
+            if (holdEventDataVariable != null) values.Add(holdEventDataVariable);
 
             if (values.Count > 0)
             {
-                flightConnector.RegisterSimValues(values.ToArray());
+                flightConnector.RegisterSimValues(values);
             }
         }
 
@@ -335,13 +332,13 @@ namespace FlightStreamDeck.Logics.Actions
         {
             var values = new List<ToggleValue>();
             foreach (var feedbackVariable in feedbackVariables) values.Add(feedbackVariable);
-            if (displayValue != null) values.Add(new ToggleValue(displayValue.Name, customUnit));
-            if (toggleEventDataVariable != null) values.Add(new ToggleValue(toggleEventDataVariable.Name));
-            if (holdEventDataVariable != null) values.Add(new ToggleValue(holdEventDataVariable.Name));
+            if (displayValue != null) values.Add(new(displayValue.Name, customUnit));
+            if (toggleEventDataVariable != null) values.Add(new(toggleEventDataVariable.Name));
+            if (holdEventDataVariable != null) values.Add(new(holdEventDataVariable.Name));
 
             if (values.Count > 0)
             {
-                flightConnector.DeRegisterSimValues(values.ToArray());
+                flightConnector.DeRegisterSimValues(values);
             }
 
             currentValue = null;
@@ -438,7 +435,7 @@ namespace FlightStreamDeck.Logics.Actions
                     imageOffBytes = Convert.FromBase64String(s);
                 }
 
-                var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
+                var valueToShow = !string.IsNullOrWhiteSpace(currentValueTime) ?
                     currentValueTime :
                     (displayValue != null && currentValue.HasValue) ? currentValue.Value.ToString("F" + displayValue.Decimals) : "";
 

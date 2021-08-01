@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions
@@ -73,12 +74,12 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void RegisterValues()
         {
-            flightConnector.RegisterSimValues(bankValue, pitchValue);
+            flightConnector.RegisterSimValues(new() { bankValue, pitchValue });
         }
 
         private void DeRegisterValues()
         {
-            flightConnector.DeRegisterSimValues(bankValue, pitchValue);
+            flightConnector.DeRegisterSimValues(new() { bankValue, pitchValue });
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)

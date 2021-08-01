@@ -66,15 +66,12 @@ namespace FlightStreamDeck.Logics.Actions
         private ToggleValue displayValue = null;
         private ToggleValue subDisplayValue = null;
         private ToggleValue displayValueBottom = null;
-        private ToggleValue minValue = null;
-        private ToggleValue maxValue = null;
-        private string customUnit = null;
-        private int? customDecimals = null;
 
         private double currentValue = 0;
         private double currentValueBottom = 0;
         private double currentSubValue = float.MinValue;
 
+        private int? customDecimals = null;
         private double? currentMinValue = null;
         private double? currentMaxValue = null;
 
@@ -100,8 +97,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private GenericGaugeSettings settings = null;
 
-        public GenericGaugeAction(ILogger<GenericGaugeAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
-            EnumConverter enumConverter)
+        public GenericGaugeAction(ILogger<GenericGaugeAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
             this.settings = DefaultSettings;
             this.logger = logger;
@@ -157,14 +153,6 @@ namespace FlightStreamDeck.Logics.Actions
                 this.settings = settings;
             }
 
-            ToggleEvent newToggleEvent = new(this.settings.ToggleValue);
-            ToggleValue newDisplayValue = new(this.settings.DisplayValue);
-            ToggleValue newSubDisplayValue = new(this.settings.SubDisplayValue);
-            ToggleValue newDisplayValueBottom = new(this.settings.DisplayValueBottom);
-
-            ToggleValue newMinValue = new(this.settings.MinValue);
-            ToggleValue newMaxValue = new(this.settings.MaxValue);
-
             if (double.TryParse(string.IsNullOrWhiteSpace(settings.MinValue) ? DefaultSettings.MinValue : settings.MinValue, out var min))
             {
                 currentMinValue = min;
@@ -186,19 +174,23 @@ namespace FlightStreamDeck.Logics.Actions
             var newUnit = settings.ValueUnit?.Trim();
             if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
 
-            if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue ||
-                newMinValue != minValue || newMaxValue != maxValue || newUnit != customUnit)
+            ToggleEvent newToggleEvent = string.IsNullOrEmpty(this.settings.ToggleValue) ? null: new(this.settings.ToggleValue);
+
+            ToggleValue newDisplayValue = string.IsNullOrEmpty(this.settings.DisplayValue) ? null : new(this.settings.DisplayValue, newUnit, customDecimals, currentMinValue, currentMaxValue);
+            ToggleValue newSubDisplayValue = string.IsNullOrEmpty(this.settings.SubDisplayValue) ? null : new(this.settings.SubDisplayValue);
+            ToggleValue newDisplayValueBottom = string.IsNullOrEmpty(this.settings.DisplayValueBottom) ? null : new(this.settings.DisplayValueBottom);
+            ToggleValue newMinValue = string.IsNullOrEmpty(this.settings.MinValue) ? null : new(this.settings.MinValue);
+            ToggleValue newMaxValue = string.IsNullOrEmpty(this.settings.MaxValue) ? null : new(this.settings.MaxValue);
+
+            if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue)
             {
                 DeRegisterValues();
             }
 
             toggleEvent = newToggleEvent;
             displayValue = newDisplayValue;
-            customUnit = newUnit;
             subDisplayValue = newSubDisplayValue;
             displayValueBottom = newDisplayValueBottom;
-            minValue = newMinValue;
-            maxValue = newMaxValue;
 
             RegisterValues();
         }
@@ -233,18 +225,18 @@ namespace FlightStreamDeck.Logics.Actions
             isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValue, ref currentValue);
             isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValueBottom, ref currentValueBottom);
             isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, subDisplayValue, ref currentSubValue);
-            double min = 0;
-            if (SetFromGenericValueStatus(e.GenericValueStatus, minValue, ref min))
-            {
-                currentMinValue = min;
-                isUpdated = true;
-            }
-            double max = 0;
-            if (SetFromGenericValueStatus(e.GenericValueStatus, maxValue, ref max))
-            {
-                currentMaxValue = max;
-                isUpdated = true;
-            }
+            //double min = 0;
+            //if (SetFromGenericValueStatus(e.GenericValueStatus, ref min))
+            //{
+            //    currentMinValue = min;
+            //    isUpdated = true;
+            //}
+            //double max = 0;
+            //if (SetFromGenericValueStatus(e.GenericValueStatus, ref max))
+            //{
+            //    currentMaxValue = max;
+            //    isUpdated = true;
+            //}
 
             if (isUpdated)
             {
@@ -257,30 +249,26 @@ namespace FlightStreamDeck.Logics.Actions
             if (toggleEvent != null) flightConnector.RegisterToggleEvent(toggleEvent);
 
             var values = new List<ToggleValue>();
-            if (displayValue != null) values.Add((new ToggleValue(displayValue.Name, customUnit)));
-            if (subDisplayValue != null) values.Add(new ToggleValue(subDisplayValue.Name, customUnit));
-            if (displayValueBottom != null) values.Add(new ToggleValue(displayValueBottom.Name, customUnit));
-            if (minValue != null) values.Add(new ToggleValue(minValue.Name));
-            if (maxValue != null) values.Add(new ToggleValue(maxValue.Name));
-
+            if (displayValue != null) values.Add(displayValue);
+            if (subDisplayValue != null) values.Add(subDisplayValue);
+            if (displayValueBottom != null) values.Add(displayValueBottom);
+            
             if (values.Count > 0)
             {
-                flightConnector.RegisterSimValues(values.ToArray());
+                flightConnector.RegisterSimValues(values);
             }
         }
 
         private void DeRegisterValues()
         {
             var values = new List<ToggleValue>();
-            if (displayValue != null) values.Add(new ToggleValue(displayValue.Name, customUnit));
-            if (subDisplayValue != null) values.Add(new ToggleValue(subDisplayValue.Name, customUnit));
-            if (displayValueBottom != null) values.Add(new ToggleValue(displayValueBottom.Name, customUnit));
-            if (minValue != null) values.Add(new ToggleValue(minValue.Name));
-            if (maxValue != null) values.Add(new ToggleValue(maxValue.Name));
+            if (displayValue != null) values.Add(displayValue);
+            if (subDisplayValue != null) values.Add(subDisplayValue);
+            if (displayValueBottom != null) values.Add(displayValueBottom);
 
             if (values.Count > 0)
             {
-                flightConnector.DeRegisterSimValues(values.ToArray());
+                flightConnector.DeRegisterSimValues(values);
             }
 
             currentValue = 0;

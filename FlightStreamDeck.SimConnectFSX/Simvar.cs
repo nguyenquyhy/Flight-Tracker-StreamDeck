@@ -12,6 +12,6 @@ namespace FlightStreamDeck.SimConnectFSX
 
 		public string Name { get; set; }
 
-		public float Data { get; set; }
+		public double Data { get; set; }
 	}
 }

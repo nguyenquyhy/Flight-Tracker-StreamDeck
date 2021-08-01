@@ -29,12 +29,11 @@ namespace FlightStreamDeck.Logics
 
         public (IEnumerable<ToggleValue>, IExpression) Parse(string feedbackValue)
         {
-            (var feedbackVariable, var feedbackComparisonVariable, var feedbackComparisonStringValue, var feedbackComparisonOperator) =
-                   GetValueValueComparison(feedbackValue);
+            (var feedbackVariable, var feedbackComparisonVariable, var feedbackComparisonStringValue, var feedbackComparisonOperator) = GetValueValueComparison(feedbackValue);
 
             var list = new List<ToggleValue>();
-            if (feedbackVariable != null) list.Add(new ToggleValue(feedbackVariable.Name));
-            if (feedbackComparisonVariable != null) list.Add(new ToggleValue(feedbackComparisonVariable.Name));
+            if (feedbackVariable != null && !string.IsNullOrWhiteSpace(feedbackVariable.Name)) list.Add(new ToggleValue(feedbackVariable.Name));
+            if (feedbackComparisonVariable != null && !string.IsNullOrWhiteSpace(feedbackComparisonVariable.Name)) list.Add(new ToggleValue(feedbackComparisonVariable.Name));
             return (list, new Expression(feedbackVariable, feedbackComparisonVariable, feedbackComparisonStringValue, feedbackComparisonOperator));
         }
 

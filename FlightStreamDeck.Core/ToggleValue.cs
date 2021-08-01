@@ -1,16 +1,22 @@
-﻿namespace FlightStreamDeck.Core
+﻿using System;
+
+namespace FlightStreamDeck.Core
 {
-    public class ToggleValue
+    public class ToggleValue: BaseToggle
     {
-        private const string DEFAULT_UNIT = "number";
+        public const string DEFAULT_UNIT = "number";
+        public const string LVARS_PREFIX = "L_";
         private const int DEFAULT_DECIMALS = 0;
-        public ToggleValue(string name, string unit, int decimals)
+        public ToggleValue(string name, string unit, int? decimals, double? minValue, double?  maxValue): base(name)
         {
-            Name = name;
             Decimals = decimals;
             Unit = unit;
+            MinValue = minValue;
+            MaxValue = maxValue;
         }
-
+        public ToggleValue(string name, string unit, int? decimals) : this(name, unit, decimals, null, null)
+        {
+        }
         public ToggleValue(string name): this(name, DEFAULT_UNIT, DEFAULT_DECIMALS)
         {
         }
@@ -18,15 +24,17 @@
         {
         }
 
-
-        private string _name;
-        public string Name
-        {
-            get => _name ??= string.Empty;
-            set => _name = value;
-        }
-
         public double Value
+        {
+            get;
+            set;
+        }
+        public double? MinValue
+        {
+            get;
+            set;
+        }
+        public double? MaxValue
         {
             get;
             set;

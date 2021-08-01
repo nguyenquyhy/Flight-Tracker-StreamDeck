@@ -45,8 +45,8 @@ namespace FlightStreamDeck.Logics
 
         void RegisterToggleEvent(ToggleEvent toggleAction);
 
-        void RegisterSimValues(params ToggleValue[] simValues);
-        void DeRegisterSimValues(params ToggleValue[] simValues);
+        void RegisterSimValues(List<ToggleValue> simValues);
+        void DeRegisterSimValues(List<ToggleValue> simValues);
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs

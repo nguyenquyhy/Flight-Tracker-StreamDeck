@@ -152,11 +152,11 @@ namespace FlightStreamDeck.SimConnectFSX
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct ClientDataValue
-    {
-        public float data;
-    }
+    //[StructLayout(LayoutKind.Sequential, Pack = 1)]
+    //public struct ClientDataValue
+    //{
+    //    public float data;
+    //}
 
     public struct ResponseString
     {

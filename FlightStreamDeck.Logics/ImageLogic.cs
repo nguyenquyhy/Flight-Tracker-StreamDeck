@@ -212,7 +212,7 @@ namespace FlightStreamDeck.Logics
 
                 ctx.DrawLines(pen, needle);
 
-                FontRectangle size = new FontRectangle(0, 0, 0, 0);
+                FontRectangle size = new(0, 0, 0, 0);
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
@@ -256,7 +256,7 @@ namespace FlightStreamDeck.Logics
                 //2 = nominal : Green
                 //3 = superb : No Color
                 Color[] colors = { Color.Red, Color.Yellow, Color.Green };
-                PointF previousWidth = new PointF(width_margin, HALF_WIDTH);
+                PointF previousWidth = new(width_margin, HALF_WIDTH);
                 int colorSentinel = 0;
 
                 foreach (var pct in splitGauge ?? Array.Empty<string>())
