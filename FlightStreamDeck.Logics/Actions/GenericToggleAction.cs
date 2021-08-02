@@ -80,9 +80,6 @@ namespace FlightStreamDeck.Logics.Actions
         private IExpression expression;
         private ToggleValue displayValue = null;
 
-        private readonly string customUnit = null;
-        private int? customDecimals = null;
-
         private double? currentValue = null;
         private string? currentValueTime = null;
         private bool currentStatus = false;
@@ -119,8 +116,9 @@ namespace FlightStreamDeck.Logics.Actions
 
             var newUnit = settings.DisplayValueUnit?.Trim();
             if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
+            var customDecimals = int.TryParse(settings.DisplayValuePrecision, out int decimals) ? decimals : 0;
             var valueLibrary = EventValueLibrary.AvailableValues.Find(x => string.IsNullOrWhiteSpace(settings.DisplayValue) && x.Name == settings.DisplayValue);
-            ToggleValue newDisplayValue = valueLibrary ?? (string.IsNullOrWhiteSpace(settings.DisplayValue) ? null : new(settings.DisplayValue, newUnit));
+            ToggleValue newDisplayValue = valueLibrary ?? (string.IsNullOrWhiteSpace(settings.DisplayValue) ? null : new(settings.DisplayValue, newUnit, customDecimals));
 
             bool isToggleEventUint = uint.TryParse(settings.ToggleValueData, out uint newToggleEventDataUInt);
             bool isHoldEventUint = uint.TryParse(settings.HoldValueData, out uint newHoldEventDataUInt);
@@ -134,7 +132,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
 
             (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
-            customDecimals = int.TryParse(settings.DisplayValuePrecision, out int decimals) ? decimals : 0;
+
 
             if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue
                 || newToggleEventDataVariable != toggleEventDataVariable
@@ -183,32 +181,32 @@ namespace FlightStreamDeck.Logics.Actions
 
                     string seconds = Math.Floor(newValue.Value).ToString().PadLeft(2, '0');
 
-                    switch (customDecimals)
+                    switch (displayValue.Decimals)
                     {
                         case 0: //HH:MM:SS
                             currentValueTime = $"{hours}:{minutes}:{seconds}{(displayValue.Name == "ZULU_TIME" ? "Z" : String.Empty)}";
-                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit).Value;
+                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name).Value;
                             break;
                         case 1: //HH:MM
                             currentValueTime = $"{hours}:{minutes}{(displayValue.Name == "ZULU_TIME" ? "Z" : String.Empty)}";
-                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit).Value;
+                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name).Value;
                             break;
                         default:
                             currentValueTime = string.Empty;
-                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name && x.Unit == customUnit).Value;
+                            currentValue = e.GenericValueStatus.Find(x => x.Name == displayValue.Name).Value;
                             break;
                     }
                 }
             }
 
-            if (toggleEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)) != null)
+            if (toggleEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name) != null)
             {
-                toggleEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)).Value;
+                toggleEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == toggleEventDataVariable.Name).Value;
             }
 
-            if (holdEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)) != null)
+            if (holdEventDataVariable != null && e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name) != null)
             {
-                holdEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name && string.IsNullOrWhiteSpace(x.Unit)).Value;
+                holdEventDataVariableValue = e.GenericValueStatus.Find(x => x.Name == holdEventDataVariable.Name).Value;
             }
 
             if (isUpdated)
@@ -332,9 +330,9 @@ namespace FlightStreamDeck.Logics.Actions
         {
             var values = new List<ToggleValue>();
             foreach (var feedbackVariable in feedbackVariables) values.Add(feedbackVariable);
-            if (displayValue != null) values.Add(new(displayValue.Name, customUnit));
-            if (toggleEventDataVariable != null) values.Add(new(toggleEventDataVariable.Name));
-            if (holdEventDataVariable != null) values.Add(new(holdEventDataVariable.Name));
+            if (displayValue != null) values.Add(displayValue);
+            if (toggleEventDataVariable != null) values.Add(toggleEventDataVariable);
+            if (holdEventDataVariable != null) values.Add(holdEventDataVariable);
 
             if (values.Count > 0)
             {

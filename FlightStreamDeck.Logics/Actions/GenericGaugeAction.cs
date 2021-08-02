@@ -179,8 +179,6 @@ namespace FlightStreamDeck.Logics.Actions
             ToggleValue newDisplayValue = string.IsNullOrEmpty(this.settings.DisplayValue) ? null : new(this.settings.DisplayValue, newUnit, customDecimals, currentMinValue, currentMaxValue);
             ToggleValue newSubDisplayValue = string.IsNullOrEmpty(this.settings.SubDisplayValue) ? null : new(this.settings.SubDisplayValue);
             ToggleValue newDisplayValueBottom = string.IsNullOrEmpty(this.settings.DisplayValueBottom) ? null : new(this.settings.DisplayValueBottom);
-            ToggleValue newMinValue = string.IsNullOrEmpty(this.settings.MinValue) ? null : new(this.settings.MinValue);
-            ToggleValue newMaxValue = string.IsNullOrEmpty(this.settings.MaxValue) ? null : new(this.settings.MaxValue);
 
             if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue)
             {

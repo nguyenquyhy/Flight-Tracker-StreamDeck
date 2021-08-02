@@ -43,19 +43,22 @@ namespace FlightStreamDeck.Logics.Actions
         {
             bool isUpdated = false;
 
-            if (e.GenericValueStatus.Find(x => x.Name == bankValue.Name && string.IsNullOrEmpty(x.Unit)) != null && currentBankValue != e.GenericValueStatus.Find(x => x.Name == bankValue.Name && string.IsNullOrEmpty(x.Unit)).Value)
+            var bank = e.GenericValueStatus.Find(x => x.Name == bankValue.Name);
+            var heading = e.GenericValueStatus.Find(x => x.Name == headingValue.Name);
+            var pitch = e.GenericValueStatus.Find(x => x.Name == pitchValue.Name);
+            if (bank != null && currentBankValue != bank.Value)
             {
-                currentBankValue = e.GenericValueStatus.Find(x => x.Name == bankValue.Name && string.IsNullOrEmpty(x.Unit)).Value;
+                currentBankValue = bank.Value;
                 isUpdated = true;
             }
-            if (e.GenericValueStatus.Find(x => x.Name == headingValue.Name && string.IsNullOrEmpty(x.Unit)) != null && currentHeadingValue != e.GenericValueStatus.Find(x => x.Name == headingValue.Name && string.IsNullOrEmpty(x.Unit)).Value)
+            if (heading != null && currentHeadingValue != heading.Value)
             {
-                currentHeadingValue = e.GenericValueStatus.Find(x => x.Name == headingValue.Name && string.IsNullOrEmpty(x.Unit)).Value;
+                currentHeadingValue = heading.Value;
                 isUpdated = true;
             }
-            if (e.GenericValueStatus.Find(x => x.Name == pitchValue.Name && string.IsNullOrEmpty(x.Unit)) != null && currentHeadingValue != e.GenericValueStatus.Find(x => x.Name == pitchValue.Name && string.IsNullOrEmpty(x.Unit)).Value)
+            if (pitch != null && currentHeadingValue != pitch.Value)
             {
-                currentPitchValue = e.GenericValueStatus.Find(x => x.Name == pitchValue.Name && string.IsNullOrEmpty(x.Unit)).Value;
+                currentPitchValue = pitch.Value;
                 isUpdated = true;
             }
 

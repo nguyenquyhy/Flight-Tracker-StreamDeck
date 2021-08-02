@@ -29,6 +29,11 @@ namespace FlightStreamDeck.Core
             get;
             set;
         }
+        public double LVarID
+        {
+            get;
+            set;
+        }
         public double? MinValue
         {
             get;

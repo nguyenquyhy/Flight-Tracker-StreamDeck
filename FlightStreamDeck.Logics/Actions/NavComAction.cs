@@ -182,8 +182,8 @@ namespace FlightStreamDeck.Logics.Actions
         private void InitializeSettings(NavComSettings settings)
         {
             this.settings = settings;
-            dependantOnAvionics = new ToggleValue(settings.AvionicsValue);
-            dependantOnBatt = new ToggleValue(settings.BattMasterValue);
+            dependantOnAvionics = new(settings.AvionicsValue);
+            dependantOnBatt = new(settings.BattMasterValue);
 
             lastDependant = !lastDependant;
             lastValue1 = null;
@@ -226,13 +226,13 @@ namespace FlightStreamDeck.Logics.Actions
                 bool dependant = true;
                 bool showMainOnly = false;
 
-                if (dependantOnBatt != null && (e.GenericValueStatus.Find(x => x.Name == dependantOnBatt.Name) != null))
+                if (dependantOnBatt != null && (e.GenericValueStatus.Find(x => x == dependantOnBatt) != null))
                 {
-                    dependant = string.IsNullOrEmpty(e.GenericValueStatus.Find(x => x.Name == dependantOnBatt.Name).Name);
+                    dependant = string.IsNullOrEmpty(e.GenericValueStatus.Find(x => x == dependantOnBatt).Name);
                 }
-                if (dependantOnBatt != null && (e.GenericValueStatus.Find(x => x.Name == dependantOnAvionics.Name) != null))
+                if (dependantOnBatt != null && (e.GenericValueStatus.Find(x => x == dependantOnAvionics) != null))
                 {
-                    dependant = string.IsNullOrEmpty(e.GenericValueStatus.Find(x => x.Name == dependantOnAvionics.Name).Name);
+                    dependant = string.IsNullOrEmpty(e.GenericValueStatus.Find(x => x == dependantOnAvionics).Name);
                 }
 
                 if (active != null && (e.GenericValueStatus.Find(x => x.Name == active.Name) != null))
@@ -241,9 +241,9 @@ namespace FlightStreamDeck.Logics.Actions
                     value1 = dependant ? e.GenericValueStatus.Find(x => x.Name == active.Name).Value.ToString("F" + active.Decimals.ToString()) : string.Empty;
                     if (settings.Type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
                 }
-                if (standby != null && (e.GenericValueStatus.Find(x => x.Name == standby.Name) != null))
+                if (standby != null && (e.GenericValueStatus.Find(x => x == standby) != null))
                 {
-                    value2 = dependant ? e.GenericValueStatus.Find(x => x.Name == standby.Name).Value.ToString("F" + standby.Decimals.ToString()) : string.Empty;
+                    value2 = dependant ? e.GenericValueStatus.Find(x => x == standby).Value.ToString("F" + standby.Decimals.ToString()) : string.Empty;
                     showMainOnly = active != null && active.Value == standby.Value;
                 }
 

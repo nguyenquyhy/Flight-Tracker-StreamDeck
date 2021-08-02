@@ -62,10 +62,10 @@ namespace FlightStreamDeck.Logics.Actions
             this.flightConnector = flightConnector;
             timer = new Timer { Interval = 400 };
             timer.Elapsed += Timer_Elapsed;
-            this.flightConnector.RegisterToggleEvent(new Core.ToggleEvent("VOR1_SET"));
-            this.flightConnector.RegisterToggleEvent(new Core.ToggleEvent("VOR2_SET"));
-            this.flightConnector.RegisterToggleEvent(new Core.ToggleEvent("ADF_SET"));
-            this.flightConnector.RegisterToggleEvent(new Core.ToggleEvent("KOHLSMAN_SET"));
+            this.flightConnector.RegisterToggleEvent(new("VOR1_SET"));
+            this.flightConnector.RegisterToggleEvent(new("VOR2_SET"));
+            this.flightConnector.RegisterToggleEvent(new("ADF_SET"));
+            this.flightConnector.RegisterToggleEvent(new("KOHLSMAN_SET"));
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -145,13 +145,13 @@ namespace FlightStreamDeck.Logics.Actions
                     flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
                     break;
                 case ValueChangeFunction.VOR1:
-                    ChangeSphericalValue(sign, increment, new Core.ToggleEvent("VOR1_SET"), (uint? value, Core.ToggleEvent evt) => { flightConnector.Trigger(evt, value.Value); });
+                    ChangeSphericalValue(sign, increment, new("VOR1_SET"), (uint? value, Core.ToggleEvent evt) => { flightConnector.Trigger(evt, value.Value); });
                     break;
                 case ValueChangeFunction.VOR2:
-                    ChangeSphericalValue(sign, increment, new Core.ToggleEvent("VOR2_SET"), (uint? value, Core.ToggleEvent evt) => { flightConnector.Trigger(evt, value.Value); });
+                    ChangeSphericalValue(sign, increment, new("VOR2_SET"), (uint? value, Core.ToggleEvent evt) => { flightConnector.Trigger(evt, value.Value); });
                     break;
                 case ValueChangeFunction.ADF:
-                    ChangeSphericalValue(sign, increment, new Core.ToggleEvent("ADF_SET"), (uint? value, Core.ToggleEvent evt) => { flightConnector.Trigger(evt, value.Value); });
+                    ChangeSphericalValue(sign, increment, new("ADF_SET"), (uint? value, Core.ToggleEvent evt) => { flightConnector.Trigger(evt, value.Value); });
                     break;
 
             }
