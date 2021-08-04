@@ -29,7 +29,12 @@ namespace FlightStreamDeck.Core
             get;
             set;
         }
-        public double LVarID
+        public double? LVarID
+        {
+            get;
+            set;
+        }
+        public bool IsRegistered
         {
             get;
             set;
@@ -55,6 +60,16 @@ namespace FlightStreamDeck.Core
         {
             get;
             set;
+        }
+
+        public static bool IsLVar(ToggleValue val)
+        {
+            return val.Name.StartsWith(LVARS_PREFIX);
+        }
+
+        public static string GetSimvarName(ToggleValue val)
+        {
+            return string.Format("({0})", val.Name.Replace(ToggleValue.LVARS_PREFIX, "L:")); ;
         }
     }
 }

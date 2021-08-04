@@ -30,7 +30,6 @@ namespace FlightStreamDeck.SimConnectFSX
         //private readonly Dictionary<(TOGGLE_VALUE variables, string unit), int> genericValues = new Dictionary<(TOGGLE_VALUE variables, string unit), int>();
         private readonly Dictionary<ToggleValue, int> genericValues = new();
 
-
         private readonly object lockLists = new();
 
         // User-defined win32 event
@@ -96,10 +95,10 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(Simconnect_OnRecvOpen);
             simconnect.OnRecvQuit += new SimConnect.RecvQuitEventHandler(Simconnect_OnRecvQuit);
 
+            InitializeClientDataAreas(simconnect);
+
             // listen to exceptions
             simconnect.OnRecvException += Simconnect_OnRecvException;
-
-            InitializeClientDataAreas(simconnect);
             simconnect.OnRecvClientData += SimConnect_OnRecvClientData;
             simconnect.OnRecvSimobjectDataBytype += Simconnect_OnRecvSimobjectDataBytypeAsync;
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
@@ -144,11 +143,7 @@ namespace FlightStreamDeck.SimConnectFSX
             RegisterGenericEvents();
         }
 
-        public void RegisterClientDataDefineStruct<T>(Enum dwID)
-        {
-            simconnect.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, T>(dwID);
-        }
-        private void InitializeClientDataAreas(SimConnect sender)
+        private static void InitializeClientDataAreas(SimConnect sender)
         {
             sender.MapClientDataNameToID("MobiFlight.LVars", SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS);
             sender.CreateClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, 4096u, SIMCONNECT_CREATE_CLIENT_DATA_FLAG.DEFAULT);
@@ -159,7 +154,7 @@ namespace FlightStreamDeck.SimConnectFSX
             sender.CreateClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_RESPONSE, 256u, SIMCONNECT_CREATE_CLIENT_DATA_FLAG.DEFAULT);
             sender.AddToClientDataDefinition(SIMCONNECT_DEFINE_ID.Dummy, 0u, 256u, 0f, 0u);
             sender.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ResponseString>(SIMCONNECT_DEFINE_ID.Dummy);
-            sender.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_RESPONSE, SIMCONNECT_REQUEST_ID.Dummy, SIMCONNECT_DEFINE_ID.Dummy, Microsoft.FlightSimulator.SimConnect.SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
+            sender.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_RESPONSE, SIMCONNECT_REQUEST_ID.Dummy, SIMCONNECT_DEFINE_ID.Dummy, SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
         }
         public void Send(string message)
         {
@@ -304,16 +299,13 @@ namespace FlightStreamDeck.SimConnectFSX
 
         private void SendGenericCommand(ToggleEvent sendingEvent, uint dwData = 0)
         {
-            if (!string.IsNullOrEmpty(sendingEvent.Name))
+            try
             {
-                try
-                {
-                    simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent.GenericEvent, dwData, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                }
-                catch (COMException ex) when (ex.Message == "0xC00000B0")
-                {
-                    RecoverFromError(ex);
-                }
+                simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent.GenericEvent, dwData, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            }
+            catch (COMException ex) when (ex.Message == "0xC00000B0")
+            {
+                RecoverFromError(ex);
             }
         }
 
@@ -622,22 +614,17 @@ namespace FlightStreamDeck.SimConnectFSX
         private readonly List<string> LVarsString = new();
         public event EventHandler LVarListUpdated;
 
-        private void UpdateGenericValues(SIMCONNECT_RECV_SIMOBJECT_DATA data, IEnumerable<KeyValuePair<ToggleValue, int>> vars, bool localVars)
+        private void UpdateGenericValues(SIMCONNECT_RECV_SIMOBJECT_DATA data, IEnumerable<KeyValuePair<ToggleValue, int>> vars, bool isLocalVar)
         {
             var result = new List<ToggleValue>();
 
             lock (lockLists)
             {
-                if (data.dwDefineCount != vars.ToList().Count)
-                {
-                    logger.LogError("Incompatible array count {actual}, expected {expected}. Skipping received data", data.dwDefineCount, vars.ToList().Count);
-                    return;
-                }
                 ClientDataValue? clientData1 = null;
                 GenericValuesStruct? clientData2 = null;
-                if (localVars) clientData1 = data.dwData[0] as ClientDataValue?;
+                if (isLocalVar) clientData1 = data.dwData[0] as ClientDataValue?;
                 else clientData2 = data.dwData[0] as GenericValuesStruct?;
-                
+
                 if (!clientData1.HasValue && !clientData2.HasValue)
                 {
                     logger.LogError("Invalid data received");
@@ -647,8 +634,16 @@ namespace FlightStreamDeck.SimConnectFSX
                 for (int i = 0; i < data.dwDefineCount; i++)
                 {
                     var genericValue = vars.ToDictionary(i => i.Key, i => i.Value).Keys.ElementAt(i);
-                    genericValue.Value = localVars ? clientData1.Value.data : clientData2.Value.Get(i);
+                    if (isLocalVar)
+                    {
+                        genericValue.Value = clientData1.Value.data;
+                    }
+                    else if (clientData2.HasValue)
+                    {
+                        genericValue.Value = clientData2.Value.Get(i);
+                    }
                     result.Add(genericValue);
+
                 }
                 result.AddRange(genericValues.Keys.Except(result));
             }
@@ -658,8 +653,11 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             if (data.dwRequestID != 0)
             {
-                var vars = genericValues.Where(val => val.Key.Name.StartsWith(ToggleValue.LVARS_PREFIX));
-                UpdateGenericValues(data, vars, true);
+                var vars = genericValues.Where(val => ToggleValue.IsLVar(val.Key) && val.Key.LVarID == data.dwDefineID);
+                if (vars.Count() != 0)
+                {
+                    UpdateGenericValues(data, vars, true);
+                }
 
                 return;
             }
@@ -748,7 +746,14 @@ namespace FlightStreamDeck.SimConnectFSX
                 case (uint)DATA_REQUESTS.TOGGLE_VALUE_DATA:
                     {
                         var result = new List<ToggleValue>();
-                        var filteredValues = genericValues.Where(val => !(val.Key.Name.StartsWith(ToggleValue.LVARS_PREFIX)));
+                        var filteredValues = genericValues.Where(val => !(ToggleValue.IsLVar(val.Key)));
+
+                        if (data.dwDefineCount != filteredValues.ToList().Count)
+                        {
+                            logger.LogError("Incompatible array count {actual}, expected {expected}. Skipping received data", data.dwDefineCount, filteredValues.ToList().Count);
+                            return;
+                        }
+
                         UpdateGenericValues(data, filteredValues, false);
                     }
                     break;
@@ -794,11 +799,6 @@ namespace FlightStreamDeck.SimConnectFSX
                             {
                                 simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                             }
-                            foreach (var lvar in LVars)
-                            {
-                                simconnect?.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ClientDataValue>((SIMCONNECT_DEFINE_ID)lvar.LVarID);
-                                simconnect?.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, (SIMCONNECT_REQUEST_ID)lvar.LVarID, (SIMCONNECT_DEFINE_ID)lvar.LVarID, SIMCONNECT_CLIENT_DATA_PERIOD.ONCE, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
-                            }
                         }
                         finally
                         {
@@ -836,6 +836,8 @@ namespace FlightStreamDeck.SimConnectFSX
                     CloseConnection();
                     Closed?.Invoke(this, new EventArgs());
                     break;
+                case SIMCONNECT_EXCEPTION.DUPLICATE_ID:
+                    break;
             }
         }
 
@@ -858,15 +860,11 @@ namespace FlightStreamDeck.SimConnectFSX
             {
                 return;
             }
-            if (!string.IsNullOrEmpty(toggleAction.Name))
-            {
-                genericEvents_Enum++;
-                toggleAction.GenericEvent = genericEvents_Enum;
-                genericEvents.Add(toggleAction);
-                logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction.Name, toggleAction.Name);
-                simconnect.MapClientEventToSimEvent(toggleAction.GenericEvent, toggleAction.Name);
-            }
-
+            genericEvents_Enum++;
+            toggleAction.GenericEvent = genericEvents_Enum;
+            genericEvents.Add(toggleAction);
+            logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction.Name, toggleAction.Name);
+            simconnect.MapClientEventToSimEvent(toggleAction.GenericEvent, toggleAction.Name);
         }
 
         public void RegisterSimValues(List<ToggleValue> simValues)
@@ -877,18 +875,28 @@ namespace FlightStreamDeck.SimConnectFSX
                 logger.LogInformation("Registering {values}", string.Join(", ", simValues.Select(x => x.Name)));
                 foreach (var simValue in simValues)
                 {
-                    if (!string.IsNullOrEmpty(simValue.Name))
+                    var currentSimValue = genericValues.Keys.ToList().Find(val => val.Name == simValue.Name);
+                    if (currentSimValue != null)
                     {
-                        var currentSimValue = genericValues.Keys.ToList().Find(val => val.Name == simValue.Name);
-                        if (currentSimValue != null)
+                        genericValues[currentSimValue]++;
+                    }
+                    else
+                    {
+                        if (ToggleValue.IsLVar(simValue))
                         {
-                            genericValues[currentSimValue]++;
+                            ToggleValue lvar = LVars.Find(x => x.Name == simValue.Name);
+                            if (lvar == null)
+                            {
+                                simValue.LVarID = (uint)(LVars.Count + 1);
+                                LVars.Add(simValue);
+                            }
+                            else
+                            {
+                                simValue.LVarID = lvar.LVarID;
+                            }
                         }
-                        else
-                        {
-                            genericValues.Add(simValue, 1);
-                            changed = true;
-                        }
+                        genericValues.Add(simValue, 1);
+                        changed = true;
                     }
                 }
             }
@@ -917,9 +925,6 @@ namespace FlightStreamDeck.SimConnectFSX
                         else
                         {
                             genericValues.Remove(currentSimValue);
-                            if (LVars.Remove(currentSimValue)) {
-                                simconnect.ClearClientDataDefinition((SIMCONNECT_DEFINE_ID)currentSimValue.LVarID);
-                            }
                             changed = true;
                         }
                     }
@@ -973,42 +978,42 @@ namespace FlightStreamDeck.SimConnectFSX
                     else
                     {
                         var log = "Registering generic data structure:";
-
+                        Dictionary<ToggleValue, int> valuesToAdd = new();
+                        List<ToggleValue> valuesToRemove = new();
                         foreach (ToggleValue simValue in genericValues.Keys)
                         {
                             string value = simValue.Name.Replace("__", ":").Replace("_", " ");
                             var simUnit = simValue.Unit;
                             log += string.Format("\n- {0} {1} {2}", simValue, value, simUnit);
 
-                            if (simValue.Name.StartsWith(ToggleValue.LVARS_PREFIX))
+                            if (ToggleValue.IsLVar(simValue))
                             {
-                                string SimVarName = string.Format("({0})", simValue.Name.Replace(ToggleValue.LVARS_PREFIX, "L:"));
-                                if (!LVars.Exists(x => x.Name == simValue.Name))
+                                ToggleValue lvar = LVars.Find(x => x.Name == simValue.Name);
+                                if (!lvar.IsRegistered)
                                 {
-                                    simValue.LVarID = (uint)(LVars.Count + 1);
-
-                                    LVars.Add(simValue);
-                                    simconnect?.AddToClientDataDefinition((SIMCONNECT_DEFINE_ID)simValue.LVarID, (uint)((LVars.Count - 1) * 4), 4u, 0.0f, 0u);
-                                    simconnect?.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ClientDataValue>((SIMCONNECT_DEFINE_ID)simValue.LVarID);
-                                    simconnect?.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, (SIMCONNECT_REQUEST_ID)simValue.LVarID, (SIMCONNECT_DEFINE_ID)simValue.LVarID, SIMCONNECT_CLIENT_DATA_PERIOD.ONCE, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
-                                    WasmModuleClient.SendWasmCmd(simconnect, "MF.SimVars.Add." + SimVarName);
+                                    uint dataOffset = (uint)((lvar.LVarID - 1) * 4);
+                                    simconnect.AddToClientDataDefinition((SIMCONNECT_DEFINE_ID)simValue.LVarID, dataOffset, 4u, 0.0f, 0u);
+                                    simconnect.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ClientDataValue>((SIMCONNECT_DEFINE_ID)simValue.LVarID);
+                                    simconnect.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, (SIMCONNECT_REQUEST_ID)simValue.LVarID, (SIMCONNECT_DEFINE_ID)simValue.LVarID, SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
+                                    WasmModuleClient.SendWasmCmd(simconnect, "MF.SimVars.Add." + ToggleValue.GetSimvarName(simValue));
+                                    LVars[LVars.IndexOf(lvar)].IsRegistered = true;
+                                }
+                                else
+                                {
+                                    simconnect.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, (SIMCONNECT_REQUEST_ID)simValue.LVarID, (SIMCONNECT_DEFINE_ID)simValue.LVarID, SIMCONNECT_CLIENT_DATA_PERIOD.ONCE, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
                                 }
                             }
                             else
                             {
-                                if (!string.IsNullOrEmpty(simValue.Name))
-                                {
-                                    simconnect.AddToDataDefinition(
-                                       DEFINITIONS.GenericData,
-                                       value,
-                                       simUnit,
-                                       SIMCONNECT_DATATYPE.FLOAT64,
-                                       0.0f,
-                                       SimConnect.SIMCONNECT_UNUSED
-                                   );
-                                }
+                                simconnect.AddToDataDefinition(
+                                   DEFINITIONS.GenericData,
+                                   value,
+                                   simUnit,
+                                   SIMCONNECT_DATATYPE.FLOAT64,
+                                   0.0f,
+                                   SimConnect.SIMCONNECT_UNUSED
+                               );
                             }
-
                         }
 
                         logger.LogInformation(log);
@@ -1019,6 +1024,9 @@ namespace FlightStreamDeck.SimConnectFSX
                 catch (TaskCanceledException)
                 {
                     logger.LogDebug("Registration is cancelled.");
+                }
+                catch (Exception ex)
+                {
                 }
                 finally
                 {

@@ -141,18 +141,15 @@ namespace FlightStreamDeck.SimConnectFSX
         public int ADFStandby2;
     }
 
-    public interface BaseDataValue
-    {
-    }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct ClientDataValue: BaseDataValue
+    public struct ClientDataValue
     {
         public float data;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-    public struct GenericValuesStruct: BaseDataValue
+    public struct GenericValuesStruct
     {
         unsafe public fixed double Data[64];
 
