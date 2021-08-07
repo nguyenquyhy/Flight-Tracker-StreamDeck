@@ -34,11 +34,7 @@ namespace FlightStreamDeck.Core
             get;
             set;
         }
-        public bool IsRegistered
-        {
-            get;
-            set;
-        }
+
         public double? MinValue
         {
             get;
