@@ -32,6 +32,8 @@ namespace FlightStreamDeck.SimConnectFSX
 
         private readonly object lockLists = new();
 
+        private List<int> lvarIDs = new();
+
         // User-defined win32 event
         const int WM_USER_SIMCONNECT = 0x0402;
         private readonly ILogger<SimConnectFlightConnector> logger;
@@ -845,9 +847,6 @@ namespace FlightStreamDeck.SimConnectFSX
                     CloseConnection();
                     Closed?.Invoke(this, new EventArgs());
                     break;
-                case SIMCONNECT_EXCEPTION.DUPLICATE_ID:
-                    //Not sure how to deal with this yet. Tried to clearclientdatadefinition but it breaks things
-                    break;
             }
         }
 
@@ -872,9 +871,10 @@ namespace FlightStreamDeck.SimConnectFSX
                 toggleAction.GenericEvent = genericEvents_Enum;
                 genericEvents.Add(toggleAction);
             }
-            else
+            else if(genericEvents.Where(x => (x.Name == toggleAction.Name) && (x.GenericEvent == toggleAction.GenericEvent)).Count() == 0)
             {
                 toggleAction.GenericEvent = genericEvents.Find(x => x.Name == toggleAction.Name).GenericEvent;
+                return;
             }
 
             logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction.Name, toggleAction.Name);
@@ -993,9 +993,13 @@ namespace FlightStreamDeck.SimConnectFSX
                                 lvarCount++;
                                 simValue.LVarID = lvarCount;
                                 uint dataOffset = (uint)((lvarCount - 1) * 4);
-                                simconnect.AddToClientDataDefinition((SIMCONNECT_DEFINE_ID)simValue.LVarID, dataOffset, 4u, 0.0f, 0u);
-                                simconnect.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ClientDataValue>((SIMCONNECT_DEFINE_ID)simValue.LVarID);
-                                simconnect.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, (SIMCONNECT_REQUEST_ID)simValue.LVarID, (SIMCONNECT_DEFINE_ID)simValue.LVarID, SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
+                                if (!lvarIDs.Exists(i => i == simValue.LVarID))
+                                {
+                                    simconnect.AddToClientDataDefinition((SIMCONNECT_DEFINE_ID)simValue.LVarID, dataOffset, 4u, 0.0f, 0u);
+                                    simconnect.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ClientDataValue>((SIMCONNECT_DEFINE_ID)simValue.LVarID);
+                                    simconnect?.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, (SIMCONNECT_REQUEST_ID)simValue.LVarID, (SIMCONNECT_DEFINE_ID)simValue.LVarID, SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
+                                    lvarIDs.Add(simValue.LVarID);
+                                }
                                 WasmModuleClient.SendWasmCmd(simconnect, "MF.SimVars.Add." + string.Format("({0})", simValue.Name));
                             }
                             else

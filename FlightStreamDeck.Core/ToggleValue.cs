@@ -28,7 +28,8 @@ namespace FlightStreamDeck.Core
             get;
             set;
         }
-        public double? LVarID
+
+        public int LVarID
         {
             get;
             set;
