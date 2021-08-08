@@ -662,7 +662,7 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             if (data.dwRequestID != 0)
             {
-                var vars = genericValues.Where(val => ToggleValue.IsLVar(val.Key) && val.Key.LVarID == data.dwDefineID);
+                var vars = genericValues.Where(val => val.Key.VarType == VarType.LVAR && val.Key.LVarID == data.dwDefineID);
                 if (vars.Count() != 0)
                 {
                     UpdateGenericValues(data, vars, true);
@@ -755,7 +755,7 @@ namespace FlightStreamDeck.SimConnectFSX
                 case (uint)DATA_REQUESTS.TOGGLE_VALUE_DATA:
                     {
                         var result = new List<ToggleValue>();
-                        var filteredValues = genericValues.Where(val => !(ToggleValue.IsLVar(val.Key)));
+                        var filteredValues = genericValues.Where(val => !(val.Key.VarType == VarType.LVAR));
 
                         if (data.dwDefineCount != filteredValues.ToList().Count)
                         {
@@ -866,13 +866,17 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             if (simconnect == null) return;
 
-            if (genericEvents.Contains(toggleAction))
+            if (!genericEvents.Exists(x => x.Name == toggleAction.Name))
             {
-                return;
+                genericEvents_Enum++;
+                toggleAction.GenericEvent = genericEvents_Enum;
+                genericEvents.Add(toggleAction);
             }
-            genericEvents_Enum++;
-            toggleAction.GenericEvent = genericEvents_Enum;
-            genericEvents.Add(toggleAction);
+            else
+            {
+                toggleAction.GenericEvent = genericEvents.Find(x => x.Name == toggleAction.Name).GenericEvent;
+            }
+
             logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction.Name, toggleAction.Name);
             simconnect.MapClientEventToSimEvent(toggleAction.GenericEvent, toggleAction.Name);
         }
@@ -984,7 +988,7 @@ namespace FlightStreamDeck.SimConnectFSX
                             var simUnit = simValue.Unit;
                             log += string.Format("\n- {0} {1} {2}", simValue, value, simUnit);
 
-                            if (ToggleValue.IsLVar(simValue))
+                            if (simValue.VarType == VarType.LVAR)
                             {
                                 lvarCount++;
                                 simValue.LVarID = lvarCount;
@@ -992,7 +996,7 @@ namespace FlightStreamDeck.SimConnectFSX
                                 simconnect.AddToClientDataDefinition((SIMCONNECT_DEFINE_ID)simValue.LVarID, dataOffset, 4u, 0.0f, 0u);
                                 simconnect.RegisterStruct<SIMCONNECT_RECV_CLIENT_DATA, ClientDataValue>((SIMCONNECT_DEFINE_ID)simValue.LVarID);
                                 simconnect.RequestClientData(SIMCONNECT_CLIENT_DATA_ID.MOBIFLIGHT_LVARS, (SIMCONNECT_REQUEST_ID)simValue.LVarID, (SIMCONNECT_DEFINE_ID)simValue.LVarID, SIMCONNECT_CLIENT_DATA_PERIOD.ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG.CHANGED, 0u, 0u, 0u);
-                                WasmModuleClient.SendWasmCmd(simconnect, "MF.SimVars.Add." + ToggleValue.GetSimvarName(simValue));
+                                WasmModuleClient.SendWasmCmd(simconnect, "MF.SimVars.Add." + string.Format("({0})", simValue.Name));
                             }
                             else
                             {

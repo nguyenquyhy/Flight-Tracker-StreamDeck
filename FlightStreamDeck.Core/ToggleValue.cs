@@ -5,7 +5,6 @@ namespace FlightStreamDeck.Core
     public class ToggleValue: BaseToggle
     {
         public const string DEFAULT_UNIT = "number";
-        public const string LVARS_PREFIX = "L_";
         private const int DEFAULT_DECIMALS = 0;
         public ToggleValue(string name, string unit, int? decimals, double? minValue, double?  maxValue): base(name)
         {
@@ -56,16 +55,6 @@ namespace FlightStreamDeck.Core
         {
             get;
             set;
-        }
-
-        public static bool IsLVar(ToggleValue val)
-        {
-            return val.Name.StartsWith(LVARS_PREFIX);
-        }
-
-        public static string GetSimvarName(ToggleValue val)
-        {
-            return string.Format("({0})", val.Name.Replace(ToggleValue.LVARS_PREFIX, "L:")); ;
         }
     }
 }

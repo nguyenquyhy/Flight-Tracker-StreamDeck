@@ -18,6 +18,11 @@ namespace FlightStreamDeck.SimConnectFSX
     {
         Dummy
     }
+    public enum SIMCONNECT_NOTIFICATION_GROUP_ID
+    {
+        SIMCONNECT_GROUP_PRIORITY_DEFAULT,
+        SIMCONNECT_GROUP_PRIORITY_HIGHEST
+    }
 
     public enum SIMCONNECT_CLIENT_DATA_ID
     {
