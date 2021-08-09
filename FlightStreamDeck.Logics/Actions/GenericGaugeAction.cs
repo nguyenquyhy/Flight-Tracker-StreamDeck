@@ -168,17 +168,34 @@ namespace FlightStreamDeck.Logics.Actions
             }
             else
             {
-                customDecimals = null;
+                customDecimals = 0;
             }
 
             var newUnit = settings.ValueUnit?.Trim();
             if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
 
-            ToggleEvent newToggleEvent = string.IsNullOrEmpty(this.settings.ToggleValue) ? null: new(this.settings.ToggleValue);
+            ToggleEvent newToggleEvent = string.IsNullOrEmpty(this.settings.ToggleValue) ? null : new(this.settings.ToggleValue);
 
-            ToggleValue newDisplayValue = string.IsNullOrEmpty(this.settings.DisplayValue) ? null : new(this.settings.DisplayValue, newUnit, customDecimals, currentMinValue, currentMaxValue);
-            ToggleValue newSubDisplayValue = string.IsNullOrEmpty(this.settings.SubDisplayValue) ? null : new(this.settings.SubDisplayValue);
-            ToggleValue newDisplayValueBottom = string.IsNullOrEmpty(this.settings.DisplayValueBottom) ? null : new(this.settings.DisplayValueBottom);
+            ToggleValue existingDisplayValue = EventValueLibrary.AvailableValues.Find(x => string.IsNullOrWhiteSpace(this.settings.DisplayValue) && x.Name == this.settings.DisplayValue);
+            ToggleValue newDisplayValue = existingDisplayValue;
+            if (newDisplayValue == null)
+            {
+                newDisplayValue = string.IsNullOrEmpty(this.settings.DisplayValue) ? null : new(this.settings.DisplayValue, newUnit, customDecimals, currentMinValue, currentMaxValue);
+            }
+
+            ToggleValue existingSubDisplayValue = EventValueLibrary.AvailableValues.Find(x => string.IsNullOrWhiteSpace(this.settings.SubDisplayValue) && x.Name == this.settings.SubDisplayValue);
+            ToggleValue newSubDisplayValue = existingSubDisplayValue;
+            if (newSubDisplayValue == null)
+            {
+                newSubDisplayValue = string.IsNullOrEmpty(this.settings.SubDisplayValue) ? null : new(this.settings.SubDisplayValue);
+            }
+
+            ToggleValue existingDisplayValueBotton = EventValueLibrary.AvailableValues.Find(x => string.IsNullOrWhiteSpace(this.settings.DisplayValueBottom) && x.Name == this.settings.DisplayValueBottom);
+            ToggleValue newDisplayValueBottom = existingDisplayValueBotton;
+            if (newDisplayValueBottom == null)
+            {
+                newDisplayValueBottom = string.IsNullOrEmpty(this.settings.DisplayValueBottom) ? null : new(this.settings.DisplayValueBottom);
+            }
 
             if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue)
             {
@@ -250,7 +267,7 @@ namespace FlightStreamDeck.Logics.Actions
             if (displayValue != null) values.Add(displayValue);
             if (subDisplayValue != null) values.Add(subDisplayValue);
             if (displayValueBottom != null) values.Add(displayValueBottom);
-            
+
             if (values.Count > 0)
             {
                 flightConnector.RegisterSimValues(values);
@@ -285,12 +302,13 @@ namespace FlightStreamDeck.Logics.Actions
                         if (displayValue != null || displayValueBottom != null)
                         {
                             var chartSplit = string.IsNullOrEmpty(settings.ChartSplitValue) ? DefaultSettings.ChartSplitValue : settings.ChartSplitValue;
-                            var numberFormat = $"F{displayValue.Decimals ?? displayValueBottom.Decimals : customDecimals}";
+
+                            var numberFormat = $"F{displayValue.Decimals ?? displayValueBottom.Decimals}";
 
                             int chartThickness = settings.ChartThicknessValue.ConvertTo<int>(DefaultSettings.ChartThicknessValue);
                             float chartChevronSize = settings.ChartChevronSizeValue.ConvertTo<int>(DefaultSettings.ChartChevronSizeValue);
                             int modifier = currentMinValue.Value > currentMaxValue.Value ? -1 : 1;
-                            
+
                             if (bool.TryParse(settings.AbsValText, out bool absValueText))
                             {
                                 await SetImageSafeAsync(
