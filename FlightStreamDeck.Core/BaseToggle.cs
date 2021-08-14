@@ -12,10 +12,22 @@ namespace FlightStreamDeck.Core
     {
         public static string LVARS_PREFIX = "L:";
         public static string MOBIFLIGHT_PREFIX = "MobiFlight.";
+        public static string LEGACY_MOBIFLIGHT_PREFIX = "MOBIFLIGHT_";
+        private string _name;
         public string Name
         {
-            get;
-            set;
+            get => _name;
+            set
+            {
+                if (value.StartsWith(LEGACY_MOBIFLIGHT_PREFIX))
+                {
+                    _name = value.Replace(LEGACY_MOBIFLIGHT_PREFIX, MOBIFLIGHT_PREFIX);
+                }
+                else
+                {
+                    _name = value;
+                }
+            }
         }
         private VarType _varType;
         public VarType VarType
