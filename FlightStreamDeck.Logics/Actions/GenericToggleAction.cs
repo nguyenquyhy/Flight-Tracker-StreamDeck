@@ -349,7 +349,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             holdEventTriggerred = false;
 
-            if (holdEvent != null || !settings.HoldValueSuppressToggle)
+            if (holdEvent == null || !settings.HoldValueSuppressToggle)
             {
                 TriggerToggleEvent();
             }
