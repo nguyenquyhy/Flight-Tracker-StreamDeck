@@ -15,6 +15,7 @@ namespace FlightStreamDeck.SimConnectFSX
 {
     public class SimConnectFlightConnector : IFlightConnector
     {
+        //Thanks to ulatekh https://www.fsdeveloper.com/forum/threads/simconnect-getlastsentpacketid-for-managed-code.438397/
         IntPtr hSimConnect;
         [DllImport("SimConnect.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         private static extern int SimConnect_GetLastSentPacketID(IntPtr hSimConnect, out uint dwSendID);
