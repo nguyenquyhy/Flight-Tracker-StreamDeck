@@ -5,14 +5,21 @@ using Microsoft.FlightSimulator.SimConnect;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace FlightStreamDeck.SimConnectFSX
 {
     public class SimConnectFlightConnector : IFlightConnector
     {
+        IntPtr hSimConnect;
+        [DllImport("SimConnect.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        private static extern int SimConnect_GetLastSentPacketID(IntPtr hSimConnect, out uint dwSendID);
+
+        // Extra SimConnect functions.
         public event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
         public event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
 
@@ -31,7 +38,6 @@ namespace FlightStreamDeck.SimConnectFSX
         private readonly Dictionary<ToggleValue, int> genericValues = new();
 
         private readonly object lockLists = new();
-
         private List<int> lvarIDs = new();
 
         // User-defined win32 event
@@ -92,6 +98,9 @@ namespace FlightStreamDeck.SimConnectFSX
                 return;
             }
             simconnect = new SimConnect("Flight Tracker Stream Deck", Handle, WM_USER_SIMCONNECT, null, 0);
+            // Get direct access to the SimConnect handle, to use functions otherwise not supported.
+            FieldInfo fiSimConnect = typeof(SimConnect).GetField("hSimConnect", BindingFlags.NonPublic | BindingFlags.Instance);
+            hSimConnect = (IntPtr)fiSimConnect.GetValue(simconnect);
 
             // listen to connect and quit msgs
             simconnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(Simconnect_OnRecvOpen);
@@ -303,7 +312,10 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             try
             {
-                simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent.GenericEvent, dwData, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+                if (!sendingEvent.HasError)
+                {
+                    simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent.GenericEvent, dwData, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+                }
             }
             catch (COMException ex) when (ex.Message == "0xC00000B0")
             {
@@ -832,21 +844,30 @@ namespace FlightStreamDeck.SimConnectFSX
         void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
             logger.LogError("Exception received: {error}", (SIMCONNECT_EXCEPTION)data.dwException);
-            switch ((SIMCONNECT_EXCEPTION)data.dwException)
+            var genericEvent = genericEvents.Find(x => x.SendID == data.dwSendID);
+            if (genericEvent != null)
             {
-                case SIMCONNECT_EXCEPTION.ERROR:
-                    // Try to reconnect on unknown error
-                    CloseConnection();
-                    Closed?.Invoke(this, new EventArgs());
-                    break;
+                genericEvent.HasError = true;
+                genericEvent.Error = ((SIMCONNECT_EXCEPTION)data.dwException).ToString();
+            }
+            else
+            {
+                switch ((SIMCONNECT_EXCEPTION)data.dwException)
+                {
+                    case SIMCONNECT_EXCEPTION.ERROR:
+                        // Try to reconnect on unknown error
+                        CloseConnection();
+                        Closed?.Invoke(this, new EventArgs());
+                        break;
 
-                case SIMCONNECT_EXCEPTION.VERSION_MISMATCH:
-                    // HACK: when sending an event repeatedly,
-                    // SimConnect might sendd thihs error and stop reacting and responding.
-                    // The workaround would be to force a reconnection.
-                    CloseConnection();
-                    Closed?.Invoke(this, new EventArgs());
-                    break;
+                    case SIMCONNECT_EXCEPTION.VERSION_MISMATCH:
+                        // HACK: when sending an event repeatedly,
+                        // SimConnect might sendd thihs error and stop reacting and responding.
+                        // The workaround would be to force a reconnection.
+                        CloseConnection();
+                        Closed?.Invoke(this, new EventArgs());
+                        break;
+                }
             }
         }
 
@@ -871,14 +892,25 @@ namespace FlightStreamDeck.SimConnectFSX
                 toggleAction.GenericEvent = genericEvents_Enum;
                 genericEvents.Add(toggleAction);
             }
-            else if(genericEvents.Where(x => (x.Name == toggleAction.Name) && (x.GenericEvent == toggleAction.GenericEvent)).Count() == 0)
+            else if (genericEvents.Find(x => (x.Name == toggleAction.Name) && (x.GenericEvent == toggleAction.GenericEvent)) == null)
             {
-                toggleAction.GenericEvent = genericEvents.Find(x => x.Name == toggleAction.Name).GenericEvent;
-                return;
+                ToggleEvent temp = genericEvents.Find(x => x.Name == toggleAction.Name);
+                toggleAction.GenericEvent = temp.GenericEvent;
+                toggleAction.HasError = temp.HasError;
+                toggleAction.Error = temp.Error;
+                if(!toggleAction.HasError)
+                {
+                    return;
+                }
             }
 
-            logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction.Name, toggleAction.Name);
-            simconnect.MapClientEventToSimEvent(toggleAction.GenericEvent, toggleAction.Name);
+            lock (lockLists)
+            {
+                logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction.Name, toggleAction.Name);
+                simconnect.MapClientEventToSimEvent(toggleAction.GenericEvent, toggleAction.Name);
+                int iResult = SimConnect_GetLastSentPacketID(hSimConnect, out uint dwSendID);
+                toggleAction.SendID = dwSendID;
+            }
         }
 
         public void RegisterSimValues(List<ToggleValue> simValues)

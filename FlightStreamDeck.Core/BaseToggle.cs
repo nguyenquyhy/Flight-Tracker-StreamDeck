@@ -37,6 +37,22 @@ namespace FlightStreamDeck.Core
                 return _varType;
             }
         }
+
+        public uint SendID
+        {
+            get;
+            set;
+        }
+        public bool HasError
+        {
+            get;
+            set;
+        }
+        public string Error
+        {
+            get;
+            set;
+        }
         public BaseToggle(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -44,6 +60,8 @@ namespace FlightStreamDeck.Core
                 throw new ArgumentException("Name cannot be null or empty");
             }
             Name = name;
+            HasError = false;
+            Error = string.Empty;
             _varType = GetVarType(name);
         }
         private static VarType GetVarType(string name)
