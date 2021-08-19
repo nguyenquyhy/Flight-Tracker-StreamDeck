@@ -29,7 +29,7 @@ namespace FlightStreamDeck.Core
             set;
         }
 
-        public int LVarID
+        public int DefineID
         {
             get;
             set;
