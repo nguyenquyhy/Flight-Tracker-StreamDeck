@@ -674,8 +674,6 @@ namespace FlightStreamDeck.SimConnectFSX
             }
             GenericValuesUpdated?.Invoke(this, new ToggleValueUpdatedEventArgs(result));
         }
-
-
         private void SimConnect_OnRecvClientData(SimConnect sender, SIMCONNECT_RECV_CLIENT_DATA data)
         {
             if (data.dwRequestID != 0)
@@ -704,13 +702,21 @@ namespace FlightStreamDeck.SimConnectFSX
                 LVarsString.Add(responseString.Data);
             }
         }
-
         private void Simconnect_OnRecvSimobjectDataAsync(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA data)
         {
             var filteredValues = genericValues.Keys.Where(val => !(val.VarType == VarType.LVAR) && val.DefineID == data.dwDefineID);
             if (filteredValues.Count() == 1 && (data.dwDefineCount == 1))
             {
                 filteredValues.First().HasError = false;
+                simconnect.AddToDataDefinition(DEFINITIONS.GenericData,
+                               filteredValues.First().SimName,
+                               filteredValues.First().Unit,
+                               SIMCONNECT_DATATYPE.FLOAT64,
+                               0.0f,
+                               SimConnect.SIMCONNECT_UNUSED);
+
+                logger.LogInformation(string.Format("Value is OK: {0}", filteredValues.First().SimName));
+
             }
         }
         private void Simconnect_OnRecvSimobjectDataBytypeAsync(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
@@ -857,10 +863,16 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             logger.LogError("Exception received: {error}", (SIMCONNECT_EXCEPTION)data.dwException);
             var genericEvent = genericEvents.Find(x => x.SendID == data.dwSendID);
+            var genericValue = genericValues.Keys.Where(x => x.SendID == data.dwSendID);
             if (genericEvent != null)
             {
                 genericEvent.HasError = true;
                 genericEvent.Error = ((SIMCONNECT_EXCEPTION)data.dwException).ToString();
+            }
+            else if(genericValue.Count() != 0)
+            {
+                genericValue.First().HasError = true;
+                genericValue.First().Error = ((SIMCONNECT_EXCEPTION)data.dwException).ToString();
             }
             else
             {
@@ -1032,9 +1044,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         List<ToggleValue> valuesToRemove = new();
                         foreach (ToggleValue simValue in genericValues.Keys)
                         {
-                            string value = simValue.Name.Replace("__", ":").Replace("_", " ");
-                            var simUnit = simValue.Unit;
-                            log += string.Format("\n- {0} {1} {2}", simValue, value, simUnit);
+                            log += string.Format("\n- {0} {1} {2}", simValue, simValue.SimName, simValue.Unit);
 
                             if (simValue.VarType == VarType.LVAR)
                             {
@@ -1056,16 +1066,11 @@ namespace FlightStreamDeck.SimConnectFSX
                                 varDefineID++;
                                 simValue.HasError = true;
                                 simValue.DefineID = varDefineID;
-                                simconnect.AddToDataDefinition((SIMCONNECT_DEFINE_ID)simValue.DefineID, value, simUnit, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-                                simconnect.RequestDataOnSimObject(DATA_REQUESTS.TOGGLE_VALUE_DATA, (SIMCONNECT_DEFINE_ID)simValue.DefineID, SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.ONCE, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 1);
+                                simconnect.AddToDataDefinition((SIMCONNECT_DEFINE_ID)simValue.DefineID, simValue.SimName, simValue.Unit, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                                simconnect.RequestDataOnSimObject((DATA_REQUESTS.TOGGLE_VALUE_DATA + 1), (SIMCONNECT_DEFINE_ID)simValue.DefineID, SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.ONCE, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 1);
+                                SimConnect_GetLastSentPacketID(hSimConnect, out uint dwSendID);
+                                simValue.SendID = dwSendID;
                                 simconnect.ClearDataDefinition((SIMCONNECT_DEFINE_ID)simValue.DefineID);
-
-                                simconnect.AddToDataDefinition(DEFINITIONS.GenericData,
-                                                               value,
-                                                               simUnit,
-                                                               SIMCONNECT_DATATYPE.FLOAT64,
-                                                               0.0f,
-                                                               SimConnect.SIMCONNECT_UNUSED);
                             }
                         }
 

@@ -29,6 +29,12 @@ namespace FlightStreamDeck.Core
                 }
             }
         }
+
+        public string SimName
+        {
+            get => Name.Replace("__", ":").Replace("_", " ");
+        }
+
         private VarType _varType;
         public VarType VarType
         {
