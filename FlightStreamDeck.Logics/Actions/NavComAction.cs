@@ -439,7 +439,11 @@ namespace FlightStreamDeck.Logics.Actions
                 var (value, swap) = await DeckLogic.NumpadTcs.Task;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    value += min.Substring(value.Length);
+                    if (value.Length < min.Length)
+                    {
+                        // Add the default mask
+                        value += min.Substring(value.Length);
+                    }
 
                     if (settings.Type == "NAV1" || settings.Type == "NAV2" || settings.Type == "COM1" || settings.Type == "COM2")
                     {

@@ -30,6 +30,10 @@ namespace FlightStreamDeck.Core
             {
                 return (result, null);
             }
+            else if (int.TryParse(value, out var intResult))
+            {
+                return (unchecked((uint)intResult), null);
+            }
             else
             {
                 var variable = GetVariableEnum(value);
