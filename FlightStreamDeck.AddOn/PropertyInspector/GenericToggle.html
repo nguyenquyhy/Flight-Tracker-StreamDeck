@@ -88,7 +88,8 @@
             if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
             if (settings['HoldValue']) { HoldValue.value = settings['HoldValue'] };
             if (settings['HoldValueData']) { HoldValueData.value = settings['HoldValueData'] };
-            if (settings['HoldValueRepeat']) { HoldValueData.checked = settings['HoldValueRepeat'] };
+            if (settings['HoldValueRepeat']) { HoldValueRepeat.checked = (settings['HoldValueRepeat'] == "true") };
+            if (settings['HoldValueSuppressToggle']) { HoldValueSuppressToggle.checked = (settings['HoldValueSuppressToggle'] == "true") };
             if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
