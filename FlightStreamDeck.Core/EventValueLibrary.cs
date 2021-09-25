@@ -370,6 +370,16 @@ namespace FlightStreamDeck.Core
                 new ToggleValue("GENERAL_ENG_OIL_TEMPERATURE__2", "Celsius", 0),
                 new ToggleValue("GENERAL_ENG_OIL_TEMPERATURE__3", "Celsius", 0),
                 new ToggleValue("GENERAL_ENG_OIL_TEMPERATURE__4", "Celsius", 0),
+                new ToggleValue("TOGGLE_VALUE.ENG_OIL_PRESSURE__1", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.ENG_OIL_PRESSURE__2", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.ENG_OIL_PRESSURE__3", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.ENG_OIL_PRESSURE__4", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__1", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__2", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__3", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__4", "Psi", 0 },
+                new ToggleValue("TOGGLE_VALUE.GYRO_DRIFT_ERROR", "Degrees", 0 },
+                new ToggleValue("TOGGLE_VALUE.HEADING_INDICATOR", "Degrees", 0 }
             };
         }
     }
