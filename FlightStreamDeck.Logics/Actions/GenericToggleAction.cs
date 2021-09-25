@@ -388,7 +388,7 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 holdEventTriggerred = true;
 
-                flightConnector.Trigger(holdEvent.Value, CalculateEventParam(holdEventDataVariable, holdEventDataVariableValue, holdEventDataUInt));
+                flightConnector.Trigger(holdEvent, CalculateEventParam(holdEventDataVariable, holdEventDataVariableValue, holdEventDataUInt));
 
                 if (!settings.HoldValueRepeat && timer != null)
                 {
@@ -402,11 +402,11 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggleEvent != null)
             {
-                flightConnector.Trigger(toggleEvent.Value, CalculateEventParam(toggleEventDataVariable, toggleEventDataVariableValue, toggleEventDataUInt));
+                flightConnector.Trigger(toggleEvent, CalculateEventParam(toggleEventDataVariable, toggleEventDataVariableValue, toggleEventDataUInt));
             }
         }
 
-        private uint CalculateEventParam(TOGGLE_VALUE? variable, double? variableValue, uint? inputValue)
+        private uint CalculateEventParam(ToggleValue variable, double? variableValue, uint? inputValue)
         {
             if (variable is not null && variableValue.HasValue)
             {
