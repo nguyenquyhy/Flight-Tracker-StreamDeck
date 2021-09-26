@@ -99,7 +99,8 @@ namespace FlightStreamDeck.Logics.Actions
             if (originalValue == null) originalValue = buttonType switch
             {
                 ValueChangeFunction.Heading => (uint)status.ApHeading,
-                ValueChangeFunction.Altitude => (uint)status.ApAltitude,
+                // NOTE: switch to AP ALT:1 due to current issue with the WT NXi
+                ValueChangeFunction.Altitude => (uint)status.ApAltitude1,
                 ValueChangeFunction.VerticalSpeed => (uint)status.ApVs,
                 ValueChangeFunction.AirSpeed => (uint)status.IndicatedAirSpeed,
                 ValueChangeFunction.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.IndicatedAirSpeed : (uint)status.ApVs,
@@ -118,8 +119,23 @@ namespace FlightStreamDeck.Logics.Actions
                     break;
 
                 case ValueChangeFunction.Altitude:
-                    originalValue = (uint)(originalValue + 100 * sign * increment);
-                    flightConnector.ApAltSet(originalValue.Value);
+                    if (status.ApAltitude0 == 99000)
+                    {
+                        // HACK: workaround since right now WT NXi doesn't recognize AP_ALT_VAR_SET_ENGLISH
+                        if (sign == 1)
+                        {
+                            flightConnector.ApAltInc();
+                        }
+                        else
+                        {
+                            flightConnector.ApAltDec();
+                        }
+                    }
+                    else
+                    {
+                        originalValue = (uint)(originalValue + 100 * sign * increment);
+                        flightConnector.ApAltSet(originalValue.Value);
+                    }
                     break;
 
                 case ValueChangeFunction.VerticalSpeed:

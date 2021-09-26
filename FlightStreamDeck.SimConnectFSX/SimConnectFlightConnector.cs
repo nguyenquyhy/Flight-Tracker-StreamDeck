@@ -355,6 +355,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
             AddToFlightStatusDefinition("AUTOPILOT ALTITUDE LOCK", "number", SIMCONNECT_DATATYPE.INT32);
             AddToFlightStatusDefinition("AUTOPILOT ALTITUDE LOCK VAR", "Feet", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("AUTOPILOT ALTITUDE LOCK VAR:1", "Feet", SIMCONNECT_DATATYPE.INT32);
 
             AddToFlightStatusDefinition("AUTOPILOT VERTICAL HOLD", "number", SIMCONNECT_DATATYPE.INT32);
             AddToFlightStatusDefinition("AUTOPILOT VERTICAL HOLD VAR", "Feet per minute", SIMCONNECT_DATATYPE.INT32);
@@ -421,7 +422,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsApNavOn = flightStatus.Value.IsApNavOn == 1,
                                     IsApAprOn = flightStatus.Value.IsApAprOn == 1,
                                     IsApAltOn = flightStatus.Value.IsApAltOn == 1,
-                                    ApAltitude = flightStatus.Value.ApAlt,
+                                    ApAltitude0 = flightStatus.Value.ApAlt0,
+                                    ApAltitude1 = flightStatus.Value.ApAlt1,
                                     IsApVsOn = flightStatus.Value.IsApVsOn == 1,
                                     IsApFlcOn = flightStatus.Value.IsApFlcOn == 1,
                                     ApAirspeed = flightStatus.Value.ApAirspeed,

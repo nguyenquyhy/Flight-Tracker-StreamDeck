@@ -119,9 +119,9 @@ namespace FlightStreamDeck.Logics.Actions
                     }
                     break;
                 case PresetFunction.Altitude:
-                    if (e.AircraftStatus.ApAltitude != lastStatus?.ApAltitude || e.AircraftStatus.IsApAltOn != lastStatus?.IsApAltOn)
+                    if (e.AircraftStatus.ApAltitude1 != lastStatus?.ApAltitude1 || e.AircraftStatus.IsApAltOn != lastStatus?.IsApAltOn)
                     {
-                        logger.LogInformation("Received ALT update: {IsApAltOn} {ApAltitude}", e.AircraftStatus.IsApAltOn, e.AircraftStatus.ApAltitude);
+                        logger.LogInformation("Received ALT update: {IsApAltOn} {ApAltitude}", e.AircraftStatus.IsApAltOn, e.AircraftStatus.ApAltitude1);
                         await UpdateImage();
                     }
                     break;
@@ -380,7 +380,7 @@ namespace FlightStreamDeck.Logics.Actions
                         break;
 
                     case PresetFunction.Altitude:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude.ToString(),
+                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude1.ToString(),
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
