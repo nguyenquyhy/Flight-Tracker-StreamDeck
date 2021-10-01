@@ -353,12 +353,29 @@ namespace FlightStreamDeck.Logics.Actions
 
             if (holdEvent.HasValue)
             {
-                timer = new Timer { Interval = settings.HoldValueRepeat ? 400 : 1000 };
+                int frequency = GetRepeatFrequencyForMobiflightSettings(settings, 400);
+                timer = new Timer { Interval = settings.HoldValueRepeat ? frequency : 1000 };
+                
                 timer.Elapsed += Timer_Elapsed;
                 timer.Start();
             }
 
             return Task.CompletedTask;
+        }
+
+        private int GetRepeatFrequencyForMobiflightSettings(GenericToggleSettings settings, int defaultFreq)
+        {
+            int frequency = 0;
+            if (settings.HoldValue.StartsWith("MOBIFLIGHT_"))
+            {
+                int.TryParse(settings.HoldValueData, out frequency);
+            }
+            if (frequency == 0)
+            {
+               frequency = defaultFreq;
+            }
+
+            return frequency;
         }
 
         protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
