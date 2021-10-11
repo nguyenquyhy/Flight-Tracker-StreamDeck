@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Property Inspector</title>
+    <link rel="stylesheet" href="css/sdpi.css">
+</head>
+<body>
+    <div class="sdpi-wrapper">
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Header</div>
+            <input class="sdpi-item-value" id="Header" value="" placeholder="e.g. YD">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event</div>
+            <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE" pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter</div>
+            <input class="sdpi-item-value" id="ToggleValueData" value="" placeholder="">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Hold event</div>
+            <input class="sdpi-item-value" id="HoldValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE" pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Hold parameter</div>
+            <input class="sdpi-item-value" id="HoldValueData" value="" placeholder="">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div style="width: 94px; padding: 4px;"></div>
+            <input class="sdpi-item-value" id="HoldValueRepeat" type="checkbox">
+            <label for="HoldValueRepeat"><span></span>Repeat</label>
+            <input class="sdpi-item-value" id="HoldValueSuppressToggle" type="checkbox" title="">
+            <label for="HoldValueSuppressToggle" title="Toggle event will not be triggered if hold event is triggered."><span></span>Suppress toggle</label>
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Feedback value</div>
+            <input class="sdpi-item-value" id="FeedbackValue" value="" placeholder="e.g. AUTOPILOT YAW DAMPER" pattern="[A-Z0-9: ]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Display value</div>
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty to show no number" pattern="[A-Z0-9: ]*">
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Active &amp; Inactive Color</div>
+            <div class="sdpi-item-value">
+                <input type="color" id="DisplayValueColorA" value="#fedf4d">
+                <input type="color" id="DisplayValueColorI" value="#ffffff">
+            </div>
+        </div>
+
+        <div class="sdpi-item min200" type="field">
+            <div class="sdpi-item-label">Unit & Decimals</div>
+            <input class="sdpi-item-value" id="DisplayValueUnit" value="" placeholder="Empty for default unit" pattern="[A-Z0-9: ]*" style="margin-right: 0">
+            <input class="sdpi-item-value" id="DisplayValuePrecision" value="" placeholder="Default decimals" pattern="[0-9: ]*" style="max-width: 90px">
+        </div>
+        <div class="sdpi-item">
+            <details class="message caution">
+                <summary>Setting invalid unit affects the whole page.</summary>
+            </details>
+        </div>
+        <div type="group" class="sdpi-item" id="messagegroup">
+            <div class="sdpi-item-label">Custom ON/OFF images</div>
+            </div>
+            <div class="sdpi-item-group">
+                <div class="sdpi-item" id="on_image_file_selector">
+                    <div class="sdpi-item-label">ON image</div>
+                    <div class="sdpi-item-group file">
+                        <input class="sdpi-item-value" type="file" id="ImageOn" accept=".jpg, .jpeg, .png">
+                        <label class="sdpi-file-info">no file...</label>
+                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleEmbed(this)">Embed</label>
+                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleLink(this)">Link</label>
+                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn">Clear</label>
+                    </div>
+                </div>
+                <div class="sdpi-item" id="off_image_file_selector">
+                    <div class="sdpi-item-label">OFF image</div>
+                    <div class="sdpi-item-group file">
+                        <input class="sdpi-item-value" type="file" id="ImageOff" accept=".jpg, .jpeg, .png">
+                        <label class="sdpi-file-info">no file...</label>
+                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleEmbed(this)">Embed</label>
+                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleLink(this)">Link</label>
+                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOff">Clear</label>
+                    </div>
+                </div>
+                <input type="hidden" id="IsEmbedding" />
+            </div>
+        </div>
+    </div>
+        <script src="common.js"></script>
+        <script src="embedimages.js"></script>
+        <script language="JavaScript" type="text/javascript">
+            function loadSettings(settings) {
+                if (settings['Header']) { Header.value = settings['Header'] };
+                if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
+                if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
+                if (settings['HoldValue']) { HoldValue.value = settings['HoldValue'] };
+                if (settings['HoldValueData']) { HoldValueData.value = settings['HoldValueData'] };
+                if (settings['HoldValueRepeat']) { HoldValueRepeat.checked = (settings['HoldValueRepeat'] == "true") };
+                if (settings['HoldValueSuppressToggle']) { HoldValueSuppressToggle.checked = (settings['HoldValueSuppressToggle'] == "true") };
+                if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
+                if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+                if (settings['DisplayValueColorA']) { DisplayValueColorA.value = settings['DisplayValueColorA'] };
+                if (settings['DisplayValueColorI']) { DisplayValueColorI.value = settings['DisplayValueColorI'] };
+                if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
+                if (settings['DisplayValuePrecision']) { DisplayValuePrecision.value = settings['DisplayValuePrecision'] };
+                if (settings['ImageOn']) {
+                    setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
+                };
+                if (settings['ImageOff']) {
+                    setFileLabel(off_image_file_selector, settings['ImageOff'], !!settings['ImageOff_base64']);
+                };
+            }
+        </script>
+        <script src="init.js"></script>
+</body>
+</html>
