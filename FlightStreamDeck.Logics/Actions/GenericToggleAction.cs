@@ -12,22 +12,24 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Drawing;
+using System.Globalization;
+
 
 namespace FlightStreamDeck.Logics.Actions
 {
     /// <summary>
     /// Note: We need to fix the JSON property names to avoid conversion to camel case
     /// </summary>
+
     public class GenericToggleSettings
     {
         [JsonProperty(nameof(Header))]
         public string Header { get; set; }
-
         [JsonProperty(nameof(ToggleValue))]
         public string ToggleValue { get; set; }
         [JsonProperty(nameof(ToggleValueData))]
         public string ToggleValueData { get; set; }
-
         [JsonProperty(nameof(HoldValue))]
         public string HoldValue { get; set; }
         [JsonProperty(nameof(HoldValueData))]
@@ -36,11 +38,14 @@ namespace FlightStreamDeck.Logics.Actions
         public bool HoldValueRepeat { get; set; }
         [JsonProperty(nameof(HoldValueSuppressToggle))]
         public bool HoldValueSuppressToggle { get; set; }
-
         [JsonProperty(nameof(FeedbackValue))]
         public string FeedbackValue { get; set; }
         [JsonProperty(nameof(DisplayValue))]
         public string DisplayValue { get; set; }
+        [JsonProperty(nameof(DisplayValueColorA))]
+        public string DisplayValueColorA { get; set; }
+        [JsonProperty(nameof(DisplayValueColorI))]
+        public string DisplayValueColorI { get; set; }
         [JsonProperty(nameof(DisplayValueUnit))]
         public string DisplayValueUnit { get; set; }
         [JsonProperty(nameof(DisplayValuePrecision))]
@@ -53,6 +58,12 @@ namespace FlightStreamDeck.Logics.Actions
         public string ImageOff { get; set; }
         [JsonProperty(nameof(ImageOff_base64))]
         public string ImageOff_base64 { get; set; }
+        public byte DCARed { get; set; }
+        public byte DCAGreen { get; set; }
+        public byte DCABlue { get; set; }
+        public byte DCIRed { get; set; }
+        public byte DCIGreen { get; set; }
+        public byte DCIBlue { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
@@ -111,7 +122,6 @@ namespace FlightStreamDeck.Logics.Actions
 
             ToggleEvent newToggleEvent = string.IsNullOrWhiteSpace(settings.ToggleValue) ? null : new(settings.ToggleValue);
             ToggleEvent newHoldEvent = string.IsNullOrWhiteSpace(settings.HoldValue) ? null : new(settings.HoldValue);
-
             ToggleValue newToggleEventDataVariable = null, newHoldEventDataVariable = null;
 
             var newUnit = settings.DisplayValueUnit?.Trim();
@@ -151,6 +161,7 @@ namespace FlightStreamDeck.Logics.Actions
             feedbackVariables = newFeedbackVariables;
             expression = newExpression;
             displayValue = newDisplayValue;
+
 
             RegisterValues();
         }
@@ -416,12 +427,52 @@ namespace FlightStreamDeck.Logics.Actions
             return inputValue ?? 0;
         }
 
-        private async Task UpdateImage()
+        public async Task UpdateImage()
         {
             if (settings != null)
             {
                 byte[] imageOnBytes = null;
                 byte[] imageOffBytes = null;
+                if (settings.DisplayValueColorA == null)
+                {               
+                    settings.DCARed = 255;
+                    settings.DCAGreen = 255;
+                    settings.DCABlue = 255;
+                } else
+                {
+                    if (settings.DisplayValueColorA.IndexOf('#') != -1)
+                        settings.DisplayValueColorA = settings.DisplayValueColorA.Replace("#", "");
+
+                    byte redA, greenA, blueA;
+                    redA = byte.Parse(settings.DisplayValueColorA.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+                    greenA = byte.Parse(settings.DisplayValueColorA.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+                    blueA = byte.Parse(settings.DisplayValueColorA.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+
+                    settings.DCARed = redA;
+                    settings.DCAGreen = greenA;
+                    settings.DCABlue = blueA;
+                }
+                if (settings.DisplayValueColorI == null)
+                {
+                    settings.DCIRed = 255;
+                    settings.DCIGreen = 255;
+                    settings.DCIBlue = 255;
+                }
+                else
+                {
+                    if (settings.DisplayValueColorI.IndexOf('#') != -1)
+                        settings.DisplayValueColorI = settings.DisplayValueColorI.Replace("#", "");
+
+                    byte redI, greenI, blueI;
+                    redI = byte.Parse(settings.DisplayValueColorI.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+                    greenI = byte.Parse(settings.DisplayValueColorI.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+                    blueI = byte.Parse(settings.DisplayValueColorI.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+
+                    settings.DCIRed = redI;
+                    settings.DCIGreen = greenI;
+                    settings.DCIBlue = blueI;
+                }
+
                 if (settings.ImageOn_base64 != null)
                 {
                     var s = settings.ImageOn_base64;
@@ -438,11 +489,23 @@ namespace FlightStreamDeck.Logics.Actions
                 var valueToShow = !string.IsNullOrWhiteSpace(currentValueTime) ?
                     currentValueTime :
                     (displayValue != null && currentValue.HasValue) ? currentValue.Value.ToString("F" + displayValue.Decimals) : "";
+                var DCRAG = settings.DCARed;
+                var DCGAG = settings.DCAGreen;
+                var DCBAG = settings.DCABlue;
+                var DCRIG = settings.DCIRed;
+                var DCGIG = settings.DCIGreen;
+                var DCBIG = settings.DCIBlue;
 
                 await SetImageSafeAsync(imageLogic.GetImage(settings.Header, currentStatus,
                     value: valueToShow,
+                    DCRA: DCRAG,
+                    DCGA: DCGAG,
+                    DCBA: DCBAG,
+                    DCRI: DCRIG,
+                    DCGI: DCGIG,
+                    DCBI: DCBIG,
                     imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes)) ;
             }
         }
     }
