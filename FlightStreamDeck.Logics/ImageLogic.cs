@@ -7,11 +7,12 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.IO;
 
+
 namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null);
+        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null, byte DCRA = 0, byte DCBA = 0, byte DCGA = 0, byte DCRI = 0, byte DCBI = 0, byte DCGI = 0);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
@@ -33,10 +34,16 @@ namespace FlightStreamDeck.Logics
         /// NOTE: either filePath or bytes should be set at the same time
         /// </summary>
         /// <returns>Base64 image data</returns>
+        /// 
+
         public string GetImage(string text, bool active, string value = null,
             string imageOnFilePath = null, byte[] imageOnBytes = null,
-            string imageOffFilePath = null, byte[] imageOffBytes = null)
+            //string imageOnFilePath2 = null, byte[] imageOnBytes2 = null,
+            string imageOffFilePath = null, byte[] imageOffBytes = null,
+            byte DCR=0, byte DCG=0, byte DCB=0, byte DCRIG=0, byte DCGIG=0, byte DCBIG=0)
+
         {
+            //throw new NotImplementedException();
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
             bool hasValue = value != null && value.Length > 0;
@@ -76,7 +83,8 @@ namespace FlightStreamDeck.Logics
                 if (hasValue)
                 {
                     size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
-                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
+                    //ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.FromRgb(DCR, DCG, DCB), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
+                    ctx.DrawText(value, valueFont, active ? Color.FromRgb(DCR, DCG, DCB) : Color.FromRgb(DCRIG, DCGIG, DCBIG), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
                 }
             });
 
@@ -387,5 +395,6 @@ namespace FlightStreamDeck.Logics
                 ctx.DrawText(text, SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular), Color.Black, startPoint);
             }
         }
+        
     }
 }
