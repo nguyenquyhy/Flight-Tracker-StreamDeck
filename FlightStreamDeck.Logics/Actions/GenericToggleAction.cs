@@ -26,6 +26,8 @@ namespace FlightStreamDeck.Logics.Actions
     {
         [JsonProperty(nameof(Header))]
         public string Header { get; set; }
+        [JsonProperty(nameof(HeaderColor))]
+        public string HeaderColor { get; set; }
         [JsonProperty(nameof(ToggleValue))]
         public string ToggleValue { get; set; }
         [JsonProperty(nameof(ToggleValueData))]
@@ -55,6 +57,10 @@ namespace FlightStreamDeck.Logics.Actions
         [JsonProperty(nameof(ImageOn_base64))]
         public string ImageOn_base64 { get; set; }
         [JsonProperty(nameof(ImageOff))]
+        //public string ImageOn2 { get; set; }
+        //[JsonProperty(nameof(ImageOn_base64))]
+        //public string ImageOn2_base64 { get; set; }
+        //[JsonProperty(nameof(ImageOff))]
         public string ImageOff { get; set; }
         [JsonProperty(nameof(ImageOff_base64))]
         public string ImageOff_base64 { get; set; }
@@ -64,6 +70,9 @@ namespace FlightStreamDeck.Logics.Actions
         public byte DCIRed { get; set; }
         public byte DCIGreen { get; set; }
         public byte DCIBlue { get; set; }
+        public byte HCLRed { get; set; }
+        public byte HCLGreen { get; set; }
+        public byte HCLBlue { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
@@ -122,6 +131,7 @@ namespace FlightStreamDeck.Logics.Actions
 
             ToggleEvent newToggleEvent = string.IsNullOrWhiteSpace(settings.ToggleValue) ? null : new(settings.ToggleValue);
             ToggleEvent newHoldEvent = string.IsNullOrWhiteSpace(settings.HoldValue) ? null : new(settings.HoldValue);
+
             ToggleValue newToggleEventDataVariable = null, newHoldEventDataVariable = null;
 
             var newUnit = settings.DisplayValueUnit?.Trim();
@@ -260,6 +270,9 @@ namespace FlightStreamDeck.Logics.Actions
                 case "ImageOn":
                     settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
                     break;
+                //case "ImageOn2":
+                //    settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
+                //    break;
                 case "ImageOff":
                     settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
                     break;
@@ -281,6 +294,7 @@ namespace FlightStreamDeck.Logics.Actions
                 FileName = fileKey switch
                 {
                     "ImageOn" => Path.GetFileName(settings.ImageOn),
+                    //"ImageOn2" => Path.GetFileName(settings.ImageOn2),
                     "ImageOff" => Path.GetFileName(settings.ImageOff),
                     _ => "image.png"
                 },
@@ -291,6 +305,7 @@ namespace FlightStreamDeck.Logics.Actions
                 var bytes = fileKey switch
                 {
                     "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
+                    //"ImageOn2" => Convert.FromBase64String(settings.ImageOn_base64),
                     "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
                     _ => null
                 };
@@ -303,6 +318,10 @@ namespace FlightStreamDeck.Logics.Actions
                     case "ImageOn":
                         settings.ImageOn_base64 = null;
                         settings.ImageOn = dialog.FileName.Replace("\\", "/");
+                        break;
+                    //case "ImageOn2":
+                    //    settings.ImageOn_base64 = null;
+                    //    settings.ImageOn = dialog.FileName.Replace("\\", "/");
                         break;
                     case "ImageOff":
                         settings.ImageOff_base64 = null;
@@ -432,7 +451,28 @@ namespace FlightStreamDeck.Logics.Actions
             if (settings != null)
             {
                 byte[] imageOnBytes = null;
+                //byte[] imageOnBytes2 = null;
                 byte[] imageOffBytes = null;
+                if (settings.HeaderColor == null)
+                {
+                    settings.HCLRed = 255;
+                    settings.HCLGreen = 255;
+                    settings.HCLBlue = 255;
+                } else
+                {
+                    if (settings.HeaderColor.IndexOf('#') != -1)
+                        settings.HeaderColor = settings.HeaderColor.Replace("#", "");
+
+                    byte Hred, Hgreen, Hblue;
+                    Hred = byte.Parse(settings.HeaderColor.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+                    Hgreen = byte.Parse(settings.HeaderColor.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+                    Hblue = byte.Parse(settings.HeaderColor.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+
+                    settings.HCLRed = Hred;
+                    settings.HCLGreen = Hgreen;
+                    settings.HCLBlue = Hblue;
+
+                }
                 if (settings.DisplayValueColorA == null)
                 {               
                     settings.DCARed = 255;
@@ -479,6 +519,12 @@ namespace FlightStreamDeck.Logics.Actions
                     s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
                     imageOnBytes = Convert.FromBase64String(s);
                 }
+                //if (settings.ImageOn2_base64 != null)
+                //{
+                //    var s = settings.ImageOn2_base64;
+                //    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                //    imageOnBytes2 = Convert.FromBase64String(s);
+                //}
                 if (settings.ImageOff_base64 != null)
                 {
                     var s = settings.ImageOff_base64;
@@ -495,8 +541,15 @@ namespace FlightStreamDeck.Logics.Actions
                 var DCRIG = settings.DCIRed;
                 var DCGIG = settings.DCIGreen;
                 var DCBIG = settings.DCIBlue;
+                var HCLRG = settings.HCLRed;
+                var HCLGG = settings.HCLGreen;
+                var HCLBG = settings.HCLBlue;
+
 
                 await SetImageSafeAsync(imageLogic.GetImage(settings.Header, currentStatus,
+                    HColorR: HCLRG,
+                    HColorG: HCLGG,
+                    HColorB: HCLBG,
                     value: valueToShow,
                     DCRA: DCRAG,
                     DCGA: DCGAG,
@@ -505,6 +558,7 @@ namespace FlightStreamDeck.Logics.Actions
                     DCGI: DCGIG,
                     DCBI: DCBIG,
                     imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                    //imageOnFilePath2: settings.ImageOn, imageOnBytes2: imageOnBytes2,
                     imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes)) ;
             }
         }
