@@ -12,7 +12,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null, byte DCRA = 0, byte DCBA = 0, byte DCGA = 0, byte DCRI = 0, byte DCBI = 0, byte DCGI = 0);
+        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null, byte DCRA = 0, byte DCBA = 0, byte DCGA = 0, byte DCRI = 0, byte DCBI = 0, byte DCGI = 0, byte HColorR = 0, byte HColorG = 0, byte HColorB = 0, byte HCR = 0, byte HCG = 0, byte HCB = 0  );
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
@@ -40,7 +40,7 @@ namespace FlightStreamDeck.Logics
             string imageOnFilePath = null, byte[] imageOnBytes = null,
             //string imageOnFilePath2 = null, byte[] imageOnBytes2 = null,
             string imageOffFilePath = null, byte[] imageOffBytes = null,
-            byte DCR=0, byte DCG=0, byte DCB=0, byte DCRIG=0, byte DCGIG=0, byte DCBIG=0)
+            byte DCR=0, byte DCG=0, byte DCB=0, byte DCRIG=0, byte DCGIG=0, byte DCBIG=0, byte HColorR = 0, byte HColorG = 0, byte HColorB = 0, byte HCLR = 0, byte HCLG = 0, byte HCLB = 0)
 
         {
             //throw new NotImplementedException();
@@ -77,7 +77,8 @@ namespace FlightStreamDeck.Logics
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     size = TextMeasurer.Measure(text, new RendererOptions(font));
-                    ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    //ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
                 }
 
                 if (hasValue)
