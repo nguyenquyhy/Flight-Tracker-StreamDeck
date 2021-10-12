@@ -11,6 +11,12 @@
             <div class="sdpi-item-label">Header</div>
             <input class="sdpi-item-value" id="Header" value="" placeholder="e.g. YD">
         </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Header Color</div>
+            <div class="sdpi-item-value">
+                <input type="color" id="HeaderColor" value="#fedf4d">              
+            </div>
+        </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Toggle event</div>
             <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE" pattern="[A-Z_]*">
@@ -61,8 +67,7 @@
             </details>
         </div>
         <div type="group" class="sdpi-item" id="messagegroup">
-            <div class="sdpi-item-label">Custom ON/OFF images</div>
-            </div>
+            <div class="sdpi-item-label">Custom ON/OFF images</div>        
             <div class="sdpi-item-group">
                 <div class="sdpi-item" id="on_image_file_selector">
                     <div class="sdpi-item-label">ON image</div>
@@ -93,6 +98,7 @@
         <script language="JavaScript" type="text/javascript">
             function loadSettings(settings) {
                 if (settings['Header']) { Header.value = settings['Header'] };
+                if (settings['HeaderColor']) { HeaderColor.value = settings['HeaderColor'] };
                 if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
                 if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
                 if (settings['HoldValue']) { HoldValue.value = settings['HoldValue'] };
