@@ -14,7 +14,7 @@
         <div class="sdpi-item">
             <div class="sdpi-item-label">Header Color</div>
             <div class="sdpi-item-value">
-                <input type="color" id="HeaderColor" value="#fedf4d">              
+                <input type="color" id="HeaderColor" value="#fedf4d">
             </div>
         </div>
         <div class="sdpi-item" type="field">
@@ -48,51 +48,72 @@
             <div class="sdpi-item-label">Display value</div>
             <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty to show no number" pattern="[A-Z0-9: ]*">
         </div>
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Active &amp; Inactive Color</div>
-            <div class="sdpi-item-value">
-                <input type="color" id="DisplayValueColorA" value="#fedf4d">
-                <input type="color" id="DisplayValueColorI" value="#ffffff">
-            </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Hide Display Value</div>
+            <input class="sdpi-item-value" id="DisplayValueHidden" type="checkbox">
+            <label for="DisplayValueHidden"><span></span></label>
         </div>
 
-        <div class="sdpi-item min200" type="field">
-            <div class="sdpi-item-label">Unit & Decimals</div>
-            <input class="sdpi-item-value" id="DisplayValueUnit" value="" placeholder="Empty for default unit" pattern="[A-Z0-9: ]*" style="margin-right: 0">
-            <input class="sdpi-item-value" id="DisplayValuePrecision" value="" placeholder="Default decimals" pattern="[0-9: ]*" style="max-width: 90px">
-        </div>
-        <div class="sdpi-item">
-            <details class="message caution">
-                <summary>Setting invalid unit affects the whole page.</summary>
-            </details>
-        </div>
-        <div type="group" class="sdpi-item" id="messagegroup">
-            <div class="sdpi-item-label">Custom ON/OFF images</div>        
-            <div class="sdpi-item-group">
-                <div class="sdpi-item" id="on_image_file_selector">
-                    <div class="sdpi-item-label">ON image</div>
-                    <div class="sdpi-item-group file">
-                        <input class="sdpi-item-value" type="file" id="ImageOn" accept=".jpg, .jpeg, .png">
-                        <label class="sdpi-file-info">no file...</label>
-                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleEmbed(this)">Embed</label>
-                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleLink(this)">Link</label>
-                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn">Clear</label>
-                    </div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Active &amp; Inactive Color</div>
+                <div class="sdpi-item-value">
+                    <input type="color" id="DisplayValueColorA" value="#fedf4d">
+                    <input type="color" id="DisplayValueColorI" value="#ffffff">
                 </div>
-                <div class="sdpi-item" id="off_image_file_selector">
-                    <div class="sdpi-item-label">OFF image</div>
-                    <div class="sdpi-item-group file">
-                        <input class="sdpi-item-value" type="file" id="ImageOff" accept=".jpg, .jpeg, .png">
-                        <label class="sdpi-file-info">no file...</label>
-                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleEmbed(this)">Embed</label>
-                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleLink(this)">Link</label>
-                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOff">Clear</label>
-                    </div>
+            </div>
+
+            <div class="sdpi-item min200" type="field">
+                <div class="sdpi-item-label">Unit & Decimals</div>
+                <input class="sdpi-item-value" id="DisplayValueUnit" value="" placeholder="Empty for default unit" pattern="[A-Z0-9: ]*" style="margin-right: 0">
+                <input class="sdpi-item-value" id="DisplayValuePrecision" value="" placeholder="Default decimals" pattern="[0-9: ]*" style="max-width: 90px">
+            </div>
+            <div class="sdpi-item">
+                <details class="message caution">
+                    <summary>Setting invalid unit affects the whole page.</summary>
+                </details>
+            </div>
+            <div type="group" class="sdpi-item" id="messagegroup">
+                <div class="sdpi-item-label">Custom ON/OFF images</div>
+                <div type="radio" class="sdpi-item" id="NumOfButtonPos">
+                    <div class="sdpi-item-label">Three Position Image</div>
+                    <input class="sdpi-item-value" id="ThreePosImage" type="checkbox">
+                    <label for="ThreePosImage"><span></span></label>
                 </div>
-                <input type="hidden" id="IsEmbedding" />
+                <div class="sdpi-item-group">
+                    <div class="sdpi-item" id="on_image_file_selector">
+                        <div class="sdpi-item-label">ON image</div>
+                        <div class="sdpi-item-group file">
+                            <input class="sdpi-item-value" type="file" id="ImageOn" accept=".jpg, .jpeg, .png">
+                            <label class="sdpi-file-info">no file...</label>
+                            <label class="sdpi-file-label" data-for="ImageOn" onclick="handleEmbed(this)">Embed</label>
+                            <label class="sdpi-file-label" data-for="ImageOn" onclick="handleLink(this)">Link</label>
+                            <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn">Clear</label>
+                        </div>
+                    </div>
+                    <div class="sdpi-item" id="on_image_file_selector2">
+                        <div class="sdpi-item-label">ON image2</div>
+                        <div class="sdpi-item-group file">
+                            <input class="sdpi-item-value" type="file" id="ImageOn2" accept=".jpg, .jpeg, .png">
+                            <label class="sdpi-file-info">no file...</label>
+                            <label class="sdpi-file-label" data-for="ImageOn2" onclick="handleEmbed(this)">Embed</label>
+                            <label class="sdpi-file-label" data-for="ImageOn2" onclick="handleLink(this)">Link</label>
+                            <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn2">Clear</label>
+                        </div>
+                    </div>
+                    <div class="sdpi-item" id="off_image_file_selector">
+                        <div class="sdpi-item-label">OFF image</div>
+                        <div class="sdpi-item-group file">
+                            <input class="sdpi-item-value" type="file" id="ImageOff" accept=".jpg, .jpeg, .png">
+                            <label class="sdpi-file-info">no file...</label>
+                            <label class="sdpi-file-label" data-for="ImageOff" onclick="handleEmbed(this)">Embed</label>
+                            <label class="sdpi-file-label" data-for="ImageOff" onclick="handleLink(this)">Link</label>
+                            <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOff">Clear</label>
+                        </div>
+                    </div>
+                    <input type="hidden" id="IsEmbedding" />
+                </div>
             </div>
         </div>
-    </div>
         <script src="common.js"></script>
         <script src="embedimages.js"></script>
         <script language="JavaScript" type="text/javascript">
@@ -107,12 +128,17 @@
                 if (settings['HoldValueSuppressToggle']) { HoldValueSuppressToggle.checked = (settings['HoldValueSuppressToggle'] == "true") };
                 if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
                 if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+                if (settings['DisplayValueHidden']) { DisplayValueHidden.checked = (settings['DisplayValueHidden'] == "true") };
                 if (settings['DisplayValueColorA']) { DisplayValueColorA.value = settings['DisplayValueColorA'] };
                 if (settings['DisplayValueColorI']) { DisplayValueColorI.value = settings['DisplayValueColorI'] };
                 if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
                 if (settings['DisplayValuePrecision']) { DisplayValuePrecision.value = settings['DisplayValuePrecision'] };
+                if (settings['ThreePosImage']) { ThreePosImage.checked = (settings['ThreePosImage'] == "true") };
                 if (settings['ImageOn']) {
                     setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
+                };
+                if (settings['ImageOn2']) {
+                    setFileLabel(on_image_file_selector2, settings['ImageOn2'], !!settings['ImageOn2_base64']);
                 };
                 if (settings['ImageOff']) {
                     setFileLabel(off_image_file_selector, settings['ImageOff'], !!settings['ImageOff_base64']);
