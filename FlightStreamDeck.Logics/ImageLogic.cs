@@ -12,7 +12,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null, byte DCRA = 0, byte DCBA = 0, byte DCGA = 0, byte DCRI = 0, byte DCBI = 0, byte DCGI = 0, byte HColorR = 0, byte HColorG = 0, byte HColorB = 0, byte HCR = 0, byte HCG = 0, byte HCB = 0  );
+        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOnFilePath2 = null, byte[] imageOnBytes2 = null, string imageOffFilePath = null, byte[] imageOffBytes = null, string DVH=null, byte DCRA = 0, byte DCBA = 0, byte DCGA = 0, byte DCRI = 0, byte DCBI = 0, byte DCGI = 0, byte HColorR = 0, byte HColorG = 0, byte HColorB = 0, byte HCR = 0, byte HCG = 0, byte HCB = 0, string TPosImage = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
@@ -38,9 +38,9 @@ namespace FlightStreamDeck.Logics
 
         public string GetImage(string text, bool active, string value = null,
             string imageOnFilePath = null, byte[] imageOnBytes = null,
-            //string imageOnFilePath2 = null, byte[] imageOnBytes2 = null,
+            string imageOnFilePath2 = null, byte[] imageOnBytes2 = null,
             string imageOffFilePath = null, byte[] imageOffBytes = null,
-            byte DCR=0, byte DCG=0, byte DCB=0, byte DCRIG=0, byte DCGIG=0, byte DCBIG=0, byte HColorR = 0, byte HColorG = 0, byte HColorB = 0, byte HCLR = 0, byte HCLG = 0, byte HCLB = 0)
+            string DVHid=null, byte DCR=0, byte DCG=0, byte DCB=0, byte DCRIG=0, byte DCGIG=0, byte DCBIG=0, byte HColorR = 0, byte HColorG = 0, byte HColorB = 0, byte HCLR = 0, byte HCLG = 0, byte HCLB = 0, string ThreePI = null)
 
         {
             //throw new NotImplementedException();
@@ -53,43 +53,89 @@ namespace FlightStreamDeck.Logics
             //    only when Feedback value is true AND Display value is empty.
             // 2. If user select custom images (esp Active one), the custom Active image is used based on Feedback value
             //    ignoring Display value.
-            var img = active ?
-                GetBackgroundImage(imageOnBytes, imageOnFilePath, !hasValue ? defaultActiveBackground : defaultBackground) :
-                GetBackgroundImage(imageOffBytes, imageOffFilePath, defaultBackground);
-
-            using var img2 = img.Clone(ctx =>
-            {
-                ctx.Resize(WIDTH, WIDTH); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
-
-                var imgSize = ctx.GetCurrentSize();
-
-                // Calculate scaling for header
-                var smallerDim = imgSize.Width < imgSize.Height ? imgSize.Width : imgSize.Height;
-                var scale = 1f;
-                if (smallerDim != WIDTH)
+            
+                if (value == "2")
                 {
-                    scale = (float)smallerDim / WIDTH;
-                    font = new Font(font, font.Size * scale);
-                    valueFont = new Font(valueFont, valueFont.Size * scale);
-                }
+                var i = ThreePI;
+                    var img = active ?
+                    GetBackgroundImage(imageOnBytes2, imageOnFilePath2, !hasValue ? defaultActiveBackground : defaultBackground) :
+                    GetBackgroundImage(imageOffBytes, imageOffFilePath, defaultBackground);
 
-                FontRectangle size;
-                if (!string.IsNullOrWhiteSpace(text))
+                using var img2 = img.Clone(ctx =>
                 {
-                    size = TextMeasurer.Measure(text, new RendererOptions(font));
-                    //ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
-                    ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
-                }
+                    ctx.Resize(WIDTH, WIDTH); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
 
-                if (hasValue)
+                    var imgSize = ctx.GetCurrentSize();
+
+                    // Calculate scaling for header
+                    var smallerDim = imgSize.Width < imgSize.Height ? imgSize.Width : imgSize.Height;
+                    var scale = 1f;
+                    if (smallerDim != WIDTH)
+                    {
+                        scale = (float)smallerDim / WIDTH;
+                        font = new Font(font, font.Size * scale);
+                        valueFont = new Font(valueFont, valueFont.Size * scale);
+                    }
+
+                    FontRectangle size;
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        size = TextMeasurer.Measure(text, new RendererOptions(font));
+                        //ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                        ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    }
+
+                    if (hasValue & ThreePI != "true")
+                    {
+                        size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
+                        //ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.FromRgb(DCR, DCG, DCB), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
+                        ctx.DrawText(value, valueFont, active ? Color.FromRgb(DCR, DCG, DCB) : Color.FromRgb(DCRIG, DCGIG, DCBIG), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
+                    }
+                });
+                return ToBase64PNG(img2);
+            } else
+                    {
+                    var img = active ?
+                    GetBackgroundImage(imageOnBytes, imageOnFilePath, !hasValue ? defaultActiveBackground : defaultBackground) :
+                    GetBackgroundImage(imageOffBytes, imageOffFilePath, defaultBackground);
+
+                using var img2 = img.Clone(ctx =>
                 {
-                    size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
-                    //ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.FromRgb(DCR, DCG, DCB), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
-                    ctx.DrawText(value, valueFont, active ? Color.FromRgb(DCR, DCG, DCB) : Color.FromRgb(DCRIG, DCGIG, DCBIG), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
-                }
-            });
+                    ctx.Resize(WIDTH, WIDTH); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
 
-            return ToBase64PNG(img2);
+                    var imgSize = ctx.GetCurrentSize();
+
+                    // Calculate scaling for header
+                    var smallerDim = imgSize.Width < imgSize.Height ? imgSize.Width : imgSize.Height;
+                    var scale = 1f;
+                    if (smallerDim != WIDTH)
+                    {
+                        scale = (float)smallerDim / WIDTH;
+                        font = new Font(font, font.Size * scale);
+                        valueFont = new Font(valueFont, valueFont.Size * scale);
+                    }
+
+                    FontRectangle size;
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        size = TextMeasurer.Measure(text, new RendererOptions(font));
+                        //ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                        ctx.DrawText(text, font, Color.FromRgb(HColorR, HColorG, HColorB), new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
+                    }
+
+                    if (hasValue & ThreePI != "true")
+                    {
+                        size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
+                        //ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.FromRgb(DCR, DCG, DCB), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
+                        ctx.DrawText(value, valueFont, active ? Color.FromRgb(DCR, DCG, DCB) : Color.FromRgb(DCRIG, DCGIG, DCBIG), new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
+                    }
+                });
+                return ToBase64PNG(img2);
+            }
+
+
+
+
         }
 
         /// <returns>Base64 image data</returns>
