@@ -44,6 +44,8 @@ namespace FlightStreamDeck.Logics.Actions
         public string FeedbackValue { get; set; }
         [JsonProperty(nameof(DisplayValue))]
         public string DisplayValue { get; set; }
+        [JsonProperty(nameof(DisplayValueHidden))]
+        public string DisplayValueHidden { get; set; }
         [JsonProperty(nameof(DisplayValueColorA))]
         public string DisplayValueColorA { get; set; }
         [JsonProperty(nameof(DisplayValueColorI))]
@@ -52,15 +54,17 @@ namespace FlightStreamDeck.Logics.Actions
         public string DisplayValueUnit { get; set; }
         [JsonProperty(nameof(DisplayValuePrecision))]
         public string DisplayValuePrecision { get; set; }
+        [JsonProperty(nameof(ThreePosImage))]
+        public string ThreePosImage { get; set; }
         [JsonProperty(nameof(ImageOn))]
         public string ImageOn { get; set; }
         [JsonProperty(nameof(ImageOn_base64))]
         public string ImageOn_base64 { get; set; }
+        [JsonProperty(nameof(ImageOn2))]
+        public string ImageOn2 { get; set; }
+        [JsonProperty(nameof(ImageOn2_base64))]
+        public string ImageOn2_base64 { get; set; }
         [JsonProperty(nameof(ImageOff))]
-        //public string ImageOn2 { get; set; }
-        //[JsonProperty(nameof(ImageOn_base64))]
-        //public string ImageOn2_base64 { get; set; }
-        //[JsonProperty(nameof(ImageOff))]
         public string ImageOff { get; set; }
         [JsonProperty(nameof(ImageOff_base64))]
         public string ImageOff_base64 { get; set; }
@@ -73,6 +77,7 @@ namespace FlightStreamDeck.Logics.Actions
         public byte HCLRed { get; set; }
         public byte HCLGreen { get; set; }
         public byte HCLBlue { get; set; }
+        public string TPI { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
@@ -319,10 +324,10 @@ namespace FlightStreamDeck.Logics.Actions
                         settings.ImageOn_base64 = null;
                         settings.ImageOn = dialog.FileName.Replace("\\", "/");
                         break;
-                    //case "ImageOn2":
-                    //    settings.ImageOn_base64 = null;
-                    //    settings.ImageOn = dialog.FileName.Replace("\\", "/");
-                        break;
+                //    case "ImageOn2":
+                //        settings.ImageOn_base64 = null;
+                //        settings.ImageOn = dialog.FileName.Replace("\\", "/");
+                //        break;
                     case "ImageOff":
                         settings.ImageOff_base64 = null;
                         settings.ImageOff = dialog.FileName.Replace("\\", "/");
@@ -451,7 +456,7 @@ namespace FlightStreamDeck.Logics.Actions
             if (settings != null)
             {
                 byte[] imageOnBytes = null;
-                //byte[] imageOnBytes2 = null;
+                byte[] imageOnBytes2 = null;
                 byte[] imageOffBytes = null;
                 if (settings.HeaderColor == null)
                 {
@@ -519,12 +524,12 @@ namespace FlightStreamDeck.Logics.Actions
                     s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
                     imageOnBytes = Convert.FromBase64String(s);
                 }
-                //if (settings.ImageOn2_base64 != null)
-                //{
-                //    var s = settings.ImageOn2_base64;
-                //    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
-                //    imageOnBytes2 = Convert.FromBase64String(s);
-                //}
+                if (settings.ImageOn2_base64 != null)
+                {
+                    var s = settings.ImageOn2_base64;
+                    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
+                    imageOnBytes2 = Convert.FromBase64String(s);
+                }
                 if (settings.ImageOff_base64 != null)
                 {
                     var s = settings.ImageOff_base64;
@@ -544,6 +549,7 @@ namespace FlightStreamDeck.Logics.Actions
                 var HCLRG = settings.HCLRed;
                 var HCLGG = settings.HCLGreen;
                 var HCLBG = settings.HCLBlue;
+                var TPBUT = settings.DisplayValueHidden;
 
 
                 await SetImageSafeAsync(imageLogic.GetImage(settings.Header, currentStatus,
@@ -558,8 +564,9 @@ namespace FlightStreamDeck.Logics.Actions
                     DCGI: DCGIG,
                     DCBI: DCBIG,
                     imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                    //imageOnFilePath2: settings.ImageOn, imageOnBytes2: imageOnBytes2,
-                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes)) ;
+                    imageOnFilePath2: settings.ImageOn, imageOnBytes2: imageOnBytes2,
+                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes,
+                    TPosImage: TPBUT));
             }
         }
     }
