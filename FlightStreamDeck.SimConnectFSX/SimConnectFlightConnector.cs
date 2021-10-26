@@ -351,275 +351,71 @@ namespace FlightStreamDeck.SimConnectFSX
 
         private void RegisterFlightStatusDefinition()
         {
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "SIMULATION RATE",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            void AddToFlightStatusDefinition(string simvar, string unit, SIMCONNECT_DATATYPE type)
+            {
+                simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus, simvar, unit, type, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            }
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE LATITUDE",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE LONGITUDE",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE ALTITUDE",
-                "Feet",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE ALT ABOVE GROUND",
-                "Feet",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE PITCH DEGREES",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE BANK DEGREES",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE HEADING DEGREES TRUE",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "PLANE HEADING DEGREES MAGNETIC",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "GROUND ALTITUDE",
-                "Meters",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "GROUND VELOCITY",
-                "Knots",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AIRSPEED INDICATED",
-                "Knots",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "VERTICAL SPEED",
-                "Feet per minute",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("SIMULATION RATE", "number", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "FUEL TOTAL QUANTITY",
-                "Gallons",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("PLANE LATITUDE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("PLANE LONGITUDE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("PLANE ALTITUDE", "Feet", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("PLANE ALT ABOVE GROUND", "Feet", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("PLANE PITCH DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("PLANE BANK DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("PLANE HEADING DEGREES TRUE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("PLANE HEADING DEGREES MAGNETIC", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("GROUND ALTITUDE", "Meters", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("GROUND VELOCITY", "Knots", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("AIRSPEED INDICATED", "Knots", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("VERTICAL SPEED", "Feet per minute", SIMCONNECT_DATATYPE.FLOAT64);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AMBIENT WIND VELOCITY",
-                "Feet per second",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AMBIENT WIND DIRECTION",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("FUEL TOTAL QUANTITY", "Gallons", SIMCONNECT_DATATYPE.FLOAT64);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "SIM ON GROUND",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "STALL WARNING",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "OVERSPEED WARNING",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AMBIENT WIND VELOCITY", "Feet per second", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("AMBIENT WIND DIRECTION", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+
+            AddToFlightStatusDefinition("SIM ON GROUND", "number", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("STALL WARNING", "number", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("OVERSPEED WARNING", "number", SIMCONNECT_DATATYPE.INT32);
 
             #region Autopilot
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT MASTER",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AUTOPILOT MASTER", "number", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT HEADING LOCK",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT HEADING LOCK DIR",
-                "Degrees",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AUTOPILOT HEADING LOCK", "number", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("AUTOPILOT HEADING LOCK DIR", "Degrees", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT NAV1 LOCK",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AUTOPILOT NAV1 LOCK", "number", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT APPROACH HOLD",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AUTOPILOT APPROACH HOLD", "number", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT ALTITUDE LOCK",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT ALTITUDE LOCK VAR",
-                "Feet",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AUTOPILOT ALTITUDE LOCK", "number", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("AUTOPILOT ALTITUDE LOCK VAR", "Feet", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("AUTOPILOT ALTITUDE LOCK VAR:1", "Feet", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT VERTICAL HOLD",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT VERTICAL HOLD VAR",
-                "Feet per minute",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AUTOPILOT VERTICAL HOLD", "number", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("AUTOPILOT VERTICAL HOLD VAR", "Feet per minute", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT FLIGHT LEVEL CHANGE",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AUTOPILOT AIRSPEED HOLD VAR",
-                "Knots",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("AUTOPILOT FLIGHT LEVEL CHANGE", "number", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("AUTOPILOT AIRSPEED HOLD VAR", "Knots", SIMCONNECT_DATATYPE.INT32);
 
             #endregion
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "KOHLSMAN SETTING MB",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("KOHLSMAN SETTING MB", "number", SIMCONNECT_DATATYPE.INT32);
 
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "TRANSPONDER CODE:1",
-                "Hz",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "COM ACTIVE FREQUENCY:1",
-                "kHz",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "COM ACTIVE FREQUENCY:2",
-                "kHz",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "AVIONICS MASTER SWITCH",
-                "number",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "NAV OBS:1",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "NAV OBS:2",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "ADF CARD",
-                "Degrees",
-                SIMCONNECT_DATATYPE.FLOAT64,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "ADF ACTIVE FREQUENCY:1",
-                "Hz",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "ADF STANDBY FREQUENCY:1",
-                "Hz",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "ADF ACTIVE FREQUENCY:2",
-                "Hz",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
-            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
-                "ADF STANDBY FREQUENCY:2",
-                "Hz",
-                SIMCONNECT_DATATYPE.INT32,
-                0.0f,
-                SimConnect.SIMCONNECT_UNUSED);
+            AddToFlightStatusDefinition("TRANSPONDER CODE:1", "Hz", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("COM ACTIVE FREQUENCY:1", "kHz", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("COM ACTIVE FREQUENCY:2", "kHz", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("AVIONICS MASTER SWITCH", "number", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("NAV OBS:1", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("NAV OBS:2", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("ADF CARD", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
+            AddToFlightStatusDefinition("ADF ACTIVE FREQUENCY:1", "Hz", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("ADF STANDBY FREQUENCY:1", "Hz", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("ADF ACTIVE FREQUENCY:2", "Hz", SIMCONNECT_DATATYPE.INT32);
+            AddToFlightStatusDefinition("ADF STANDBY FREQUENCY:2", "Hz", SIMCONNECT_DATATYPE.INT32);
 
             // IMPORTANT: register it with the simconnect managed wrapper marshaller
             // if you skip this step, you will only receive a uint in the .dwData field.
@@ -757,7 +553,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsApNavOn = flightStatus.Value.IsApNavOn == 1,
                                     IsApAprOn = flightStatus.Value.IsApAprOn == 1,
                                     IsApAltOn = flightStatus.Value.IsApAltOn == 1,
-                                    ApAltitude = flightStatus.Value.ApAlt,
+                                    ApAltitude0 = flightStatus.Value.ApAlt0,
+                                    ApAltitude1 = flightStatus.Value.ApAlt1,
                                     IsApVsOn = flightStatus.Value.IsApVsOn == 1,
                                     IsApFlcOn = flightStatus.Value.IsApFlcOn == 1,
                                     ApAirspeed = flightStatus.Value.ApAirspeed,
