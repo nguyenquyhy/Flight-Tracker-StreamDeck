@@ -109,7 +109,8 @@ namespace FlightStreamDeck.Logics
         public bool IsApAprOn { get; set; }
 
         public bool IsApAltOn { get; set; }
-        public int ApAltitude { get; set; }
+        public int ApAltitude0 { get; set; }
+        public int ApAltitude1 { get; set; }
 
         public bool IsApVsOn { get; set; }
         public int ApVs { get; set; }
