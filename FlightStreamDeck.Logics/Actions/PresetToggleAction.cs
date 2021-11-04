@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Globalization;
 
 namespace FlightStreamDeck.Logics.Actions
 {
@@ -21,6 +22,8 @@ namespace FlightStreamDeck.Logics.Actions
         public string Type { get; set; }
         [JsonProperty(nameof(HideHeader))]
         public bool HideHeader { get; set; }
+        [JsonProperty(nameof(HeaderColor))]
+        public string HeaderColor { get; set; }
         [JsonProperty(nameof(ImageOn))]
         public string ImageOn { get; set; }
         [JsonProperty(nameof(ImageOn_base64))]
@@ -29,6 +32,19 @@ namespace FlightStreamDeck.Logics.Actions
         public string ImageOff { get; set; }
         [JsonProperty(nameof(ImageOff_base64))]
         public string ImageOff_base64 { get; set; }
+        [JsonProperty(nameof(DisplayValueColorA))]
+        public string DisplayValueColorA { get; set; }
+        [JsonProperty(nameof(DisplayValueColorI))]
+        public string DisplayValueColorI { get; set; }
+        public byte DCARed { get; set; }
+        public byte DCAGreen { get; set; }
+        public byte DCABlue { get; set; }
+        public byte DCIRed { get; set; }
+        public byte DCIGreen { get; set; }
+        public byte DCIBlue { get; set; }
+        public byte HCLRed { get; set; }
+        public byte HCLGreen { get; set; }
+        public byte HCLBlue { get; set; }
     }
 
     public class PresetFunction
@@ -340,6 +356,67 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 byte[] imageOnBytes = null;
                 byte[] imageOffBytes = null;
+                if (settings.HeaderColor == null)
+                {
+                    settings.HCLRed = 255;
+                    settings.HCLGreen = 255;
+                    settings.HCLBlue = 255;
+                }
+                else
+                {
+                    if (settings.HeaderColor.IndexOf('#') != -1)
+                        settings.HeaderColor = settings.HeaderColor.Replace("#", "");
+
+                    byte Hred, Hgreen, Hblue;
+                    Hred = byte.Parse(settings.HeaderColor.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+                    Hgreen = byte.Parse(settings.HeaderColor.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+                    Hblue = byte.Parse(settings.HeaderColor.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+
+                    settings.HCLRed = Hred;
+                    settings.HCLGreen = Hgreen;
+                    settings.HCLBlue = Hblue;
+
+                }
+                if (settings.DisplayValueColorA == null)
+                {
+                    settings.DCARed = 255;
+                    settings.DCAGreen = 255;
+                    settings.DCABlue = 255;
+                }
+                else
+                {
+                    if (settings.DisplayValueColorA.IndexOf('#') != -1)
+                        settings.DisplayValueColorA = settings.DisplayValueColorA.Replace("#", "");
+
+                    byte redA, greenA, blueA;
+                    redA = byte.Parse(settings.DisplayValueColorA.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+                    greenA = byte.Parse(settings.DisplayValueColorA.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+                    blueA = byte.Parse(settings.DisplayValueColorA.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+
+                    settings.DCARed = redA;
+                    settings.DCAGreen = greenA;
+                    settings.DCABlue = blueA;
+                }
+                if (settings.DisplayValueColorI == null)
+                {
+                    settings.DCIRed = 255;
+                    settings.DCIGreen = 255;
+                    settings.DCIBlue = 255;
+                }
+                else
+                {
+                    if (settings.DisplayValueColorI.IndexOf('#') != -1)
+                        settings.DisplayValueColorI = settings.DisplayValueColorI.Replace("#", "");
+
+                    byte redI, greenI, blueI;
+                    redI = byte.Parse(settings.DisplayValueColorI.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+                    greenI = byte.Parse(settings.DisplayValueColorI.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+                    blueI = byte.Parse(settings.DisplayValueColorI.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+
+                    settings.DCIRed = redI;
+                    settings.DCIGreen = greenI;
+                    settings.DCIBlue = blueI;
+                }
                 if (settings.ImageOn_base64 != null)
                 {
                     var s = settings.ImageOn_base64;
@@ -353,46 +430,120 @@ namespace FlightStreamDeck.Logics.Actions
                     imageOffBytes = Convert.FromBase64String(s);
                 }
 
+                var DCRAG = settings.DCARed;
+                var DCGAG = settings.DCAGreen;
+                var DCBAG = settings.DCABlue;
+                var DCRIG = settings.DCIRed;
+                var DCGIG = settings.DCIGreen;
+                var DCBIG = settings.DCIBlue;
+                var HCLRG = settings.HCLRed;
+                var HCLGG = settings.HCLGreen;
+                var HCLBG = settings.HCLBlue;
+                
+
                 switch (settings.Type)
                 {
                     case PresetFunction.Avionics:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn,
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.ApMaster:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn,
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.Heading:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(),
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.Nav:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn,
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.Altitude:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude1.ToString(),
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.VerticalSpeed:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(),
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
 
                     case PresetFunction.FLC:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn,
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
@@ -400,6 +551,15 @@ namespace FlightStreamDeck.Logics.Actions
 
                     case PresetFunction.Approach:
                         await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn,
+                            HColorR: HCLRG,
+                            HColorG: HCLGG,
+                            HColorB: HCLBG,
+                            DCRA: DCRAG,
+                            DCGA: DCGAG,
+                            DCBA: DCBAG,
+                            DCRI: DCRIG,
+                            DCGI: DCGIG,
+                            DCBI: DCBIG,
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
