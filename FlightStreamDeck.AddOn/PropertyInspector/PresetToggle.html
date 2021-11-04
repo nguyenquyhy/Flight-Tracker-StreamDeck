@@ -27,7 +27,18 @@
             <input class="sdpi-item-value" id="HideHeader" type="checkbox">
             <label for="HideHeader"><span></span></label>
         </div>
-
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Header Color</div>
+            <div class="sdpi-item-value">
+                <input type="color" id="HeaderColor" value="#ffcf00">
+            </div>
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Active Color</div>
+            <div class="sdpi-item-value">
+                <input type="color" id="DisplayValueColorI" value="#ffcf00">
+            </div>
+        </div>
         <div type="group" class="sdpi-item" id="messagegroup">
             <div class="sdpi-item-label">Custom ON/OFF images</div>
             <div class="sdpi-item-group">
@@ -66,6 +77,8 @@
             if (settings['HideHeader']) {
                 HideHeader.checked = settings['HideHeader'];
             };
+            if (settings['HeaderColor']) { HeaderColor.value = settings['HeaderColor'] };
+            if (settings['DisplayValueColorI']) { DisplayValueColorI.value = settings['DisplayValueColorI'] };
             if (settings['ImageOn']) {
                 setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
             };
