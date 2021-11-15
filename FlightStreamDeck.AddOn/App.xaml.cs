@@ -72,6 +72,10 @@ namespace FlightStreamDeck.AddOn
             services.AddSingleton<IImageLogic, ImageLogic>();
             services.AddTransient<IEvaluator, ComparisonEvaluator>();
             services.AddTransient<EnumConverter>();
+
+            services.AddSingleton<SimEventManager>();
+            services.AddTransient<IEventRegistrar>(services => services.GetService<SimEventManager>());
+            services.AddTransient<IEventDispatcher>(services => services.GetService<SimEventManager>());
         }
     }
 }

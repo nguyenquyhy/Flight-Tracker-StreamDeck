@@ -5,6 +5,7 @@ using Microsoft.FlightSimulator.SimConnect;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,12 +16,15 @@ namespace FlightStreamDeck.SimConnectFSX
     {
         public event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
         public event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
-
-        private const int StatusDelayMilliseconds = 100;
-
+        public event EventHandler<InvalidEventRegisteredEventArgs> InvalidEventRegistered;
         public event EventHandler Closed;
 
-        private readonly List<TOGGLE_EVENT> genericEvents = new List<TOGGLE_EVENT>();
+        // Extra SimConnect functions via native pointer
+        IntPtr hSimConnect;
+        [DllImport("SimConnect.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+        private static extern int /* HRESULT */ SimConnect_GetLastSentPacketID(IntPtr hSimConnect, out uint /* DWORD */ dwSendID);
+
+        private const int StatusDelayMilliseconds = 100;
 
         /// <summary>
         /// This is a reference counter to make sure we do not deregister variables that are still in use.
@@ -87,6 +91,10 @@ namespace FlightStreamDeck.SimConnectFSX
             }
             simconnect = new SimConnect("Flight Tracker Stream Deck", Handle, WM_USER_SIMCONNECT, null, 0);
 
+            // Get direct access to the SimConnect handle, to use functions otherwise not supported.
+            FieldInfo fiSimConnect = typeof(SimConnect).GetField("hSimConnect", BindingFlags.NonPublic | BindingFlags.Instance);
+            hSimConnect = (IntPtr)fiSimConnect.GetValue(simconnect);
+
             // listen to connect and quit msgs
             simconnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(Simconnect_OnRecvOpen);
             simconnect.OnRecvQuit += new SimConnect.RecvQuitEventHandler(Simconnect_OnRecvQuit);
@@ -134,7 +142,6 @@ namespace FlightStreamDeck.SimConnectFSX
 
             isGenericValueRegistered = false;
             RegisterGenericValues();
-            RegisterGenericEvents();
         }
 
         public void Send(string message)
@@ -275,7 +282,7 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        private void SendGenericCommand(TOGGLE_EVENT sendingEvent, uint dwData = 0)
+        private void SendGenericCommand(Enum sendingEvent, uint dwData = 0)
         {
             try
             {
@@ -539,13 +546,17 @@ namespace FlightStreamDeck.SimConnectFSX
 
         void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
-            logger.LogError("Exception received: {error}", (SIMCONNECT_EXCEPTION)data.dwException);
+            logger.LogError("Exception received: {error} from {sendID}", (SIMCONNECT_EXCEPTION)data.dwException, data.dwSendID);
             switch ((SIMCONNECT_EXCEPTION)data.dwException)
             {
                 case SIMCONNECT_EXCEPTION.ERROR:
                     // Try to reconnect on unknown error
                     CloseConnection();
                     Closed?.Invoke(this, new EventArgs());
+                    break;
+
+                case SIMCONNECT_EXCEPTION.NAME_UNRECOGNIZED:
+                    InvalidEventRegistered?.Invoke(this, new InvalidEventRegisteredEventArgs(data.dwSendID));
                     break;
 
                 case SIMCONNECT_EXCEPTION.VERSION_MISMATCH:
@@ -562,25 +573,28 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             // 0xC000014B: CTD
             // 0xC00000B0: Sim has exited or any generic SimConnect error
+            // 0xC000014B: STATUS_PIPE_BROKEN
             logger.LogError(exception, "Exception received");
             CloseConnection();
             Closed?.Invoke(this, new EventArgs());
         }
 
+        private uint GetLastSendID()
+        {
+            SimConnect_GetLastSentPacketID(hSimConnect, out uint dwSendID);
+            return dwSendID;
+        }
+
         #region Generic Buttons
 
-        public void RegisterToggleEvent(TOGGLE_EVENT toggleAction)
+        public uint? RegisterToggleEvent(Enum eventEnum, string eventName)
         {
-            if (simconnect == null) return;
+            if (simconnect == null) return null;
 
-            if (genericEvents.Contains(toggleAction))
-            {
-                return;
-            }
+            logger.LogInformation("RegisterEvent {action} {simConnectAction}", eventEnum, eventName);
+            simconnect.MapClientEventToSimEvent(eventEnum, eventName);
 
-            genericEvents.Add(toggleAction);
-            logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.EventToSimConnectEvent());
-            simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.EventToSimConnectEvent());
+            return GetLastSendID();
         }
 
         public void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues)
@@ -713,21 +727,10 @@ namespace FlightStreamDeck.SimConnectFSX
             });
         }
 
-        private void RegisterGenericEvents()
+        public void Trigger(Enum eventEnum, uint data)
         {
-            if (simconnect == null) return;
-
-            foreach (var toggleAction in genericEvents)
-            {
-                logger.LogInformation("RegisterEvent {action} {simConnectAction}", toggleAction, toggleAction.EventToSimConnectEvent());
-                simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.EventToSimConnectEvent());
-            }
-        }
-
-        public void Trigger(TOGGLE_EVENT toggleAction, uint data = 0)
-        {
-            logger.LogInformation("Toggle {action} {data}", toggleAction, data);
-            SendGenericCommand(toggleAction, data);
+            logger.LogInformation("Toggle {event} {data}", eventEnum, data);
+            SendGenericCommand(eventEnum, data);
         }
 
         #endregion

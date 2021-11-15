@@ -14,14 +14,14 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.preset.increase")]
     public class ValueIncreaseAction : PresetChangeAction
     {
-        public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector)
-            : base(logger, flightConnector) { }
+        public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher)
+            : base(logger, flightConnector, eventRegistrar, eventDispatcher) { }
     }
     [StreamDeckAction("tech.flighttracker.streamdeck.preset.decrease")]
     public class ValueDecreaseAction : PresetChangeAction
     {
-        public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector)
-            : base(logger, flightConnector) { }
+        public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher)
+            : base(logger, flightConnector, eventRegistrar, eventDispatcher) { }
     }
 
     #endregion
@@ -48,7 +48,7 @@ namespace FlightStreamDeck.Logics.Actions
     {
         private readonly ILogger logger;
         private readonly IFlightConnector flightConnector;
-
+        private readonly IEventDispatcher eventDispatcher;
         private Timer timer;
         private string action;
         private bool timerHaveTick = false;
@@ -56,16 +56,22 @@ namespace FlightStreamDeck.Logics.Actions
         private AircraftStatus status;
         private ValueChangeSettings settings;
 
-        public PresetChangeAction(ILogger logger, IFlightConnector flightConnector)
+        public PresetChangeAction(
+            ILogger logger, 
+            IFlightConnector flightConnector,
+            IEventRegistrar eventRegistrar,
+            IEventDispatcher eventDispatcher)
         {
             this.logger = logger;
             this.flightConnector = flightConnector;
+            this.eventDispatcher = eventDispatcher;
+
             timer = new Timer { Interval = 400 };
             timer.Elapsed += Timer_Elapsed;
-            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.VOR1_SET);
-            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.VOR2_SET);
-            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.ADF_SET);
-            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.KOHLSMAN_SET);
+            eventRegistrar.RegisterEvent(KnownEvents.VOR1_SET.ToString());
+            eventRegistrar.RegisterEvent(KnownEvents.VOR2_SET.ToString());
+            eventRegistrar.RegisterEvent(KnownEvents.ADF_SET.ToString());
+            eventRegistrar.RegisterEvent(KnownEvents.KOHLSMAN_SET.ToString());
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -115,7 +121,7 @@ namespace FlightStreamDeck.Logics.Actions
             switch (buttonType)
             {
                 case ValueChangeFunction.Heading:
-                    ChangeSphericalValue(sign, increment, null, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.ApHdgSet(value.Value); });
+                    ChangeSphericalValue(sign, increment, null, (uint? value, KnownEvents? evt) => { flightConnector.ApHdgSet(value.Value); });
                     break;
 
                 case ValueChangeFunction.Altitude:
@@ -161,13 +167,13 @@ namespace FlightStreamDeck.Logics.Actions
                     flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
                     break;
                 case ValueChangeFunction.VOR1:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, KnownEvents.VOR1_SET, (uint? value, KnownEvents? evt) => { eventDispatcher.Trigger(evt.Value.ToString(), value.Value); });
                     break;
                 case ValueChangeFunction.VOR2:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, KnownEvents.VOR2_SET, (uint? value, KnownEvents? evt) => { eventDispatcher.Trigger(evt.Value.ToString(), value.Value); });
                     break;
                 case ValueChangeFunction.ADF:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, KnownEvents.ADF_SET, (uint? value, KnownEvents? evt) => { eventDispatcher.Trigger(evt.Value.ToString(), value.Value); });
                     break;
 
             }
@@ -236,7 +242,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        private void ChangeSphericalValue(int sign, int increment, Core.TOGGLE_EVENT? evt, Action<uint?, Core.TOGGLE_EVENT?> changeValue)
+        private void ChangeSphericalValue(int sign, int increment, KnownEvents? evt, Action<uint?, KnownEvents?> changeValue)
         {
             originalValue = (uint)(originalValue + 360 + sign * increment) % 360;
             changeValue(originalValue, evt);

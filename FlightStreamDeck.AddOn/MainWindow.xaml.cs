@@ -18,15 +18,17 @@ namespace FlightStreamDeck.AddOn
     {
         private readonly DeckLogic deckLogic;
         private readonly IFlightConnector flightConnector;
+        private readonly IEventRegistrar eventRegistrar;
         private readonly ILogger<MainWindow> logger;
         private readonly ThrottlingLogic throttlingLogic;
         private IntPtr Handle;
 
-        public MainWindow(DeckLogic deckLogic, IFlightConnector flightConnector, ILogger<MainWindow> logger, ThrottlingLogic throttlingLogic)
+        public MainWindow(DeckLogic deckLogic, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, ILogger<MainWindow> logger, ThrottlingLogic throttlingLogic)
         {
             InitializeComponent();
             this.deckLogic = deckLogic;
             this.flightConnector = flightConnector;
+            this.eventRegistrar = eventRegistrar;
             this.logger = logger;
             this.throttlingLogic = throttlingLogic;
         }
@@ -112,6 +114,7 @@ namespace FlightStreamDeck.AddOn
                 try
                 {
                     simConnect.Initialize(Handle);
+                    eventRegistrar.ReInitializeEvents();
                     myNotifyIcon.Icon = new Icon("Images/button_active@2x.ico");
                     simConnect.Send("Connected to Stream Deck plugin");
                     break;

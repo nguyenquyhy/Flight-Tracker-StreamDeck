@@ -8,6 +8,8 @@ namespace FlightStreamDeck.Logics
     {
         event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
         event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
+        event EventHandler<InvalidEventRegisteredEventArgs> InvalidEventRegistered;
+
         void ApOff();
         void ApOn();
         void ApToggle();
@@ -41,9 +43,9 @@ namespace FlightStreamDeck.Logics
 
         void AvMasterToggle(uint state);
 
-        void Trigger(TOGGLE_EVENT setAction, uint data = 0);
+        void Trigger(Enum eventEnum, uint data);
 
-        void RegisterToggleEvent(TOGGLE_EVENT toggleAction);
+        uint? RegisterToggleEvent(Enum eventEnum, string eventName);
 
         void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
         void DeRegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
@@ -67,6 +69,16 @@ namespace FlightStreamDeck.Logics
         }
 
         public Dictionary<(TOGGLE_VALUE variable, string unit), double> GenericValueStatus { get; }
+    }
+
+    public class InvalidEventRegisteredEventArgs : EventArgs
+    {
+        public InvalidEventRegisteredEventArgs(uint sendID)
+        {
+            SendID = sendID;
+        }
+
+        public uint SendID { get; }
     }
 
     public class AircraftStatus

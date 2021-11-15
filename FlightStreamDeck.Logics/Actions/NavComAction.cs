@@ -44,6 +44,8 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly ILogger<NavComAction> logger;
         private readonly IImageLogic imageLogic;
         private readonly IFlightConnector flightConnector;
+        private readonly IEventRegistrar eventRegistrar;
+        private readonly IEventDispatcher eventDispatcher;
         private readonly EnumConverter enumConverter;
 
         private readonly Timer timer;
@@ -57,8 +59,8 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_VALUE? active;
         private TOGGLE_VALUE? standby;
-        private TOGGLE_EVENT? toggle;
-        private TOGGLE_EVENT? set;
+        private KnownEvents? toggle;
+        private KnownEvents? set;
         private string mask;
 
         string lastValue1 = null;
@@ -68,13 +70,21 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TaskCompletionSource<bool> initializationTcs;
 
-        public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector, EnumConverter enumConverter)
+        public NavComAction(
+            ILogger<NavComAction> logger,
+            IImageLogic imageLogic,
+            IFlightConnector flightConnector,
+            IEventRegistrar eventRegistrar,
+            IEventDispatcher eventDispatcher,
+            EnumConverter enumConverter)
         {
             registration = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]);
 
             this.logger = logger;
             this.imageLogic = imageLogic;
             this.flightConnector = flightConnector;
+            this.eventRegistrar = eventRegistrar;
+            this.eventDispatcher = eventDispatcher;
             this.enumConverter = enumConverter;
             timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
             timer.Elapsed += Timer_Elapsed;
@@ -309,36 +319,36 @@ namespace FlightStreamDeck.Logics.Actions
                 case "NAV1":
                     active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__1;
                     standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__1;
-                    toggle = TOGGLE_EVENT.NAV1_RADIO_SWAP;
-                    set = TOGGLE_EVENT.NAV1_STBY_SET;
+                    toggle = KnownEvents.NAV1_RADIO_SWAP;
+                    set = KnownEvents.NAV1_STBY_SET;
                     mask = "108.00";
                     break;
                 case "NAV2":
                     active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2;
                     standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2;
-                    toggle = TOGGLE_EVENT.NAV2_RADIO_SWAP;
-                    set = TOGGLE_EVENT.NAV2_STBY_SET;
+                    toggle = KnownEvents.NAV2_RADIO_SWAP;
+                    set = KnownEvents.NAV2_STBY_SET;
                     mask = "108.00";
                     break;
                 case "COM1":
                     active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1;
                     standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1;
-                    toggle = TOGGLE_EVENT.COM_STBY_RADIO_SWAP;
-                    set = TOGGLE_EVENT.COM_STBY_RADIO_SET;
+                    toggle = KnownEvents.COM_STBY_RADIO_SWAP;
+                    set = KnownEvents.COM_STBY_RADIO_SET;
                     mask = "118.00";
                     break;
                 case "COM2":
                     active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2;
                     standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2;
-                    toggle = TOGGLE_EVENT.COM2_RADIO_SWAP;
-                    set = TOGGLE_EVENT.COM2_STBY_RADIO_SET;
+                    toggle = KnownEvents.COM2_RADIO_SWAP;
+                    set = KnownEvents.COM2_STBY_RADIO_SET;
                     mask = "118.00";
                     break;
                 case "XPDR":
                     active = TOGGLE_VALUE.TRANSPONDER_CODE__1;
                     standby = TOGGLE_VALUE.TRANSPONDER_CODE__1;
                     toggle = null;
-                    set = TOGGLE_EVENT.XPNDR_SET;
+                    set = KnownEvents.XPNDR_SET;
                     mask = "1200";
                     break;
                 default:
@@ -358,11 +368,11 @@ namespace FlightStreamDeck.Logics.Actions
             }
             if (toggle != null)
             {
-                flightConnector.RegisterToggleEvent(toggle.Value);
+                eventRegistrar.RegisterEvent(toggle.Value.ToString());
             }
             if (set != null)
             {
-                flightConnector.RegisterToggleEvent(set.Value);
+                eventRegistrar.RegisterEvent(set.Value.ToString());
             }
             if (dependantOnAvionics != null)
             {
@@ -382,7 +392,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggle != null)
             {
-                flightConnector.Trigger(toggle.Value);
+                eventDispatcher.Trigger(toggle.Value.ToString());
             }
         }
 
@@ -458,12 +468,12 @@ namespace FlightStreamDeck.Logics.Actions
                         uint digit = (byte)value[i] - (uint)48;
                         data = data * 16 + digit;
                     }
-                    flightConnector.Trigger(set.Value, data);
+                    eventDispatcher.Trigger(set.Value.ToString(), data);
 
                     if (toggle != null && swap)
                     {
                         await Task.Delay(500);
-                        flightConnector.Trigger(toggle.Value);
+                        eventDispatcher.Trigger(toggle.Value.ToString());
                     }
                 }
             }

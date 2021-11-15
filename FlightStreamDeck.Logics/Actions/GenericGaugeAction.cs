@@ -62,9 +62,11 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly ILogger<GenericGaugeAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
+        private readonly IEventRegistrar eventRegistrar;
+        private readonly IEventDispatcher eventDispatcher;
         private readonly EnumConverter enumConverter;
 
-        private TOGGLE_EVENT? toggleEvent = null;
+        private string? toggleEvent = null;
         private TOGGLE_VALUE? displayValue = null;
         private TOGGLE_VALUE? subDisplayValue = null;
         private TOGGLE_VALUE? displayValueBottom = null;
@@ -102,13 +104,20 @@ namespace FlightStreamDeck.Logics.Actions
 
         private GenericGaugeSettings settings = null;
 
-        public GenericGaugeAction(ILogger<GenericGaugeAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
+        public GenericGaugeAction(
+            ILogger<GenericGaugeAction> logger,
+            IFlightConnector flightConnector,
+            IImageLogic imageLogic,
+            IEventRegistrar eventRegistrar,
+            IEventDispatcher eventDispatcher,
             EnumConverter enumConverter)
         {
             this.settings = DefaultSettings;
             this.logger = logger;
             this.flightConnector = flightConnector;
             this.imageLogic = imageLogic;
+            this.eventRegistrar = eventRegistrar;
+            this.eventDispatcher = eventDispatcher;
             this.enumConverter = enumConverter;
         }
 
@@ -130,7 +139,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            if (toggleEvent.HasValue) flightConnector.Trigger(toggleEvent.Value);
+            eventDispatcher.Trigger(toggleEvent);
             return Task.CompletedTask;
         }
 
@@ -160,7 +169,7 @@ namespace FlightStreamDeck.Logics.Actions
                 this.settings = settings;
             }
 
-            TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(this.settings.ToggleValue);
+            var newToggleEvent = this.settings.ToggleValue;
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(this.settings.DisplayValue);
             TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(this.settings.SubDisplayValue);
             TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(this.settings.DisplayValueBottom);
@@ -257,7 +266,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void RegisterValues()
         {
-            if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
+            eventRegistrar.RegisterEvent(toggleEvent);
 
             var values = new List<(TOGGLE_VALUE variables, string unit)>();
             if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
