@@ -35,7 +35,7 @@ However, with great power comes great responsibility: you have to do a bit of se
 |-----------|-------------|---------|
 | Title | This is the built-in title of any Stream Deck button. We hide this by default. You should consider using the next parameter instead. | *Empty* |
 | Header | This is similar to title but with a pre-defined font, size and position that looks nice on the button. | HDG |
-| Toggle event | The SimConnect event that triggers when the button is tapped on.<br />You can find the supporting event ID in [FlightStreamDeck.Core/TOGGLE_EVENT.cs](/FlightStreamDeck.Core/TOGGLE_EVENT.cs). Explanation of each ID can be found in [Legacy Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Legacy_Event_IDs.htm). | AP_PANEL_HEADING_HOLD |
+| Toggle event | The SimConnect event that triggers when the button is tapped on.<br />You can find a list of tested event IDs in [FlightStreamDeck.Logics/KnownEvents.cs](/FlightStreamDeck.Logics/KnownEvents.cs), but you are not limited to that list. Any valid SimConnect event ID should work. Explanation of each ID can be found in [Event IDs](https://docs.flightsimulator.com/html/index.htm#t=Programming_Tools%2FSimVars%2FEvent_IDs.htm). | AP_PANEL_HEADING_HOLD |
 | Toggle parameter | The parameter to pass along with the event. This can be a number or a SimConnect variable. If using a variable, the value of the variable will be passed to the event. | 1 <BR/> PLANE HEADING DEGREES MAGNETIC |
 | Hold event & parameter | Similar to Toggle event & parameter, but will trigger when you hold the button. | |
 | Feedback value | The SimConnect variable that indicates if the button is *active* or not. Active state will show a green light or a green number (if `Display value` below is set) on the button.<br />You can find the supporting variables in [FlightStreamDeck.Core/TOGGLE_VALUE.cs](/FlightStreamDeck.Core/TOGGLE_VALUE.cs). Explanation for each variable can be found in [Aircraft Simulation Variables](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_Simulation_Variables.htm).<br />You can also use some comparison operators such as "==", "!=", ">", "<", ">=", "<=" between a variable and a value or between 2 variables. | AUTOPILOT HEADING LOCK<br />FLAPS HANDLE INDEX==2 |
@@ -155,7 +155,7 @@ Here are the steps that you need to do to get access to the new events:
 7. There should now be a "MSFS2020-module" folder, open that folder.
 8. Copy the "mobiflight-event-module" folder to your MSFS community folder.
 9. Relaunch MSFS 2020
-10. Configure Flight-Stream-Deck with [newly supported events](/FlightStreamDeck.Core/TOGGLE_EVENT.cs#L773), courtesy of MobiFlight!  They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
+10. Configure Flight-Stream-Deck with MobiFlight events! They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
 
 We've included a quick GNS 530 example for the knobs and basic buttons [here](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/tree/master/Assets/Starter%20Profiles/MobiFlight-GNS-530.streamDeckProfile)
 
