@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,7 +6,9 @@
     <UseWPF>true</UseWPF>
     <PlatformTarget>x64</PlatformTarget>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>0.37.0</Version>
+    <Version>0.39.0</Version>
+    <FileVersion>0.39.0.0</FileVersion>
+    <AssemblyVersion>0.39.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
