@@ -61,6 +61,7 @@ namespace FlightStreamDeck.Core
         }
         public BaseToggle(string name)
         {
+            
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Name cannot be null or empty");

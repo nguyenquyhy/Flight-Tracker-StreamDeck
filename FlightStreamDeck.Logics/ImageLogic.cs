@@ -156,7 +156,9 @@ namespace FlightStreamDeck.Logics
 
         public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageFilePath = null, byte[] imageBytes = null)
         {
+            
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
+            //var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
 
             var img = GetBackgroundImage(imageBytes, imageFilePath, defaultBackground);
@@ -176,12 +178,16 @@ namespace FlightStreamDeck.Logics
 
                 if (!string.IsNullOrWhiteSpace(value1))
                 {
+                    //value1 = value1.Substring(0, value1.Length - 3);
+                    //value1 = value1.Insert(3, ".");
                     var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.Yellow : Color.LightGray;
                     ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, showMainOnly ? (imgSize.Height / 2) : (imgSize.Height / 6 + imgSize.Height / 4)));
                 }
                 if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
+                    //value2 = value2.Substring(0, value2.Length - 3);
+                    //value2 = value2.Insert(3, ".");
                     var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
                     ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 6 + imgSize.Height / 4 + size2.Height));

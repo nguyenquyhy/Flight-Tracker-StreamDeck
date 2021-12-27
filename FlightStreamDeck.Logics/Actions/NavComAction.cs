@@ -35,8 +35,8 @@ namespace FlightStreamDeck.Logics.Actions
         private const int HOLD_DURATION_MILLISECONDS = 1000;
         private const string minNavVal = "10800";
         private const string maxNavVal = "11795";
-        private const string minComVal = "11800";
-        private const string maxComVal = "13697";
+        private const string minComVal = "118000";
+        private const string maxComVal = "136990";
         private const string minXpdrVal = "0000";
         private const string maxXpdrVal = "7777";
 
@@ -239,12 +239,18 @@ namespace FlightStreamDeck.Logics.Actions
                 {
                     showMainOnly = true;
                     value1 = dependant ? e.GenericValueStatus.Find(x => x.Name == active.Name).Value.ToString("F" + active.Decimals.ToString()) : string.Empty;
+                    //value1 = value1.Substring(0, value1.Length - 3);
+                    //value1 = value1.Insert(3, ".");
                     if (settings.Type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
                 }
-                if (standby != null && (e.GenericValueStatus.Find(x => x == standby) != null))
+                if (standby != null && (e.GenericValueStatus.Find(x => x.Name.Contains("STANDBY")) != null))
                 {
-                    value2 = dependant ? e.GenericValueStatus.Find(x => x == standby).Value.ToString("F" + standby.Decimals.ToString()) : string.Empty;
-                    showMainOnly = active != null && active.Value == standby.Value;
+                    //value2 = dependant ? e.GenericValueStatus.Find(x => x == standby).Value.ToString("F" + standby.Decimals.ToString()) : string.Empty;
+                    value2 = dependant ? e.GenericValueStatus.Find(x => x.Name.Contains ("STANDBY")).Value.ToString("F" + standby.Decimals.ToString()) : string.Empty;
+                    //value2 = value2.Substring(0, value2.Length - 3);
+                    //value2 = value2.Insert(3, ".");
+                    showMainOnly = false;
+                    //showMainOnly = active != null && active.Value == standby.Value;
                 }
 
                 if (settings.Type != null && settings.Type.StartsWith("ADF"))
@@ -323,7 +329,7 @@ namespace FlightStreamDeck.Logics.Actions
                     standby = new ToggleValue("COM_STANDBY_FREQUENCY__1");
                     toggle = new ToggleEvent("COM_STBY_RADIO_SWAP");
                     set = new ToggleEvent("COM_STBY_RADIO_SET");
-                    mask = "118.00";
+                    mask = "118.000";
                     break;
                 case "COM2":
                     active = new ToggleValue("COM_ACTIVE_FREQUENCY__2");

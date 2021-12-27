@@ -90,7 +90,7 @@ namespace FlightStreamDeck.Logics.Actions
             MaxValue = "30",
             AbsValText = "false",
             ValueUnit = string.Empty,
-            ValuePrecision = "2",
+            ValuePrecision = "3",
             HideLabelOutsideMinMaxTop = false,
             HideLabelOutsideMinMaxBottom = false
         };
@@ -180,7 +180,8 @@ namespace FlightStreamDeck.Logics.Actions
             ToggleValue newDisplayValue = existingDisplayValue;
             if (newDisplayValue == null)
             {
-                newDisplayValue = string.IsNullOrEmpty(this.settings.DisplayValue) ? null : new(this.settings.DisplayValue, newUnit, customDecimals, currentMinValue, currentMaxValue);
+                //newDisplayValue = string.IsNullOrEmpty(this.settings.DisplayValue) ? null : new(this.settings.DisplayValue, newUnit, customDecimals, currentMinValue, currentMaxValue);
+                newDisplayValue = string.IsNullOrEmpty(this.settings.DisplayValue) ? null : new(this.settings.DisplayValue, newUnit, customDecimals);
             }
 
             ToggleValue existingSubDisplayValue = EventValueLibrary.AvailableValues.Find(x => string.IsNullOrWhiteSpace(this.settings.SubDisplayValue) && x.Name == this.settings.SubDisplayValue);

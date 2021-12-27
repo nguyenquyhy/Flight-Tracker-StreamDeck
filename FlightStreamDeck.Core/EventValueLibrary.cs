@@ -4,10 +4,9 @@ namespace FlightStreamDeck.Core
 {
     public static class EventValueLibrary
     {
-        public static List<ToggleValue> AvailableValues
+        public static List<ToggleValue> AvailableValues = new List<ToggleValue>(new[]
         {
-            get => new()
-            {
+
                 new ToggleValue("THROTTLE_LOWER_LIMIT", "Percent", 2),
                 new ToggleValue("GENERAL_ENG_RPM__1", "Rpm", 1),
                 new ToggleValue("GENERAL_ENG_RPM__2", "Rpm", 1),
@@ -30,10 +29,10 @@ namespace FlightStreamDeck.Core
                 new ToggleValue("GENERAL_ENG_EXHAUST_GAS_TEMPERATURE__3", "Percent", 0),
                 new ToggleValue("GENERAL_ENG_EXHAUST_GAS_TEMPERATURE__4", "Percent", 0),
                 new ToggleValue("ENG_MAX_RPM", "Rpm", 1),
-		new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__1", "Psi", 0),
-		new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__2", "Psi", 0),
-		new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__3", "Psi", 0),
-		new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__4", "Psi", 0),
+                new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__1", "Psi", 0),
+                new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__2", "Psi", 0),
+                new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__3", "Psi", 0),
+                new ToggleValue("GENERAL_ENG_FUEL_PRESSURE__4", "Psi", 0),
                 new ToggleValue("GENERAL_ENG_FUEL_USED_SINCE_START", "Pounds", 2),
                 new ToggleValue("TURB_ENG_ITT__1", "Celsius", 0),
                 new ToggleValue("TURB_ENG_ITT__2", "Celsius", 0),
@@ -385,7 +384,7 @@ namespace FlightStreamDeck.Core
                 new ToggleValue("TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__4", "Psi", 0),
                 new ToggleValue("TOGGLE_VALUE.GYRO_DRIFT_ERROR", "Degrees", 0),
                 new ToggleValue("TOGGLE_VALUE.HEADING_INDICATOR", "Degrees", 0)
-            };
+
+        });
         }
     }
-}
