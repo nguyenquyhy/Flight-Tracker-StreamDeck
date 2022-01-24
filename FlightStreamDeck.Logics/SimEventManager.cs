@@ -83,7 +83,7 @@ namespace FlightStreamDeck.Logics
                 }
                 else
                 {
-                    logger.LogInformation("Event {eventName} cannot be re-registered to enum {eventEnum}.", eventName, (int)registration.eventEnum, sendId);
+                    logger.LogInformation("Event {eventName} cannot be re-registered to enum {eventEnum}.", eventName, (int)registration.eventEnum);
                     registeredEvents[eventName] = (registration.eventEnum, false);
                 }
             }
