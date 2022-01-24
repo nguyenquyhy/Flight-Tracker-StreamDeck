@@ -207,11 +207,12 @@ namespace FlightStreamDeck.Logics.Actions
         private async Task FlightConnector_AircraftStatusUpdatedAsync(object sender, AircraftStatusUpdatedEventArgs e)
         {
             status = e.AircraftStatus;
+            var type = settings?.Type;
             // Update ADF image here since ADF frequencies aren't easily "converted" with mhz/khz/hz from simconnect
-            if (settings.Type != null && settings.Type.StartsWith("ADF"))
+            if (type != null && type.StartsWith("ADF"))
             {
-                string active = FormatFrequency(settings.Type.Equals("ADF1") ? status?.ADFActiveFrequency1 : status?.ADFActiveFrequency2);
-                string standby = FormatFrequency(settings.Type.Equals("ADF1") ? status?.ADFStandbyFrequency1 : status?.ADFStandbyFrequency2);
+                string active = FormatFrequency(type.Equals("ADF1") ? status?.ADFActiveFrequency1 : status?.ADFActiveFrequency2);
+                string standby = FormatFrequency(type.Equals("ADF1") ? status?.ADFStandbyFrequency1 : status?.ADFStandbyFrequency2);
 
                 if (!string.IsNullOrEmpty(active) || !string.IsNullOrEmpty(standby))
                 {
