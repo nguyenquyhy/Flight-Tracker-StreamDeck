@@ -140,22 +140,17 @@ The plugin also allows you to switch between the 2 modes by clicking on the othe
 
 [MobiFlight](https://www.mobiflight.com/en/download.html) has put some awesome work together to allow MSFS users to have access to some events that we haven't gotten in the SDK yet!  One of the most requested things yet has been GPS/G1000/ETC integration with the streamdeck plugin, but the SDK has been lagging behind.
 
-Well, the future is now! MobiFlight put together a [video](https://youtu.be/ylOIzUktpDk?t=282) of how you install and setup his app.  In order for us to use the events he exposes to interact with the simulator, we need to install his app, update the setting to install beta mode, and then copy the new module folder that gets downloaded to your MSFS community folder.  We don't need his app installed or running after we get the wasm module copied into our community folder.  It's just how they are distrubting it right now. 
+Well, the future is now! MobiFlight put together a [video](https://youtu.be/ylOIzUktpDk?t=282) of how you install and setup his app.  In order for us to use the events he exposes to interact with the simulator, we need to install his app, and copy the new module folder that gets downloaded to your MSFS community folder.  We don't need his app installed or running after we get the wasm module copied into our community folder.  It's just how they are distributing it right now. 
 
 Go show MobiFlight some love over in their [forum post](https://forums.flightsimulator.com/t/simconnect-and-gps-event-ids/308990/16). Tell them the folks from Flight-Tracker-StreamDeck <3 their work!
 
 Here are the steps that you need to do to get access to the new events:
 
 1. Have MSFS 2020 stopped.
-2. Install MobiFlight - https://www.mobiflight.com/en/download.html
-3. Run MobiFlight
-4. In the Extras -> Settings menu, at the bottom, check "I would like to receive beta version updates"
-5. Click "Help -> Check for update"
-6. After update, navigate to the install location for MobiFlight on your machine.
-7. There should now be a "MSFS2020-module" folder, open that folder.
-8. Copy the "mobiflight-event-module" folder to your MSFS community folder.
-9. Relaunch MSFS 2020
-10. Configure Flight-Stream-Deck with MobiFlight events! They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
+2. Download and install MobiFlight - https://www.mobiflight.com/en/download.html
+3. When prompted, also install the Mobiflight WASM module for MSFS2020 (this is the important part for Flight-Stream-Deck)
+4. Relaunch MSFS 2020
+5. Configure Flight-Stream-Deck with MobiFlight events! They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
 
 We've included a quick GNS 530 example for the knobs and basic buttons [here](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/tree/master/Assets/Starter%20Profiles/MobiFlight-GNS-530.streamDeckProfile)
 
