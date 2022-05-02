@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using SharpDeck;
-using SharpDeck.Events.Received;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,11 +8,10 @@ namespace FlightStreamDeck.Logics
 {
     public class NumpadParams
     {
-        public NumpadParams(string type, string min, string max, string mask, string imageBackgroundFilePath, byte[] imageBackground_base64)
+        public NumpadParams(string type, string min, string mask, string imageBackgroundFilePath, byte[] imageBackground_base64)
         {
             Type = type;
             MinPattern = min;
-            MaxPattern = max;
             Mask = mask;
             ImageBackgroundFilePath = imageBackgroundFilePath;
             ImageBackground_base64 = imageBackground_base64;
@@ -21,7 +19,6 @@ namespace FlightStreamDeck.Logics
 
         public string Type { get; }
         public string MinPattern { get; }
-        public string MaxPattern { get; }
         public string Value { get; set; } = "";
         public string Mask { get; set; } = "xxx.xx";
         public string ImageBackgroundFilePath { get; set; }
@@ -48,7 +45,7 @@ namespace FlightStreamDeck.Logics
             loggerFactory.CreateLogger<DeckLogic>().LogInformation("Initialize with args: {args}", string.Join("|", args));
 
             var plugin = StreamDeckPlugin.Create(args[1..], Assembly.GetAssembly(GetType())).WithServiceProvider(serviceProvider);
-            
+
             Task.Run(() =>
             {
                 plugin.Run(); // continuously listens until the connection closes

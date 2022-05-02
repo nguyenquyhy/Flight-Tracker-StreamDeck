@@ -47,8 +47,8 @@ namespace FlightStreamDeck.Logics
 
         uint? RegisterToggleEvent(Enum eventEnum, string eventName);
 
-        void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
-        void DeRegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
+        void RegisterSimValues(params (TOGGLE_VALUE variables, string? unit)[] simValues);
+        void DeRegisterSimValues(params (TOGGLE_VALUE variables, string? unit)[] simValues);
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
@@ -63,12 +63,12 @@ namespace FlightStreamDeck.Logics
 
     public class ToggleValueUpdatedEventArgs : EventArgs
     {
-        public ToggleValueUpdatedEventArgs(Dictionary<(TOGGLE_VALUE variable, string unit), double> genericValueStatus)
+        public ToggleValueUpdatedEventArgs(Dictionary<(TOGGLE_VALUE variable, string? unit), double> genericValueStatus)
         {
             GenericValueStatus = genericValueStatus;
         }
 
-        public Dictionary<(TOGGLE_VALUE variable, string unit), double> GenericValueStatus { get; }
+        public Dictionary<(TOGGLE_VALUE variable, string? unit), double> GenericValueStatus { get; }
     }
 
     public class InvalidEventRegisteredEventArgs : EventArgs

@@ -13,7 +13,7 @@ namespace FlightStreamDeck.Logics
     {
         string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null);
         string GetNumberImage(int number);
-        string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null);
+        string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageOnFilePath = null, byte[]? imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
         public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string subValueText = null);
         public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
@@ -99,7 +99,7 @@ namespace FlightStreamDeck.Logics
             return ToBase64PNG(img);
         }
 
-        public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageFilePath = null, byte[] imageBytes = null)
+        public string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageFilePath = null, byte[]? imageBytes = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
@@ -310,7 +310,7 @@ namespace FlightStreamDeck.Logics
             return ToBase64PNG(img);
         }
 
-        private Image GetBackgroundImage(byte[] imageBytes, string imageFilePath, Image imageDefault)
+        private Image GetBackgroundImage(byte[]? imageBytes, string? imageFilePath, Image imageDefault)
         {
             if (imageBytes != null && imageBytes.Length > 0)
             {

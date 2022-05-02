@@ -1,4 +1,5 @@
 ﻿using FlightStreamDeck.Core;
+using FlightStreamDeck.Logics.Actions.NavCom;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -8,7 +9,6 @@ using SharpDeck.Enums;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,12 +31,11 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
     public class NavComAction : BaseAction<NavComSettings>
     {
-        private AircraftStatus status;
         private const int HOLD_DURATION_MILLISECONDS = 1000;
         private const string minNavVal = "10800";
         private const string maxNavVal = "11795";
-        private const string minComVal = "11800";
-        private const string maxComVal = "13697";
+        private const string minComVal = "118000";
+        private const string maxComVal = "136990";
         private const string minXpdrVal = "0000";
         private const string maxXpdrVal = "7777";
 
@@ -50,25 +49,17 @@ namespace FlightStreamDeck.Logics.Actions
 
         private readonly Timer timer;
 
-        private IdentifiableDeviceInfo device;
+        private IdentifiableDeviceInfo? device;
 
-        private NavComSettings settings;
+        private NavComSettings? settings;
 
-        private TOGGLE_VALUE? dependantOnAvionics;
-        private TOGGLE_VALUE? dependantOnBatt;
+        NavComHandler? handler = null;
 
-        private TOGGLE_VALUE? active;
-        private TOGGLE_VALUE? standby;
-        private KnownEvents? toggle;
-        private KnownEvents? set;
-        private string mask;
-
-        string lastValue1 = null;
-        string lastValue2 = null;
+        string? lastValue1 = null;
+        string? lastValue2 = null;
         bool lastDependant = false;
-        bool forceRegen = false;
 
-        private TaskCompletionSource<bool> initializationTcs;
+        private TaskCompletionSource<bool>? initializationTcs;
 
         public NavComAction(
             ILogger<NavComAction> logger,
@@ -94,26 +85,28 @@ namespace FlightStreamDeck.Logics.Actions
         {
             timer.Stop();
 
-            // Handle hold
-            if (settings.HoldFunction != "Swap")
+            if (settings != null)
             {
-                await SwitchToNumpad();
-            }
-            else
-            {
-                SwapFrequencies();
+                // Handle hold
+                if (settings.HoldFunction != "Swap")
+                {
+                    await SwitchToNumpad();
+                }
+                else
+                {
+                    handler?.SwapFrequencies();
+                }
             }
         }
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
-            flightConnector.AircraftStatusUpdated += new EventHandler<AircraftStatusUpdatedEventArgs>(async (s, e) => await FlightConnector_AircraftStatusUpdatedAsync(s, e));
 
             var settings = args.Payload.GetSettings<NavComSettings>();
             InitializeSettings(settings);
 
-            await UpdateImage(dependant: false, value1: null, value2: null, showMainOnly: false);
+            await UpdateImage(false, string.Empty, string.Empty, false);
 
             var tcs = initializationTcs;
             if (tcs != null)
@@ -126,8 +119,7 @@ namespace FlightStreamDeck.Logics.Actions
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
         {
             flightConnector.GenericValuesUpdated -= FlightConnector_GenericValuesUpdated;
-            flightConnector.AircraftStatusUpdated -= new EventHandler<AircraftStatusUpdatedEventArgs>(async (s, e) => await FlightConnector_AircraftStatusUpdatedAsync(s, e));
-            SwitchTo(null);
+            SwitchTo(null, null, null);
 
             return Task.CompletedTask;
         }
@@ -137,7 +129,7 @@ namespace FlightStreamDeck.Logics.Actions
             if (lastDependant)
             {
                 var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
-                if (device.Type != DeviceType.StreamDeckMini)
+                if (device != null && device.Type != DeviceType.StreamDeckMini)
                 {
                     this.device = device;
                     timer.Start();
@@ -156,13 +148,16 @@ namespace FlightStreamDeck.Logics.Actions
                     timer.Stop();
 
                     // Click
-                    if (settings.HoldFunction != "Swap")
+                    if (settings != null)
                     {
-                        SwapFrequencies();
-                    }
-                    else
-                    {
-                        return SwitchToNumpad();
+                        if (settings.HoldFunction != "Swap")
+                        {
+                            handler?.SwapFrequencies();
+                        }
+                        else
+                        {
+                            return SwitchToNumpad();
+                        }
                     }
                 }
             }
@@ -188,89 +183,34 @@ namespace FlightStreamDeck.Logics.Actions
                 InitializeSettings(args.Payload.ToObject<NavComSettings>());
             }
 
-            await UpdateImage(dependant: false, value1: null, value2: null, showMainOnly: false);
+            await UpdateImage(false, string.Empty, string.Empty, false);
         }
 
         private void InitializeSettings(NavComSettings settings)
         {
             this.settings = settings;
-            dependantOnAvionics = enumConverter.GetVariableEnum(settings.AvionicsValue);
-            dependantOnBatt = enumConverter.GetVariableEnum(settings.BattMasterValue);
-
+            
             lastDependant = !lastDependant;
             lastValue1 = null;
             lastValue2 = null;
 
-            SwitchTo(settings.Type);
+            SwitchTo(
+                settings.Type, 
+                enumConverter.GetVariableEnum(settings.BattMasterValue),
+                enumConverter.GetVariableEnum(settings.AvionicsValue)
+            );
         }
 
-        private async Task FlightConnector_AircraftStatusUpdatedAsync(object sender, AircraftStatusUpdatedEventArgs e)
-        {
-            status = e.AircraftStatus;
-            var type = settings?.Type;
-            // Update ADF image here since ADF frequencies aren't easily "converted" with mhz/khz/hz from simconnect
-            if (type != null && type.StartsWith("ADF"))
-            {
-                string active = FormatFrequency(type.Equals("ADF1") ? status?.ADFActiveFrequency1 : status?.ADFActiveFrequency2);
-                string standby = FormatFrequency(type.Equals("ADF1") ? status?.ADFStandbyFrequency1 : status?.ADFStandbyFrequency2);
-
-                if (!string.IsNullOrEmpty(active) || !string.IsNullOrEmpty(standby))
-                {
-                    string value = lastDependant ? active : string.Empty;
-                    string value2 = lastDependant ? standby : string.Empty;
-                    if (forceRegen || lastValue1 != value || lastValue2 != value2)
-                    {
-                        forceRegen = false;
-                        lastValue1 = value;
-                        lastValue2 = value2;
-                        await UpdateImage(lastDependant, value, value2, false);
-                    }
-                }
-            }
-        }
-
-        private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
+        private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
         {
             var settings = this.settings;
 
             if (settings != null)
             {
-                string value1 = null, value2 = null;
-                bool dependant = true;
-                bool showMainOnly = false;
+                if (handler != null)
+                {
+                    var (value1, value2, showMainOnly, dependant) = handler.GetDisplayValues(e.GenericValueStatus);
 
-                if (dependantOnBatt != null && e.GenericValueStatus.ContainsKey((dependantOnBatt.Value, null)))
-                {
-                    dependant = e.GenericValueStatus[(dependantOnBatt.Value, null)] != 0;
-                }
-                if (dependantOnAvionics != null && e.GenericValueStatus.ContainsKey((dependantOnAvionics.Value, null)))
-                {
-                    dependant = dependant && e.GenericValueStatus[(dependantOnAvionics.Value, null)] != 0;
-                }
-
-                if (active != null && e.GenericValueStatus.ContainsKey((active.Value, null)))
-                {
-                    showMainOnly = true;
-                    value1 = dependant ? e.GenericValueStatus[(active.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(active.Value)) : string.Empty;
-                    if (settings.Type == "XPDR" && value1 != string.Empty) value1 = value1.PadLeft(4, '0');
-                }
-                if (standby != null && e.GenericValueStatus.ContainsKey((standby.Value, null)))
-                {
-                    value2 = dependant ? e.GenericValueStatus[(standby.Value, null)].ToString("F" + EventValueLibrary.GetDecimals(standby.Value)) : string.Empty;
-                    showMainOnly = active != null && active.Value == standby.Value;
-                }
-
-                if (settings.Type != null && settings.Type.StartsWith("ADF"))
-                {
-                    // For ADF, the update happens in FlightConnector_AircraftStatusUpdatedAsync
-                    if (lastDependant != dependant)
-                    {
-                        forceRegen = true;
-                        lastDependant = dependant;
-                    }
-                }
-                else
-                {
                     if (lastValue1 != value1 || lastValue2 != value2 || lastDependant != dependant)
                     {
                         lastValue1 = value1;
@@ -284,12 +224,12 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage(bool dependant, string value1, string value2, bool showMainOnly)
         {
-            await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly, settings.ImageBackground, GetImageBytes()));
+            await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly, settings.ImageBackground, GetImageBytes()));
         }
 
-        private byte[] GetImageBytes()
+        private byte[]? GetImageBytes()
         {
-            byte[] imageBackgroundBytes = null;
+            byte[]? imageBackgroundBytes = null;
             if (settings.ImageBackground_base64 != null)
             {
                 var s = settings.ImageBackground_base64;
@@ -300,137 +240,136 @@ namespace FlightStreamDeck.Logics.Actions
             return imageBackgroundBytes;
         }
 
-        private void SwitchTo(string type)
+        private void SwitchTo(string? type, TOGGLE_VALUE? batteryVariable, TOGGLE_VALUE? avionicsVariable)
         {
-            var existing = new List<(TOGGLE_VALUE variables, string unit)>();
-            if (active != null)
-            {
-                existing.Add((active.Value, null));
-            }
-            if (standby != null)
-            {
-                existing.Add((standby.Value, null));
-            }
-            if (existing.Count > 0)
-            {
-                flightConnector.DeRegisterSimValues(existing.ToArray());
-            }
+            handler?.DeRegisterSimValues();
             switch (type)
             {
                 case "NAV1":
-                    active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__1;
-                    standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__1;
-                    toggle = KnownEvents.NAV1_RADIO_SWAP;
-                    set = KnownEvents.NAV1_STBY_SET;
-                    mask = "108.00";
+                    handler = new BcdHandler(
+                        flightConnector,
+                        eventRegistrar,
+                        eventDispatcher,
+                        TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__1,
+                        TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__1,
+                        batteryVariable,
+                        avionicsVariable,
+                        KnownEvents.NAV1_RADIO_SWAP,
+                        KnownEvents.NAV1_STBY_SET,
+                        minNavVal,
+                        "108.00"
+                    );
                     break;
                 case "NAV2":
-                    active = TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2;
-                    standby = TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2;
-                    toggle = KnownEvents.NAV2_RADIO_SWAP;
-                    set = KnownEvents.NAV2_STBY_SET;
-                    mask = "108.00";
+                    handler = new BcdHandler(
+                        flightConnector,
+                        eventRegistrar,
+                        eventDispatcher,
+                        TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2,
+                        TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2,
+                        batteryVariable,
+                        avionicsVariable,
+                        KnownEvents.NAV2_RADIO_SWAP,
+                        KnownEvents.NAV2_STBY_SET,
+                        minNavVal,
+                        "108.00"
+                    );
                     break;
                 case "COM1":
-                    active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1;
-                    standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1;
-                    toggle = KnownEvents.COM_STBY_RADIO_SWAP;
-                    set = KnownEvents.COM_STBY_RADIO_SET;
-                    mask = "118.00";
+                    handler = new HzHandler(
+                        flightConnector,
+                        eventRegistrar,
+                        eventDispatcher,
+                        TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1,
+                        TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1,
+                        batteryVariable,
+                        avionicsVariable,
+                        KnownEvents.COM_STBY_RADIO_SWAP,
+                        KnownEvents.COM_STBY_RADIO_SET_HZ,
+                        minComVal,
+                        "118.000"
+                    );
                     break;
                 case "COM2":
-                    active = TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2;
-                    standby = TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2;
-                    toggle = KnownEvents.COM2_RADIO_SWAP;
-                    set = KnownEvents.COM2_STBY_RADIO_SET;
-                    mask = "118.00";
+                    handler = new HzHandler(
+                        flightConnector,
+                        eventRegistrar,
+                        eventDispatcher,
+                        TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2,
+                        TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2,
+                        batteryVariable,
+                        avionicsVariable,
+                        KnownEvents.COM2_RADIO_SWAP,
+                        KnownEvents.COM2_STBY_RADIO_SET_HZ,
+                        minComVal,
+                        "118.000"
+                    );
                     break;
                 case "XPDR":
-                    active = TOGGLE_VALUE.TRANSPONDER_CODE__1;
-                    standby = TOGGLE_VALUE.TRANSPONDER_CODE__1;
-                    toggle = null;
-                    set = KnownEvents.XPNDR_SET;
-                    mask = "1200";
+                    handler = new XpdrHandler(
+                        flightConnector,
+                        eventRegistrar,
+                        eventDispatcher,
+                        TOGGLE_VALUE.TRANSPONDER_CODE__1,
+                        null,
+                        batteryVariable,
+                        avionicsVariable,
+                        null,
+                        KnownEvents.XPNDR_SET,
+                        minXpdrVal,
+                        "1200"
+                    );
+                    break;
+                case "ADF1":
+                    handler = new AdfHandler(
+                        flightConnector,
+                        eventRegistrar,
+                        eventDispatcher,
+                        TOGGLE_VALUE.ADF_ACTIVE_FREQUENCY__1,
+                        TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__1,
+                        batteryVariable,
+                        avionicsVariable,
+                        null,
+                        null,
+                        "",
+                        ""
+                    );
+                    break;
+                case "ADF2":
+                    handler = new AdfHandler(
+                        flightConnector,
+                        eventRegistrar,
+                        eventDispatcher,
+                        TOGGLE_VALUE.ADF_ACTIVE_FREQUENCY__2,
+                        TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__2,
+                        batteryVariable,
+                        avionicsVariable,
+                        null,
+                        null,
+                        "",
+                        ""
+                    );
                     break;
                 default:
-                    active = null;
-                    standby = null;
-                    toggle = null;
-                    set = null;
-                    lastValue1 = null;
-                    lastValue2 = null;
+                    handler = null;
                     break;
             }
-            var values = new List<(TOGGLE_VALUE variable, string unit)>();
-            if (type != null && !type.StartsWith("ADF"))
-            {
-                values.Add((active.Value, null));
-                values.Add((standby.Value, null));
-            }
-            if (toggle != null)
-            {
-                eventRegistrar.RegisterEvent(toggle.Value.ToString());
-            }
-            if (set != null)
-            {
-                eventRegistrar.RegisterEvent(set.Value.ToString());
-            }
-            if (dependantOnAvionics != null)
-            {
-                values.Add((dependantOnAvionics.Value, null));
-            }
-            if (dependantOnBatt != null)
-            {
-                values.Add((dependantOnBatt.Value, null));
-            }
-            if (values.Count > 0)
-            {
-                flightConnector.RegisterSimValues(values.ToArray());
-            }
-        }
-
-        private void SwapFrequencies()
-        {
-            if (toggle != null)
-            {
-                eventDispatcher.Trigger(toggle.Value.ToString());
-            }
+            handler?.RegisterSimValuesAndEvents();
         }
 
         private async Task SwitchToNumpad()
         {
-            if (settings?.Type != null && set != null && mask != null && lastDependant)
+            var handler = this.handler;
+            if (settings?.Type != null && handler?.IsSettable == true && lastDependant)
             {
-                var set = this.set;
-                var mask = this.mask;
-                var min = settings.Type switch
-                {
-                    "NAV1" => minNavVal,
-                    "NAV2" => minNavVal,
-                    "COM1" => minComVal,
-                    "COM2" => minComVal,
-                    "XPDR" => minXpdrVal,
-                    _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
-                };
                 DeckLogic.NumpadParams = new NumpadParams(
                     settings.Type,
-                    min,
-                    settings.Type switch
-                    {
-                        "NAV1" => maxNavVal,
-                        "NAV2" => maxNavVal,
-                        "COM1" => maxComVal,
-                        "COM2" => maxComVal,
-                        "XPDR" => maxXpdrVal,
-                        _ => throw new ArgumentException($"{settings.Type} is not supported for numpad")
-                    },
-                    mask,
+                    handler.MinPattern,
+                    handler.Mask,
                     settings.ImageBackground,
                     GetImageBytes()
                 );
                 DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
-
-                var toggle = this.toggle;
 
                 this.initializationTcs = new TaskCompletionSource<bool>();
 
@@ -448,34 +387,9 @@ namespace FlightStreamDeck.Logics.Actions
                 }
 
                 var (value, swap) = await DeckLogic.NumpadTcs.Task;
-                if (!string.IsNullOrEmpty(value))
+                if (handler != null && !string.IsNullOrEmpty(value))
                 {
-                    if (value.Length < min.Length)
-                    {
-                        // Add the default mask
-                        value += min.Substring(value.Length);
-                    }
-
-                    if (settings.Type == "NAV1" || settings.Type == "NAV2" || settings.Type == "COM1" || settings.Type == "COM2")
-                    {
-                        // NOTE: SimConnect ignore first 1
-                        value = value[1..];
-                    }
-
-                    // BCD encode
-                    uint data = 0;
-                    for (var i = 0; i < value.Length; i++)
-                    {
-                        uint digit = (byte)value[i] - (uint)48;
-                        data = data * 16 + digit;
-                    }
-                    eventDispatcher.Trigger(set.Value.ToString(), data);
-
-                    if (toggle != null && swap)
-                    {
-                        await Task.Delay(500);
-                        eventDispatcher.Trigger(toggle.Value.ToString());
-                    }
+                    await handler.TriggerAsync(value, swap);
                 }
             }
         }
@@ -537,7 +451,5 @@ namespace FlightStreamDeck.Logics.Actions
             });
             InitializeSettings(settings);
         }
-
-        private string FormatFrequency(int? frequency) => (frequency == null) ? null : (frequency.Value / 1000).ToString();
     }
 }

@@ -29,7 +29,7 @@ namespace FlightStreamDeck.SimConnectFSX
         /// <summary>
         /// This is a reference counter to make sure we do not deregister variables that are still in use.
         /// </summary>
-        private readonly Dictionary<(TOGGLE_VALUE variables, string unit), int> genericValues = new Dictionary<(TOGGLE_VALUE variables, string unit), int>();
+        private readonly Dictionary<(TOGGLE_VALUE variables, string? unit), int> genericValues = new();
 
         private readonly object lockLists = new object();
 
@@ -381,10 +381,6 @@ namespace FlightStreamDeck.SimConnectFSX
             AddToFlightStatusDefinition("NAV OBS:1", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
             AddToFlightStatusDefinition("NAV OBS:2", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
             AddToFlightStatusDefinition("ADF CARD", "Degrees", SIMCONNECT_DATATYPE.FLOAT64);
-            AddToFlightStatusDefinition("ADF ACTIVE FREQUENCY:1", "Hz", SIMCONNECT_DATATYPE.INT32);
-            AddToFlightStatusDefinition("ADF STANDBY FREQUENCY:1", "Hz", SIMCONNECT_DATATYPE.INT32);
-            AddToFlightStatusDefinition("ADF ACTIVE FREQUENCY:2", "Hz", SIMCONNECT_DATATYPE.INT32);
-            AddToFlightStatusDefinition("ADF STANDBY FREQUENCY:2", "Hz", SIMCONNECT_DATATYPE.INT32);
 
             // IMPORTANT: register it with the simconnect managed wrapper marshaller
             // if you skip this step, you will only receive a uint in the .dwData field.
@@ -443,10 +439,6 @@ namespace FlightStreamDeck.SimConnectFSX
                                     Nav1OBS = flightStatus.Value.Nav1OBS,
                                     Nav2OBS = flightStatus.Value.Nav2OBS,
                                     ADFCard = flightStatus.Value.ADFCard,
-                                    ADFActiveFrequency1 = flightStatus.Value.ADFActive1,
-                                    ADFStandbyFrequency1 = flightStatus.Value.ADFStandby1,
-                                    ADFActiveFrequency2 = flightStatus.Value.ADFActive2,
-                                    ADFStandbyFrequency2 = flightStatus.Value.ADFStandby2,
                                 }));
                         }
                         else
@@ -459,7 +451,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
                 case (uint)DATA_REQUESTS.TOGGLE_VALUE_DATA:
                     {
-                        var result = new Dictionary<(TOGGLE_VALUE variable, string unit), double>();
+                        var result = new Dictionary<(TOGGLE_VALUE variable, string? unit), double>();
                         lock (lockLists)
                         {
                             if (data.dwDefineCount != genericValues.Count)
@@ -597,7 +589,7 @@ namespace FlightStreamDeck.SimConnectFSX
             return GetLastSendID();
         }
 
-        public void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues)
+        public void RegisterSimValues(params (TOGGLE_VALUE variables, string? unit)[] simValues)
         {
             var changed = false;
             lock (lockLists)
@@ -622,7 +614,7 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        public void DeRegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues)
+        public void DeRegisterSimValues(params (TOGGLE_VALUE variables, string? unit)[] simValues)
         {
             var changed = false;
             lock (lockLists)
@@ -693,7 +685,7 @@ namespace FlightStreamDeck.SimConnectFSX
                     {
                         var log = "Registering generic data structure:";
 
-                        foreach ((TOGGLE_VALUE simValue, string unit) in genericValues.Keys)
+                        foreach ((var simValue, var unit) in genericValues.Keys)
                         {
                             string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
                             var simUnit = EventValueLibrary.GetUnit(simValue, unit);
