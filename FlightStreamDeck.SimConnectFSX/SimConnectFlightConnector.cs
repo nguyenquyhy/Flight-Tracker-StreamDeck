@@ -14,6 +14,7 @@ namespace FlightStreamDeck.SimConnectFSX
 {
     public class SimConnectFlightConnector : IFlightConnector
     {
+        public event EventHandler<AircraftDataUpdatedEventArgs> AircraftDataUpdated;
         public event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
         public event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
         public event EventHandler<InvalidEventRegisteredEventArgs> InvalidEventRegistered;
@@ -105,6 +106,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.OnRecvSimobjectDataBytype += Simconnect_OnRecvSimobjectDataBytypeAsync;
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
 
+            RegisterAircraftDataDefinition();
             RegisterFlightStatusDefinition();
 
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
@@ -318,6 +320,32 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
+        private void RegisterAircraftDataDefinition()
+        {
+            simconnect.AddToDataDefinition(DEFINITIONS.AircraftData,
+                "ATC TYPE",
+                null,
+                SIMCONNECT_DATATYPE.STRING32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.AircraftData,
+                "ATC MODEL",
+                null,
+                SIMCONNECT_DATATYPE.STRING32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.AircraftData,
+                "TITLE",
+                null,
+                SIMCONNECT_DATATYPE.STRING256,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
+            // IMPORTANT: register it with the simconnect managed wrapper marshaller
+            // if you skip this step, you will only receive a uint in the .dwData field.
+            simconnect.RegisterDataDefineStruct<AircraftDataStruct>(DEFINITIONS.AircraftData);
+        }
+
         private void RegisterFlightStatusDefinition()
         {
             void AddToFlightStatusDefinition(string simvar, string unit, SIMCONNECT_DATATYPE type)
@@ -392,6 +420,29 @@ namespace FlightStreamDeck.SimConnectFSX
             // Must be general SimObject information
             switch (data.dwRequestID)
             {
+                case (uint)DATA_REQUESTS.AIRCRAFT_DATA:
+                    {
+                        var aircraftData = data.dwData[0] as AircraftDataStruct?;
+
+                        if (aircraftData.HasValue)
+                        {
+                            logger.LogTrace("Get Aircraft data");
+                            AircraftDataUpdated?.Invoke(this, new AircraftDataUpdatedEventArgs(
+                                new AircraftData
+                                {
+                                    Type = aircraftData.Value.Type,
+                                    Model = aircraftData.Value.Model,
+                                    Title = aircraftData.Value.Title,
+                                }));
+                        }
+                        else
+                        {
+                            // Cast failed
+                            logger.LogError($"Cannot cast to {nameof(AircraftDataStruct)}!");
+                        }
+                    }
+                    break;
+
                 case (uint)DATA_REQUESTS.FLIGHT_STATUS:
                     {
                         var flightStatus = data.dwData[0] as FlightStatusStruct?;
@@ -511,6 +562,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         try
                         {
                             cts?.Token.ThrowIfCancellationRequested();
+                            simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.AIRCRAFT_DATA, DEFINITIONS.AircraftData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                             simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.FLIGHT_STATUS, DEFINITIONS.FlightStatus, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
 
                             if (genericValues.Count > 0 && isGenericValueRegistered)
