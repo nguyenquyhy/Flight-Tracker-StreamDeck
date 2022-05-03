@@ -56,35 +56,12 @@ namespace FlightStreamDeck.Logics.Actions.NavCom
             }
             eventRegistrar.RegisterEvent(set.ToString());
 
-            var values = new List<(TOGGLE_VALUE variable, string? unit)>();
-            values.Add((active, null));
-            if (standby != null)
-            {
-                values.Add((standby.Value, null));
-            }
-            if (batteryVariable != null)
-            {
-                values.Add((batteryVariable.Value, null));
-            }
-            if (avionicsVariable != null)
-            {
-                values.Add((avionicsVariable.Value, null));
-            }
-            if (values.Count > 0)
-            {
-                flightConnector.RegisterSimValues(values.ToArray());
-            }
+            flightConnector.RegisterSimValues(GetSimVars().ToArray());
         }
 
         public void DeRegisterSimValues()
         {
-            var existing = new List<(TOGGLE_VALUE variables, string? unit)>();
-            existing.Add((active, null));
-            if (standby != null)
-            {
-                existing.Add((standby.Value, null));
-            }
-            flightConnector.DeRegisterSimValues(existing.ToArray());
+            flightConnector.DeRegisterSimValues(GetSimVars().ToArray());
         }
 
         public async Task TriggerAsync(string value, bool swap)
@@ -142,9 +119,32 @@ namespace FlightStreamDeck.Logics.Actions.NavCom
         }
 
         protected abstract uint FormatValueForSimConnect(string value);
+
         protected virtual string FormatValueForDisplay(double value, TOGGLE_VALUE simvar)
         {
             return value.ToString("F" + EventValueLibrary.GetDecimals(simvar));
+        }
+
+        protected virtual List<(TOGGLE_VALUE variable, string? unit)> GetSimVars()
+        {
+            var values = new List<(TOGGLE_VALUE variable, string? unit)>
+            {
+                (active, null)
+            };
+            if (standby != null)
+            {
+                values.Add((standby.Value, null));
+            }
+            if (batteryVariable != null)
+            {
+                values.Add((batteryVariable.Value, null));
+            }
+            if (avionicsVariable != null)
+            {
+                values.Add((avionicsVariable.Value, null));
+            }
+
+            return values;
         }
     }
 }
