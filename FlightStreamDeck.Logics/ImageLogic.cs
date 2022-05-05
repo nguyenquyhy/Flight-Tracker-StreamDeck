@@ -11,11 +11,11 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string value = null, string imageOnFilePath = null, byte[] imageOnBytes = null, string imageOffFilePath = null, byte[] imageOffBytes = null);
+        string GetImage(string text, bool active, string? value = null, string? imageOnFilePath = null, byte[]? imageOnBytes = null, string? imageOffFilePath = null, byte[]? imageOffBytes = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageOnFilePath = null, byte[]? imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
-        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string subValueText = null);
+        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string? subValueText = null);
         public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
     }
 
@@ -33,9 +33,9 @@ namespace FlightStreamDeck.Logics
         /// NOTE: either filePath or bytes should be set at the same time
         /// </summary>
         /// <returns>Base64 image data</returns>
-        public string GetImage(string text, bool active, string value = null,
-            string imageOnFilePath = null, byte[] imageOnBytes = null,
-            string imageOffFilePath = null, byte[] imageOffBytes = null)
+        public string GetImage(string text, bool active, string? value = null,
+            string? imageOnFilePath = null, byte[]? imageOnBytes = null,
+            string? imageOffFilePath = null, byte[]? imageOffBytes = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
@@ -177,7 +177,7 @@ namespace FlightStreamDeck.Logics
             }
         }
 
-        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string subValueText = null)
+        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string? subValueText = null)
         {
             var font = SystemFonts.CreateFont("Arial", 22, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
@@ -259,7 +259,7 @@ namespace FlightStreamDeck.Logics
                 PointF previousWidth = new PointF(width_margin, HALF_WIDTH);
                 int colorSentinel = 0;
 
-                foreach (var pct in splitGauge ?? Array.Empty<string>())
+                foreach (var pct in splitGauge)
                 {
                     string[] split = pct.Split(':');
                     if (float.TryParse(split[0], out float critFloatWidth) && colors.Length > colorSentinel)

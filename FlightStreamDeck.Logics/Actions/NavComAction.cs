@@ -25,7 +25,7 @@ namespace FlightStreamDeck.Logics.Actions
         [JsonProperty(nameof(ImageBackground))]
         public string ImageBackground { get; set; }
         [JsonProperty(nameof(ImageBackground_base64))]
-        public string ImageBackground_base64 { get; set; }
+        public string? ImageBackground_base64 { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
@@ -81,7 +81,7 @@ namespace FlightStreamDeck.Logics.Actions
             timer.Elapsed += Timer_Elapsed;
         }
 
-        private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             timer.Stop();
 
@@ -224,13 +224,16 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage(bool dependant, string value1, string value2, bool showMainOnly)
         {
-            await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly, settings.ImageBackground, GetImageBytes()));
+            if (settings != null)
+            {
+                await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly, settings.ImageBackground, GetImageBytes()));
+            }
         }
 
         private byte[]? GetImageBytes()
         {
             byte[]? imageBackgroundBytes = null;
-            if (settings.ImageBackground_base64 != null)
+            if (settings?.ImageBackground_base64 != null)
             {
                 var s = settings.ImageBackground_base64;
                 s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
@@ -369,7 +372,7 @@ namespace FlightStreamDeck.Logics.Actions
                     settings.ImageBackground,
                     GetImageBytes()
                 );
-                DeckLogic.NumpadTcs = new TaskCompletionSource<(string, bool)>();
+                DeckLogic.NumpadTcs = new TaskCompletionSource<(string?, bool)>();
 
                 this.initializationTcs = new TaskCompletionSource<bool>();
 
@@ -396,60 +399,66 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task ConvertLinkToEmbed(string fileKey)
         {
-            switch (fileKey)
+            if (settings != null)
             {
-                case "ImageBackground":
-                    settings.ImageBackground_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageBackground));
-                    break;
-            }
+                switch (fileKey)
+                {
+                    case "ImageBackground":
+                        settings.ImageBackground_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageBackground));
+                        break;
+                }
 
-            await SetSettingsAsync(settings);
-            await SendToPropertyInspectorAsync(new
-            {
-                Action = "refresh",
-                Settings = settings
-            });
-            InitializeSettings(settings);
+                await SetSettingsAsync(settings);
+                await SendToPropertyInspectorAsync(new
+                {
+                    Action = "refresh",
+                    Settings = settings
+                });
+                InitializeSettings(settings);
+            }
         }
 
         private async Task ConvertEmbedToLink(string fileKey)
         {
-            var dialog = new SaveFileDialog
+            if (settings?.ImageBackground_base64 != null)
             {
-                FileName = fileKey switch
+                var dialog = new SaveFileDialog
                 {
-                    "ImageBackground" => Path.GetFileName(settings.ImageBackground),
-                    _ => "image.png"
-                },
-                Filter = "Images|*.jpg;*.jpeg;*.png"
-            };
-            if (dialog.ShowDialog() == true)
-            {
-                var bytes = fileKey switch
-                {
-                    "ImageBackground" => Convert.FromBase64String(settings.ImageBackground_base64),
-                    _ => null
+                    FileName = fileKey switch
+                    {
+                        "ImageBackground" => Path.GetFileName(settings.ImageBackground),
+                        _ => "image.png"
+                    },
+                    Filter = "Images|*.jpg;*.jpeg;*.png"
                 };
-                if (bytes != null)
+                if (dialog.ShowDialog() == true)
                 {
-                    File.WriteAllBytes(dialog.FileName, bytes);
+                    var bytes = fileKey switch
+                    {
+                        "ImageBackground" => Convert.FromBase64String(settings.ImageBackground_base64),
+                        _ => null
+                    };
+                    if (bytes != null)
+                    {
+                        File.WriteAllBytes(dialog.FileName, bytes);
+                    }
+                    switch (fileKey)
+                    {
+                        case "ImageOn":
+                            settings.ImageBackground_base64 = null;
+                            settings.ImageBackground = dialog.FileName.Replace("\\", "/");
+                            break;
+                    }
                 }
-                switch (fileKey)
-                {
-                    case "ImageOn":
-                        settings.ImageBackground_base64 = null;
-                        settings.ImageBackground = dialog.FileName.Replace("\\", "/");
-                        break;
-                }
-            }
 
-            await SetSettingsAsync(settings);
-            await SendToPropertyInspectorAsync(new
-            {
-                Action = "refresh",
-                Settings = settings
-            });
-            InitializeSettings(settings);
+                await SetSettingsAsync(settings);
+                await SendToPropertyInspectorAsync(new
+                {
+                    Action = "refresh",
+                    Settings = settings
+                });
+                InitializeSettings(settings);
+            }
         }
     }
 }

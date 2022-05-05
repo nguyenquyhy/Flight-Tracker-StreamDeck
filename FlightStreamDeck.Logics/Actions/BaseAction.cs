@@ -30,7 +30,7 @@ namespace FlightStreamDeck.Logics.Actions
     }
     public abstract class BaseAction : StreamDeckAction
     {
-        public async Task SetImageSafeAsync(string base64Image)
+        public async Task SetImageSafeAsync(string? base64Image)
         {
             try
             {

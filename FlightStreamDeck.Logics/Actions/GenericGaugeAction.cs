@@ -33,9 +33,8 @@ namespace FlightStreamDeck.Logics.Actions
         public bool HideLabelOutsideMinMaxTop { get; set; }
         public bool HideLabelOutsideMinMaxBottom { get; set; }
 
-        internal bool EmptyPayload
-        {
-            get =>
+        public bool IsEmptyPayload()
+            =>
                 string.IsNullOrEmpty(Header) &&
                 string.IsNullOrEmpty(HeaderBottom) &&
                 string.IsNullOrEmpty(ToggleValue) &&
@@ -53,7 +52,6 @@ namespace FlightStreamDeck.Logics.Actions
                 string.IsNullOrEmpty(ChartThicknessValue) &&
                 string.IsNullOrEmpty(ChartChevronSizeValue) &&
                 !DisplayHorizontalValue;
-        }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
@@ -72,7 +70,7 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? displayValueBottom = null;
         private TOGGLE_VALUE? minValue = null;
         private TOGGLE_VALUE? maxValue = null;
-        private string customUnit = null;
+        private string? customUnit = null;
         private int? customDecimals = null;
 
         private double currentValue = 0;
@@ -82,7 +80,7 @@ namespace FlightStreamDeck.Logics.Actions
         private double? currentMinValue = null;
         private double? currentMaxValue = null;
 
-        private static readonly GenericGaugeSettings DefaultSettings = new GenericGaugeSettings()
+        private static readonly GenericGaugeSettings DefaultSettings = new()
         {
             Type = "Generic",
             DisplayHorizontalValue = true,
@@ -102,7 +100,7 @@ namespace FlightStreamDeck.Logics.Actions
             HideLabelOutsideMinMaxBottom = false
         };
 
-        private GenericGaugeSettings settings = null;
+        private GenericGaugeSettings? settings = null;
 
         public GenericGaugeAction(
             ILogger<GenericGaugeAction> logger,
@@ -159,23 +157,23 @@ namespace FlightStreamDeck.Logics.Actions
         private async Task InitializeSettings(GenericGaugeSettings settings)
         {
             //keep constructor'd settings if the gauge is newly added.
-            bool emptyPayload = settings?.EmptyPayload ?? true;
+            bool emptyPayload = settings?.IsEmptyPayload() == true;
             if (emptyPayload)
             {
-                await this.UpdatePropertyInspector();
+                await UpdatePropertyInspector();
             }
             else
             {
                 this.settings = settings;
             }
 
-            var newToggleEvent = this.settings.ToggleValue;
-            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(this.settings.DisplayValue);
-            TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(this.settings.SubDisplayValue);
-            TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(this.settings.DisplayValueBottom);
+            var newToggleEvent = settings.ToggleValue;
+            TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
+            TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(settings.SubDisplayValue);
+            TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(settings.DisplayValueBottom);
 
-            TOGGLE_VALUE? newMinValue = enumConverter.GetVariableEnum(this.settings.MinValue);
-            TOGGLE_VALUE? newMaxValue = enumConverter.GetVariableEnum(this.settings.MaxValue);
+            TOGGLE_VALUE? newMinValue = enumConverter.GetVariableEnum(settings.MinValue);
+            TOGGLE_VALUE? newMaxValue = enumConverter.GetVariableEnum(settings.MaxValue);
 
             if (double.TryParse(string.IsNullOrWhiteSpace(settings.MinValue) ? DefaultSettings.MinValue : settings.MinValue, out var min))
             {
@@ -217,10 +215,10 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdatePropertyInspector()
         {
-            await this.SendToPropertyInspectorAsync(this.settings);
+            await SendToPropertyInspectorAsync(this.settings);
         }
 
-        private bool SetFromGenericValueStatus(Dictionary<(TOGGLE_VALUE variable, string unit), double> genericValueStatus, TOGGLE_VALUE? variable, string unit, ref double currentValue)
+        private bool SetFromGenericValueStatus(Dictionary<(TOGGLE_VALUE variable, string? unit), double> genericValueStatus, TOGGLE_VALUE? variable, string? unit, ref double currentValue)
         {
             bool isUpdated = false;
             if (variable.HasValue)
@@ -236,7 +234,7 @@ namespace FlightStreamDeck.Logics.Actions
             return isUpdated;
         }
 
-        private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
+        private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
         {
             if (StreamDeck == null) return;
 
@@ -268,7 +266,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             eventRegistrar.RegisterEvent(toggleEvent);
 
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
+            var values = new List<(TOGGLE_VALUE variables, string? unit)>();
             if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
             if (subDisplayValue.HasValue) values.Add((subDisplayValue.Value, customUnit));
             if (displayValueBottom.HasValue) values.Add((displayValueBottom.Value, customUnit));
@@ -283,7 +281,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void DeRegisterValues()
         {
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
+            var values = new List<(TOGGLE_VALUE variables, string? unit)>();
             if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
             if (subDisplayValue.HasValue) values.Add((subDisplayValue.Value, customUnit));
             if (displayValueBottom.HasValue) values.Add((displayValueBottom.Value, customUnit));
@@ -329,7 +327,7 @@ namespace FlightStreamDeck.Logics.Actions
                                     currentMaxValue.Value,
                                     numberFormat,
                                     settings.DisplayHorizontalValue,
-                                    chartSplit?.Split(','),
+                                    chartSplit?.Split(',') ?? Array.Empty<string>(),
                                     chartThickness,
                                     chartChevronSize,
                                     absValueText,
@@ -366,13 +364,13 @@ namespace FlightStreamDeck.Logics.Actions
     public static class GenericGaugeActionExtensions
     {
         //https://stackoverflow.com/a/51429227
-        public static T ConvertTo<T>(this object? value, object defaultValue)
+        public static T? ConvertTo<T>(this object? value, object defaultValue)
         {
             if (value is T variable) return variable;
 
             try
             {
-                if (string.IsNullOrEmpty(value.ToString()) && defaultValue != null)
+                if (string.IsNullOrEmpty(value?.ToString()))
                 {
                     value = defaultValue;
                 }
@@ -380,7 +378,7 @@ namespace FlightStreamDeck.Logics.Actions
                 //Handling Nullable types i.e, int?, double?, bool? .. etc
                 if (Nullable.GetUnderlyingType(typeof(T)) != null)
                 {
-                    return (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFrom(value);
+                    return (T?)TypeDescriptor.GetConverter(typeof(T)).ConvertFrom(value);
                 }
 
                 return (T)Convert.ChangeType(value, typeof(T));

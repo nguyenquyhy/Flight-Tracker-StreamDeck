@@ -25,7 +25,7 @@ namespace FlightStreamDeck.Logics
             this.enumConverter = enumConverter;
         }
 
-        public (IEnumerable<TOGGLE_VALUE>, IExpression) Parse(string feedbackValue)
+        public (IEnumerable<TOGGLE_VALUE>, IExpression?) Parse(string feedbackValue)
         {
             var variable = enumConverter.GetVariableEnum(feedbackValue);
             if (variable == null) return (new List<TOGGLE_VALUE>(), null);

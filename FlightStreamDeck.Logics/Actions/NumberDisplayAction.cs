@@ -11,7 +11,7 @@ namespace FlightStreamDeck.Logics.Actions
     {
         private readonly Timer timer;
         private readonly IImageLogic imageLogic;
-        private string lastValue;
+        private string? lastValue;
 
         public NumberDisplayAction(IImageLogic imageLogic)
         {
@@ -20,7 +20,7 @@ namespace FlightStreamDeck.Logics.Actions
             this.imageLogic = imageLogic;
         }
 
-        private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             if (lastValue != DeckLogic.NumpadParams.Value)
             {

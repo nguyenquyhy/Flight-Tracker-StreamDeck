@@ -48,11 +48,11 @@ namespace FlightStreamDeck.Logics.Actions
         [JsonProperty(nameof(ImageOn))]
         public string ImageOn { get; set; }
         [JsonProperty(nameof(ImageOn_base64))]
-        public string ImageOn_base64 { get; set; }
+        public string? ImageOn_base64 { get; set; }
         [JsonProperty(nameof(ImageOff))]
         public string ImageOff { get; set; }
         [JsonProperty(nameof(ImageOff_base64))]
-        public string ImageOff_base64 { get; set; }
+        public string? ImageOff_base64 { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
@@ -68,7 +68,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private Timer? timer = null;
 
-        private GenericToggleSettings settings = null;
+        private GenericToggleSettings? settings = null;
 
         private string? toggleEvent = null;
         private uint? toggleEventDataUInt = null;
@@ -80,10 +80,10 @@ namespace FlightStreamDeck.Logics.Actions
         private double? holdEventDataVariableValue = null;
 
         private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
-        private IExpression expression;
+        private IExpression? expression;
         private TOGGLE_VALUE? displayValue = null;
 
-        private string customUnit = null;
+        private string? customUnit = null;
         private int? customDecimals = null;
 
         private double? currentValue = null;
@@ -162,7 +162,7 @@ namespace FlightStreamDeck.Logics.Actions
             RegisterValues();
         }
 
-        private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
+        private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
         {
             if (StreamDeck == null) return;
 
@@ -251,69 +251,75 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task ConvertLinkToEmbed(string fileKey)
         {
-            switch (fileKey)
+            if (settings != null)
             {
-                case "ImageOn":
-                    settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
-                    break;
-                case "ImageOff":
-                    settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
-                    break;
-            }
+                switch (fileKey)
+                {
+                    case "ImageOn":
+                        settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
+                        break;
+                    case "ImageOff":
+                        settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
+                        break;
+                }
 
-            await SetSettingsAsync(settings);
-            await SendToPropertyInspectorAsync(new
-            {
-                Action = "refresh",
-                Settings = settings
-            });
-            InitializeSettings(settings);
+                await SetSettingsAsync(settings);
+                await SendToPropertyInspectorAsync(new
+                {
+                    Action = "refresh",
+                    Settings = settings
+                });
+                InitializeSettings(settings);
+            }
         }
 
         private async Task ConvertEmbedToLink(string fileKey)
         {
-            var dialog = new SaveFileDialog
+            if (settings != null)
             {
-                FileName = fileKey switch
+                var dialog = new SaveFileDialog
                 {
-                    "ImageOn" => Path.GetFileName(settings.ImageOn),
-                    "ImageOff" => Path.GetFileName(settings.ImageOff),
-                    _ => "image.png"
-                },
-                Filter = "Images|*.jpg;*.jpeg;*.png"
-            };
-            if (dialog.ShowDialog() == true)
-            {
-                var bytes = fileKey switch
-                {
-                    "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
-                    "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
-                    _ => null
+                    FileName = fileKey switch
+                    {
+                        "ImageOn" => Path.GetFileName(settings.ImageOn),
+                        "ImageOff" => Path.GetFileName(settings.ImageOff),
+                        _ => "image.png"
+                    },
+                    Filter = "Images|*.jpg;*.jpeg;*.png"
                 };
-                if (bytes != null)
+                if (dialog.ShowDialog() == true)
                 {
-                    File.WriteAllBytes(dialog.FileName, bytes);
+                    var bytes = fileKey switch
+                    {
+                        "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
+                        "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
+                        _ => null
+                    };
+                    if (bytes != null)
+                    {
+                        File.WriteAllBytes(dialog.FileName, bytes);
+                    }
+                    switch (fileKey)
+                    {
+                        case "ImageOn":
+                            settings.ImageOn_base64 = null;
+                            settings.ImageOn = dialog.FileName.Replace("\\", "/");
+                            break;
+                        case "ImageOff":
+                            settings.ImageOff_base64 = null;
+                            settings.ImageOff = dialog.FileName.Replace("\\", "/");
+                            break;
+                    }
                 }
-                switch (fileKey)
-                {
-                    case "ImageOn":
-                        settings.ImageOn_base64 = null;
-                        settings.ImageOn = dialog.FileName.Replace("\\", "/");
-                        break;
-                    case "ImageOff":
-                        settings.ImageOff_base64 = null;
-                        settings.ImageOff = dialog.FileName.Replace("\\", "/");
-                        break;
-                }
-            }
 
-            await SetSettingsAsync(settings);
-            await SendToPropertyInspectorAsync(new
-            {
-                Action = "refresh",
-                Settings = settings
-            });
-            InitializeSettings(settings);
+                await SetSettingsAsync(settings);
+                await SendToPropertyInspectorAsync(new
+                {
+                    Action = "refresh",
+                    Settings = settings
+                });
+                InitializeSettings(settings);
+            }
         }
 
         private void RegisterValues()
@@ -321,7 +327,7 @@ namespace FlightStreamDeck.Logics.Actions
             eventRegistrar.RegisterEvent(toggleEvent);
             eventRegistrar.RegisterEvent(holdEvent);
 
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
+            var values = new List<(TOGGLE_VALUE variables, string? unit)>();
             foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
             if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
             if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
@@ -335,7 +341,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private void DeRegisterValues()
         {
-            var values = new List<(TOGGLE_VALUE variables, string unit)>();
+            var values = new List<(TOGGLE_VALUE variables, string? unit)>();
             foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
             if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
             if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
@@ -354,38 +360,44 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
         {
-            holdEventTriggerred = false;
-
-            if (!eventDispatcher.IsValid(holdEvent) || !settings.HoldValueSuppressToggle)
+            if (settings != null)
             {
-                await TriggerToggleEventAsync();
-            }
+                holdEventTriggerred = false;
 
-            if (eventDispatcher.IsValid(holdEvent))
-            {
-                timer = new Timer { Interval = settings.HoldValueRepeat ? 400 : 1000 };
-                timer.Elapsed += Timer_Elapsed;
-                timer.Start();
+                if (!eventDispatcher.IsValid(holdEvent) || !settings.HoldValueSuppressToggle)
+                {
+                    await TriggerToggleEventAsync();
+                }
+
+                if (eventDispatcher.IsValid(holdEvent))
+                {
+                    timer = new Timer { Interval = settings.HoldValueRepeat ? 400 : 1000 };
+                    timer.Elapsed += Timer_Elapsed;
+                    timer.Start();
+                }
             }
         }
 
         protected override async Task OnKeyUp(ActionEventArgs<KeyPayload> args)
         {
-            if (settings.HoldValueSuppressToggle && !holdEventTriggerred)
+            if (settings != null)
             {
-                await TriggerToggleEventAsync();
-            }
+                if (settings.HoldValueSuppressToggle && !holdEventTriggerred)
+                {
+                    await TriggerToggleEventAsync();
+                }
 
-            var localTimer = timer;
-            if (localTimer != null)
-            {
-                localTimer.Elapsed -= Timer_Elapsed;
-                localTimer.Stop();
-                localTimer = null;
+                var localTimer = timer;
+                if (localTimer != null)
+                {
+                    localTimer.Elapsed -= Timer_Elapsed;
+                    localTimer.Stop();
+                    localTimer = null;
+                }
             }
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             if (eventDispatcher.Trigger(holdEvent, CalculateEventParam(holdEventDataVariable, holdEventDataVariableValue, holdEventDataUInt)))
             {
@@ -425,8 +437,8 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                byte[] imageOnBytes = null;
-                byte[] imageOffBytes = null;
+                byte[]? imageOnBytes = null;
+                byte[]? imageOffBytes = null;
                 if (settings.ImageOn_base64 != null)
                 {
                     var s = settings.ImageOn_base64;

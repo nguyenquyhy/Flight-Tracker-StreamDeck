@@ -14,10 +14,10 @@ namespace FlightStreamDeck.SimConnectFSX
 {
     public class SimConnectFlightConnector : IFlightConnector
     {
-        public event EventHandler<AircraftStatusUpdatedEventArgs> AircraftStatusUpdated;
-        public event EventHandler<ToggleValueUpdatedEventArgs> GenericValuesUpdated;
-        public event EventHandler<InvalidEventRegisteredEventArgs> InvalidEventRegistered;
-        public event EventHandler Closed;
+        public event EventHandler<AircraftStatusUpdatedEventArgs>? AircraftStatusUpdated;
+        public event EventHandler<ToggleValueUpdatedEventArgs>? GenericValuesUpdated;
+        public event EventHandler<InvalidEventRegisteredEventArgs>? InvalidEventRegistered;
+        public event EventHandler? Closed;
 
         // Extra SimConnect functions via native pointer
         IntPtr hSimConnect;
@@ -39,8 +39,8 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public IntPtr Handle { get; private set; }
 
-        private SimConnect simconnect = null;
-        private CancellationTokenSource cts = null;
+        private SimConnect? simconnect = null;
+        private CancellationTokenSource? cts = null;
 
         public SimConnectFlightConnector(ILogger<SimConnectFlightConnector> logger)
         {
@@ -92,8 +92,12 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect = new SimConnect("Flight Tracker Stream Deck", Handle, WM_USER_SIMCONNECT, null, 0);
 
             // Get direct access to the SimConnect handle, to use functions otherwise not supported.
-            FieldInfo fiSimConnect = typeof(SimConnect).GetField("hSimConnect", BindingFlags.NonPublic | BindingFlags.Instance);
-            hSimConnect = (IntPtr)fiSimConnect.GetValue(simconnect);
+            var fiSimConnectValue = typeof(SimConnect).GetField("hSimConnect", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(simconnect);
+            if (fiSimConnectValue == null)
+            {
+                throw new InvalidOperationException("hSimConnect is not available!");
+            }
+            hSimConnect = (IntPtr)fiSimConnectValue;
 
             // listen to connect and quit msgs
             simconnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(Simconnect_OnRecvOpen);
@@ -105,7 +109,7 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.OnRecvSimobjectDataBytype += Simconnect_OnRecvSimobjectDataBytypeAsync;
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
 
-            RegisterFlightStatusDefinition();
+            RegisterFlightStatusDefinition(simconnect);
 
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
@@ -318,7 +322,7 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        private void RegisterFlightStatusDefinition()
+        private void RegisterFlightStatusDefinition(SimConnect simconnect)
         {
             void AddToFlightStatusDefinition(string simvar, string unit, SIMCONNECT_DATATYPE type)
             {
@@ -643,7 +647,7 @@ namespace FlightStreamDeck.SimConnectFSX
             }
         }
 
-        private CancellationTokenSource ctsGeneric = null;
+        private CancellationTokenSource? ctsGeneric = null;
         private readonly object lockGeneric = new object();
         private readonly SemaphoreSlim smGeneric = new SemaphoreSlim(1);
         private bool isGenericValueRegistered = false;

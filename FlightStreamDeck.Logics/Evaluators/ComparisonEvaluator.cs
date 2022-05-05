@@ -9,7 +9,7 @@ namespace FlightStreamDeck.Logics
     {
         public class Expression : IExpression
         {
-            public Expression(TOGGLE_VALUE? feedbackVariable, TOGGLE_VALUE? feedbackComparisonVariable, string feedbackComparisonStringValue, string feedbackComparisonOperator)
+            public Expression(TOGGLE_VALUE? feedbackVariable, TOGGLE_VALUE? feedbackComparisonVariable, string? feedbackComparisonStringValue, string feedbackComparisonOperator)
             {
                 FeedbackVariable = feedbackVariable;
                 FeedbackComparisonVariable = feedbackComparisonVariable;
@@ -19,7 +19,7 @@ namespace FlightStreamDeck.Logics
 
             public TOGGLE_VALUE? FeedbackVariable { get; }
             public TOGGLE_VALUE? FeedbackComparisonVariable { get; }
-            public string FeedbackComparisonStringValue { get; }
+            public string? FeedbackComparisonStringValue { get; }
             public string FeedbackComparisonOperator { get; }
 
             public double? PreviousFeedbackValue { get; set; }
@@ -36,7 +36,7 @@ namespace FlightStreamDeck.Logics
 
         public (IEnumerable<TOGGLE_VALUE>, IExpression) Parse(string feedbackValue)
         {
-            (var feedbackVariable, var feedbackComparisonVariable, var feedbackComparisonStringValue, var feedbackComparisonOperator) =
+            var (feedbackVariable, feedbackComparisonVariable, feedbackComparisonStringValue, feedbackComparisonOperator) =
                    GetValueValueComparison(feedbackValue);
 
             var list = new List<TOGGLE_VALUE>();
@@ -108,43 +108,43 @@ namespace FlightStreamDeck.Logics
             OperatorLess
         };
 
-        public Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string> GetValueValueComparison(string value)
+        public (TOGGLE_VALUE? leftEnum, TOGGLE_VALUE? rightEnum, string? rightString, string comparisionOperator) GetValueValueComparison(string value)
         {
-            if (string.IsNullOrEmpty(value)) return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
+            if (string.IsNullOrEmpty(value)) return (null, null, string.Empty, string.Empty);
 
             TOGGLE_VALUE? result = enumConverter.GetVariableEnum(value);
 
             if (result != null)
             {
                 // Old behavior
-                return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(result, null, "0", "!=");
+                return (result, null, "0", "!=");
             }
             else
             {
-                IEnumerable<string> comparisonAttempt = AllowedComparisons.Where((string allowedComp) => value.Contains(allowedComp));
+                var comparisonAttempt = AllowedComparisons.Where((string allowedComp) => value.Contains(allowedComp));
 
-                if (comparisonAttempt.Count() >= 1)
+                if (comparisonAttempt.Any())
                 {
-                    IEnumerable<string> splitInput = value.Split(comparisonAttempt.First());
-                    TOGGLE_VALUE? leftSideEnum = enumConverter.GetVariableEnum(splitInput.First());
-                    TOGGLE_VALUE? rightSideEnum = int.TryParse(splitInput.Last(), out int temp) ? null : enumConverter.GetVariableEnum(splitInput.Last());
-                    string rightSideString = rightSideEnum == null ? splitInput.Last() : null;
+                    var splitInput = value.Split(comparisonAttempt.First());
+                    var leftSideEnum = enumConverter.GetVariableEnum(splitInput.First());
+                    var rightSideEnum = int.TryParse(splitInput.Last(), out int temp) ? null : enumConverter.GetVariableEnum(splitInput.Last());
+                    string? rightSideString = rightSideEnum == null ? splitInput.Last() : null;
 
                     if (
                         (leftSideEnum != null && rightSideEnum != null && leftSideEnum != rightSideEnum) ||
                         (leftSideEnum != null && !string.IsNullOrEmpty(rightSideString))
                     )
                     {
-                        return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(
-                                leftSideEnum,
-                                rightSideEnum,
-                                rightSideString,
-                                comparisonAttempt.First()
+                        return (
+                            leftSideEnum,
+                            rightSideEnum,
+                            rightSideString,
+                            comparisonAttempt.First()
                         );
                     }
                 }
 
-                return new Tuple<TOGGLE_VALUE?, TOGGLE_VALUE?, string, string>(null, null, string.Empty, string.Empty);
+                return (null, null, string.Empty, string.Empty);
             }
         }
 

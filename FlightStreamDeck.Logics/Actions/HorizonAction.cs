@@ -38,7 +38,7 @@ namespace FlightStreamDeck.Logics.Actions
             await UpdateImage();
         }
 
-        private async void FlightConnector_GenericValuesUpdated(object sender, ToggleValueUpdatedEventArgs e)
+        private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
         {
             bool isUpdated = false;
 

@@ -414,7 +414,7 @@ namespace FlightStreamDeck.Core
             { TOGGLE_VALUE.HEADING_INDICATOR, new ValueEntry("Degrees", 0) },
         };
 
-        public static string GetUnit(this TOGGLE_VALUE value, string unit)
+        public static string GetUnit(this TOGGLE_VALUE value, string? unit)
         {
             if (!string.IsNullOrEmpty(unit))
             {

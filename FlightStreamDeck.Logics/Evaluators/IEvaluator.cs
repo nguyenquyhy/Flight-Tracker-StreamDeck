@@ -10,7 +10,7 @@ namespace FlightStreamDeck.Logics
 
     public interface IEvaluator
     {
-        (IEnumerable<TOGGLE_VALUE>, IExpression) Parse(string feedbackValue);
+        (IEnumerable<TOGGLE_VALUE>, IExpression?) Parse(string feedbackValue);
         bool Evaluate(Dictionary<TOGGLE_VALUE, double> values, IExpression expression);
     }
 }

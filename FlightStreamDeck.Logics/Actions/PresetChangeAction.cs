@@ -50,11 +50,11 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly IFlightConnector flightConnector;
         private readonly IEventDispatcher eventDispatcher;
         private Timer timer;
-        private string action;
+        private string? action;
         private bool timerHaveTick = false;
         private uint? originalValue = null;
-        private AircraftStatus status;
-        private ValueChangeSettings settings;
+        private AircraftStatus? status;
+        private ValueChangeSettings? settings;
 
         public PresetChangeAction(
             ILogger logger, 
@@ -74,7 +74,7 @@ namespace FlightStreamDeck.Logics.Actions
             eventRegistrar.RegisterEvent(KnownEvents.KOHLSMAN_SET.ToString());
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             timerHaveTick = true;
             Process(false);
@@ -121,7 +121,7 @@ namespace FlightStreamDeck.Logics.Actions
             switch (buttonType)
             {
                 case ValueChangeFunction.Heading:
-                    ChangeSphericalValue(sign, increment, null, (uint? value, KnownEvents? evt) => { flightConnector.ApHdgSet(value.Value); });
+                    ChangeHeading(originalValue.Value, sign, increment);
                     break;
 
                 case ValueChangeFunction.Altitude:
@@ -145,7 +145,7 @@ namespace FlightStreamDeck.Logics.Actions
                     break;
 
                 case ValueChangeFunction.VerticalSpeed:
-                    ChangeVerticalSpeed(sign);
+                    ChangeVerticalSpeed(originalValue.Value, sign);
                     break;
 
                 case ValueChangeFunction.AirSpeed:
@@ -159,7 +159,7 @@ namespace FlightStreamDeck.Logics.Actions
                     }
                     else
                     {
-                        ChangeVerticalSpeed(sign);
+                        ChangeVerticalSpeed(originalValue.Value, sign);
                     }
                     break;
                 case ValueChangeFunction.QNH:
@@ -167,19 +167,19 @@ namespace FlightStreamDeck.Logics.Actions
                     flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
                     break;
                 case ValueChangeFunction.VOR1:
-                    ChangeSphericalValue(sign, increment, KnownEvents.VOR1_SET, (uint? value, KnownEvents? evt) => { eventDispatcher.Trigger(evt.Value.ToString(), value.Value); });
+                    ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.VOR1_SET);
                     break;
                 case ValueChangeFunction.VOR2:
-                    ChangeSphericalValue(sign, increment, KnownEvents.VOR2_SET, (uint? value, KnownEvents? evt) => { eventDispatcher.Trigger(evt.Value.ToString(), value.Value); });
+                    ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.VOR2_SET);
                     break;
                 case ValueChangeFunction.ADF:
-                    ChangeSphericalValue(sign, increment, KnownEvents.ADF_SET, (uint? value, KnownEvents? evt) => { eventDispatcher.Trigger(evt.Value.ToString(), value.Value); });
+                    ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.ADF_SET);
                     break;
 
             }
         }
 
-        private void FlightConnector_AircraftStatusUpdated(object sender, AircraftStatusUpdatedEventArgs e)
+        private void FlightConnector_AircraftStatusUpdated(object? sender, AircraftStatusUpdatedEventArgs e)
         {
             status = e.AircraftStatus;
         }
@@ -224,10 +224,10 @@ namespace FlightStreamDeck.Logics.Actions
             return Task.CompletedTask;
         }
 
-        private void ChangeVerticalSpeed(int sign)
+        private void ChangeVerticalSpeed(uint originalValue, int sign)
         {
             originalValue = (uint)(originalValue + 100 * sign);
-            flightConnector.ApVsSet(originalValue.Value);
+            flightConnector.ApVsSet(originalValue);
         }
 
         private void ChangeAirSpeed(int sign)
@@ -242,10 +242,21 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        private void ChangeSphericalValue(int sign, int increment, KnownEvents? evt, Action<uint?, KnownEvents?> changeValue)
+        private void ChangeHeading(uint value, int sign, int increment)
         {
-            originalValue = (uint)(originalValue + 360 + sign * increment) % 360;
-            changeValue(originalValue, evt);
+            value = CalculateSphericalIncrement(value, sign, increment);
+            originalValue = value;
+            flightConnector.ApHdgSet(value);
         }
+
+        private void ChangeSphericalValue(uint value, int sign, int increment, KnownEvents evt)
+        {
+            value = CalculateSphericalIncrement(value, sign, increment);
+            originalValue = value; 
+            eventDispatcher.Trigger(evt.ToString(), value);
+        }
+
+        private uint CalculateSphericalIncrement(uint originalValue, int sign, int increment)
+            => (uint)(originalValue + 360 + sign * increment) % 360;
     }
 }

@@ -24,11 +24,11 @@ namespace FlightStreamDeck.Logics.Actions
         [JsonProperty(nameof(ImageOn))]
         public string ImageOn { get; set; }
         [JsonProperty(nameof(ImageOn_base64))]
-        public string ImageOn_base64 { get; set; }
+        public string? ImageOn_base64 { get; set; }
         [JsonProperty(nameof(ImageOff))]
         public string ImageOff { get; set; }
         [JsonProperty(nameof(ImageOff_base64))]
-        public string ImageOff_base64 { get; set; }
+        public string? ImageOff_base64 { get; set; }
     }
 
     public class PresetFunction
@@ -50,9 +50,9 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly Timer timer;
-        private AircraftStatus status = null;
+        private AircraftStatus? status = null;
         private bool timerHasTick;
-        private PresetToggleSettings settings;
+        private PresetToggleSettings? settings;
 
         public PresetToggleAction(ILogger<PresetToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
@@ -63,7 +63,7 @@ namespace FlightStreamDeck.Logics.Actions
             timer.Elapsed += Timer_Elapsed;
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             timerHasTick = true;
             timer.Stop();
@@ -81,7 +81,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        private async void FlightConnector_AircraftStatusUpdated(object sender, AircraftStatusUpdatedEventArgs e)
+        private async void FlightConnector_AircraftStatusUpdated(object? sender, AircraftStatusUpdatedEventArgs e)
         {
             if (StreamDeck == null) return;
 
@@ -189,69 +189,75 @@ namespace FlightStreamDeck.Logics.Actions
         }
         private async Task ConvertLinkToEmbed(string fileKey)
         {
-            switch (fileKey)
+            if (settings != null)
             {
-                case "ImageOn":
-                    settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
-                    break;
-                case "ImageOff":
-                    settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
-                    break;
-            }
+                switch (fileKey)
+                {
+                    case "ImageOn":
+                        settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
+                        break;
+                    case "ImageOff":
+                        settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
+                        break;
+                }
 
-            await SetSettingsAsync(settings);
-            await SendToPropertyInspectorAsync(new
-            {
-                Action = "refresh",
-                Settings = settings
-            });
-            InitializeSettings(settings);
+                await SetSettingsAsync(settings);
+                await SendToPropertyInspectorAsync(new
+                {
+                    Action = "refresh",
+                    Settings = settings
+                });
+                InitializeSettings(settings);
+            }
         }
 
         private async Task ConvertEmbedToLink(string fileKey)
         {
-            var dialog = new SaveFileDialog
+            if (settings != null)
             {
-                FileName = fileKey switch
+                var dialog = new SaveFileDialog
                 {
-                    "ImageOn" => Path.GetFileName(settings.ImageOn),
-                    "ImageOff" => Path.GetFileName(settings.ImageOff),
-                    _ => "image.png"
-                },
-                Filter = "Images|*.jpg;*.jpeg;*.png"
-            };
-            if (dialog.ShowDialog() == true)
-            {
-                var bytes = fileKey switch
-                {
-                    "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
-                    "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
-                    _ => null
+                    FileName = fileKey switch
+                    {
+                        "ImageOn" => Path.GetFileName(settings.ImageOn),
+                        "ImageOff" => Path.GetFileName(settings.ImageOff),
+                        _ => "image.png"
+                    },
+                    Filter = "Images|*.jpg;*.jpeg;*.png"
                 };
-                if (bytes != null)
+                if (dialog.ShowDialog() == true)
                 {
-                    File.WriteAllBytes(dialog.FileName, bytes);
+                    var bytes = fileKey switch
+                    {
+                        "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
+                        "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
+                        _ => null
+                    };
+                    if (bytes != null)
+                    {
+                        File.WriteAllBytes(dialog.FileName, bytes);
+                    }
+                    switch (fileKey)
+                    {
+                        case "ImageOn":
+                            settings.ImageOn_base64 = null;
+                            settings.ImageOn = dialog.FileName.Replace("\\", "/");
+                            break;
+                        case "ImageOff":
+                            settings.ImageOff_base64 = null;
+                            settings.ImageOff = dialog.FileName.Replace("\\", "/");
+                            break;
+                    }
                 }
-                switch (fileKey)
-                {
-                    case "ImageOn":
-                        settings.ImageOn_base64 = null;
-                        settings.ImageOn = dialog.FileName.Replace("\\", "/");
-                        break;
-                    case "ImageOff":
-                        settings.ImageOff_base64 = null;
-                        settings.ImageOff = dialog.FileName.Replace("\\", "/");
-                        break;
-                }
-            }
 
-            await SetSettingsAsync(settings);
-            await SendToPropertyInspectorAsync(new
-            {
-                Action = "refresh",
-                Settings = settings
-            });
-            InitializeSettings(settings);
+                await SetSettingsAsync(settings);
+                await SendToPropertyInspectorAsync(new
+                {
+                    Action = "refresh",
+                    Settings = settings
+                });
+                InitializeSettings(settings);
+            }
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -338,8 +344,8 @@ namespace FlightStreamDeck.Logics.Actions
             var currentStatus = status;
             if (currentStatus != null && settings != null)
             {
-                byte[] imageOnBytes = null;
-                byte[] imageOffBytes = null;
+                byte[]? imageOnBytes = null;
+                byte[]? imageOffBytes = null;
                 if (settings.ImageOn_base64 != null)
                 {
                     var s = settings.ImageOn_base64;

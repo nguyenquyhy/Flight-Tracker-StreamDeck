@@ -8,7 +8,7 @@ namespace FlightStreamDeck.Logics
 {
     public class NumpadParams
     {
-        public NumpadParams(string type, string min, string mask, string imageBackgroundFilePath, byte[] imageBackground_base64)
+        public NumpadParams(string type, string min, string mask, string imageBackgroundFilePath, byte[]? imageBackground_base64)
         {
             Type = type;
             MinPattern = min;
@@ -22,13 +22,13 @@ namespace FlightStreamDeck.Logics
         public string Value { get; set; } = "";
         public string Mask { get; set; } = "xxx.xx";
         public string ImageBackgroundFilePath { get; set; }
-        public byte[] ImageBackground_base64 { get; set; }
+        public byte[]? ImageBackground_base64 { get; set; }
     }
 
     public class DeckLogic
     {
-        public static NumpadParams NumpadParams { get; set; }
-        public static TaskCompletionSource<(string value, bool swap)> NumpadTcs { get; set; }
+        public static NumpadParams? NumpadParams { get; set; }
+        public static TaskCompletionSource<(string? value, bool swap)>? NumpadTcs { get; set; }
 
         private readonly ILoggerFactory loggerFactory;
         private readonly IServiceProvider serviceProvider;
