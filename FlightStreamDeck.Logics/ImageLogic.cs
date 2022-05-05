@@ -69,13 +69,13 @@ namespace FlightStreamDeck.Logics
                 FontRectangle size;
                 if (!string.IsNullOrWhiteSpace(text))
                 {
-                    size = TextMeasurer.Measure(text, new RendererOptions(font));
+                    size = TextMeasurer.Measure(text, new TextOptions(font));
                     ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
                 }
 
                 if (hasValue)
                 {
-                    size = TextMeasurer.Measure(value, new RendererOptions(valueFont));
+                    size = TextMeasurer.Measure(value, new TextOptions(valueFont));
                     ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
                 }
             });
@@ -92,7 +92,7 @@ namespace FlightStreamDeck.Logics
             using var img = defaultBackground.Clone(ctx =>
             {
                 var imgSize = ctx.GetCurrentSize();
-                var size = TextMeasurer.Measure(text, new RendererOptions(font));
+                var size = TextMeasurer.Measure(text, new TextOptions(font));
                 ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 2 - size.Height / 2));
             });
 
@@ -114,20 +114,20 @@ namespace FlightStreamDeck.Logics
 
                 if (!string.IsNullOrWhiteSpace(type))
                 {
-                    var size = TextMeasurer.Measure(type, new RendererOptions(font));
+                    var size = TextMeasurer.Measure(type, new TextOptions(font));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
                     ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, showMainOnly ? imgSize.Height / 4 : imgSize.Height / 6));
                 }
 
                 if (!string.IsNullOrWhiteSpace(value1))
                 {
-                    var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
+                    var size1 = TextMeasurer.Measure(value1, new TextOptions(valueFont));
                     Color displayColor = dependant ? Color.Yellow : Color.LightGray;
                     ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, showMainOnly ? (imgSize.Height / 2) : (imgSize.Height / 6 + imgSize.Height / 4)));
                 }
                 if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
-                    var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
+                    var size2 = TextMeasurer.Measure(value2, new TextOptions(valueFont));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
                     ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 6 + imgSize.Height / 4 + size2.Height));
                 }
@@ -215,12 +215,12 @@ namespace FlightStreamDeck.Logics
                 FontRectangle size = new FontRectangle(0, 0, 0, 0);
                 if (!string.IsNullOrWhiteSpace(text))
                 {
-                    size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                    size = TextMeasurer.Measure(text, new TextOptions(titleFont));
                     ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
                 }
 
                 var valueText = value.ToString(valueFormat);
-                var sizeValue = TextMeasurer.Measure(valueText, new RendererOptions(font));
+                var sizeValue = TextMeasurer.Measure(valueText, new TextOptions(font));
                 Color textColor = value > max ? Color.Red : Color.White;
                 ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
 
@@ -373,7 +373,7 @@ namespace FlightStreamDeck.Logics
                 var textColor = (floatValue > max || floatValue < min) ? Color.Red : Color.White;
                 var font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
 
-                var size = TextMeasurer.Measure(valueText, new RendererOptions(font));
+                var size = TextMeasurer.Measure(valueText, new TextOptions(font));
                 float adjustY = top ? Math.Abs(-5 - size.Height) : 5;
                 arrowAddY = top ? arrowAddY - adjustY : arrowAddY + adjustY;
                 var valuePoint = new PointF(HALF_WIDTH - size.Width / 2, arrowAddY);
@@ -381,7 +381,7 @@ namespace FlightStreamDeck.Logics
 
                 ctx.DrawPolygon(pen, needle);
                 var text = labelText != string.Empty ? labelText[0].ToString() : string.Empty;
-                size = TextMeasurer.Measure(text, new RendererOptions(SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular)));
+                size = TextMeasurer.Measure(text, new TextOptions(SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular)));
                 startPoint.Y -= top ? size.Height : 0;
                 startPoint.X -= size.Width / 2;
                 ctx.DrawText(text, SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular), Color.Black, startPoint);
