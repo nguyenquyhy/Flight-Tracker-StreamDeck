@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpDeck;
 using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -44,15 +42,15 @@ namespace FlightStreamDeck.Logics.Actions
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.preset.toggle")]
-    public class PresetToggleAction : BaseAction<PresetToggleSettings>
+    public class PresetToggleAction : BaseAction<PresetToggleSettings>, EmbedLinkLogic.IAction
     {
         private readonly ILogger logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly Timer timer;
+        private readonly EmbedLinkLogic embedLinkLogic;
         private AircraftStatus? status = null;
         private bool timerHasTick;
-        private PresetToggleSettings? settings;
 
         public PresetToggleAction(ILogger<PresetToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
         {
@@ -61,6 +59,7 @@ namespace FlightStreamDeck.Logics.Actions
             this.imageLogic = imageLogic;
             timer = new Timer { Interval = 1000 };
             timer.Elapsed += Timer_Elapsed;
+            embedLinkLogic = new EmbedLinkLogic(this);
         }
 
         private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
@@ -149,15 +148,13 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        protected override Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+        protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
             var settings = args.Payload.GetSettings<PresetToggleSettings>();
-            InitializeSettings(settings);
+            await InitializeSettingsAsync(settings);
 
             status = null;
             this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
-
-            return Task.CompletedTask;
         }
 
         protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
@@ -173,91 +170,18 @@ namespace FlightStreamDeck.Logics.Actions
             if (args.Payload.TryGetValue("convertToEmbed", out JToken fileKeyObject))
             {
                 var fileKey = fileKeyObject.Value<string>();
-                await ConvertLinkToEmbed(fileKey);
+                await embedLinkLogic.ConvertLinkToEmbedAsync(fileKey);
             }
             else if (args.Payload.TryGetValue("convertToLink", out fileKeyObject))
             {
                 var fileKey = fileKeyObject.Value<string>();
-
-                System.Windows.Application.Current.Dispatcher.Invoke(() => ConvertEmbedToLink(fileKey));
+                await embedLinkLogic.ConvertEmbedToLinkAsync(fileKey);
             }
             else
             {
-                InitializeSettings(args.Payload.ToObject<PresetToggleSettings>());
+                await InitializeSettingsAsync(args.Payload.ToObject<PresetToggleSettings>());
             }
             await UpdateImage();
-        }
-        private async Task ConvertLinkToEmbed(string fileKey)
-        {
-            if (settings != null)
-            {
-                switch (fileKey)
-                {
-                    case "ImageOn":
-                        settings.ImageOn_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOn));
-                        break;
-                    case "ImageOff":
-                        settings.ImageOff_base64 = Convert.ToBase64String(File.ReadAllBytes(settings.ImageOff));
-                        break;
-                }
-
-                await SetSettingsAsync(settings);
-                await SendToPropertyInspectorAsync(new
-                {
-                    Action = "refresh",
-                    Settings = settings
-                });
-                InitializeSettings(settings);
-            }
-        }
-
-        private async Task ConvertEmbedToLink(string fileKey)
-        {
-            if (settings != null)
-            {
-                var dialog = new SaveFileDialog
-                {
-                    FileName = fileKey switch
-                    {
-                        "ImageOn" => Path.GetFileName(settings.ImageOn),
-                        "ImageOff" => Path.GetFileName(settings.ImageOff),
-                        _ => "image.png"
-                    },
-                    Filter = "Images|*.jpg;*.jpeg;*.png"
-                };
-                if (dialog.ShowDialog() == true)
-                {
-                    var bytes = fileKey switch
-                    {
-                        "ImageOn" => Convert.FromBase64String(settings.ImageOn_base64),
-                        "ImageOff" => Convert.FromBase64String(settings.ImageOff_base64),
-                        _ => null
-                    };
-                    if (bytes != null)
-                    {
-                        File.WriteAllBytes(dialog.FileName, bytes);
-                    }
-                    switch (fileKey)
-                    {
-                        case "ImageOn":
-                            settings.ImageOn_base64 = null;
-                            settings.ImageOn = dialog.FileName.Replace("\\", "/");
-                            break;
-                        case "ImageOff":
-                            settings.ImageOff_base64 = null;
-                            settings.ImageOff = dialog.FileName.Replace("\\", "/");
-                            break;
-                    }
-                }
-
-                await SetSettingsAsync(settings);
-                await SendToPropertyInspectorAsync(new
-                {
-                    Action = "refresh",
-                    Settings = settings
-                });
-                InitializeSettings(settings);
-            }
         }
 
         protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -334,9 +258,11 @@ namespace FlightStreamDeck.Logics.Actions
             return Task.CompletedTask;
         }
 
-        private void InitializeSettings(PresetToggleSettings settings)
+        public override Task InitializeSettingsAsync(PresetToggleSettings settings)
         {
             this.settings = settings;
+
+            return Task.CompletedTask;
         }
 
         private async Task UpdateImage()
@@ -348,15 +274,11 @@ namespace FlightStreamDeck.Logics.Actions
                 byte[]? imageOffBytes = null;
                 if (settings.ImageOn_base64 != null)
                 {
-                    var s = settings.ImageOn_base64;
-                    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
-                    imageOnBytes = Convert.FromBase64String(s);
+                    imageOnBytes = Convert.FromBase64String(settings.ImageOn_base64);
                 }
                 if (settings.ImageOff_base64 != null)
                 {
-                    var s = settings.ImageOff_base64;
-                    s = s.Replace('-', '+').Replace('_', '/').PadRight(4 * ((s.Length + 3) / 4), '=');
-                    imageOffBytes = Convert.FromBase64String(s);
+                    imageOffBytes = Convert.FromBase64String(settings.ImageOff_base64);
                 }
 
                 switch (settings.Type)
@@ -409,6 +331,46 @@ namespace FlightStreamDeck.Logics.Actions
                             imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                             imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
                         break;
+                }
+            }
+        }
+
+        public string? GetImagePath(string fileKey) => fileKey switch
+        {
+            "ImageOn" => settings?.ImageOn,
+            "ImageOff" => settings?.ImageOff,
+            _ => throw new ArgumentOutOfRangeException(nameof(fileKey), $"'{fileKey}' is invalid.")
+        };
+
+        public string? GetImageBase64(string fileKey) => fileKey switch
+        {
+            "ImageOn" => settings?.ImageOn_base64,
+            "ImageOff" => settings?.ImageOff_base64,
+            _ => throw new ArgumentOutOfRangeException(nameof(fileKey), $"'{fileKey}' is invalid.")
+        };
+
+        public void SetImagePath(string fileKey, string path)
+        {
+            if (settings != null)
+            {
+                switch (fileKey)
+                {
+                    case "ImageOn": settings.ImageOn = path; break;
+                    case "ImageOff": settings.ImageOff = path; break;
+                    default: throw new ArgumentOutOfRangeException(nameof(fileKey), $"'{fileKey}' is invalid.");
+                }
+            }
+        }
+
+        public void SetImageBase64(string fileKey, string? base64)
+        {
+            if (settings != null)
+            {
+                switch (fileKey)
+                {
+                    case "ImageOn": settings.ImageOn_base64 = base64; break;
+                    case "ImageOff": settings.ImageOff_base64 = base64; break;
+                    default: throw new ArgumentOutOfRangeException(nameof(fileKey), $"'{fileKey}' is invalid.");
                 }
             }
         }

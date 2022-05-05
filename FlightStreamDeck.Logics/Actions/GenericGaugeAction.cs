@@ -100,8 +100,6 @@ namespace FlightStreamDeck.Logics.Actions
             HideLabelOutsideMinMaxBottom = false
         };
 
-        private GenericGaugeSettings? settings = null;
-
         public GenericGaugeAction(
             ILogger<GenericGaugeAction> logger,
             IFlightConnector flightConnector,
@@ -121,7 +119,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            await InitializeSettings(args.Payload.GetSettings<GenericGaugeSettings>());
+            await InitializeSettingsAsync(args.Payload.GetSettings<GenericGaugeSettings>());
 
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
@@ -145,7 +143,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             try
             {
-                await InitializeSettings(args.Payload.ToObject<GenericGaugeSettings>());
+                await InitializeSettingsAsync(args.Payload.ToObject<GenericGaugeSettings>());
                 await UpdateImage();
             }
             catch (Exception e)
@@ -154,7 +152,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        private async Task InitializeSettings(GenericGaugeSettings settings)
+        public override async Task InitializeSettingsAsync(GenericGaugeSettings settings)
         {
             //keep constructor'd settings if the gauge is newly added.
             bool emptyPayload = settings?.IsEmptyPayload() == true;

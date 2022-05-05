@@ -26,7 +26,7 @@ function handleEmbed(_this) {
 function handleLink(_this) {
     var fileKey = _this.dataset.for;
     if (settings[fileKey] && settings[fileKey + '_base64']) {
-        if (confirm('Do you want to save current image and link to that version?\n\nnClick OK to save and link current image or Cancel to choose another image to link.')) {
+        if (confirm('Do you want to save current image and link to that version?\n\nClick OK to save and link current image or Cancel to choose another image to link.')) {
             sendValueToPlugin({
                 convertToLink: fileKey
             });
