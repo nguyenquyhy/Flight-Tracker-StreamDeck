@@ -270,67 +270,58 @@ namespace FlightStreamDeck.Logics.Actions
             var currentStatus = status;
             if (currentStatus != null && settings != null)
             {
-                byte[]? imageOnBytes = null;
-                byte[]? imageOffBytes = null;
-                if (settings.ImageOn_base64 != null)
+                byte[]? imageOnBytes = settings.ImageOn_base64 != null ? Convert.FromBase64String(settings.ImageOn_base64) : null;
+                byte[]? imageOffBytes = settings.ImageOff_base64 != null ? Convert.FromBase64String(settings.ImageOff_base64) : null;
+
+                var image = settings.Type switch
                 {
-                    imageOnBytes = Convert.FromBase64String(settings.ImageOn_base64);
-                }
-                if (settings.ImageOff_base64 != null)
+                    PresetFunction.Avionics => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn,
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    PresetFunction.ApMaster => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn,
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    PresetFunction.Heading => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(),
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    PresetFunction.Nav => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn,
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    PresetFunction.Altitude => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude1.ToString(),
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    PresetFunction.VerticalSpeed => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(),
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    PresetFunction.FLC => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn,
+                        value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null,
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    PresetFunction.Approach => imageLogic.GetImage(
+                        settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn,
+                        imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                        imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes),
+
+                    _ => null,
+                };
+
+                if (image != null)
                 {
-                    imageOffBytes = Convert.FromBase64String(settings.ImageOff_base64);
-                }
-
-                switch (settings.Type)
-                {
-                    case PresetFunction.Avionics:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AV", currentStatus.IsAvMasterOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
-
-                    case PresetFunction.ApMaster:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "AP", currentStatus.IsAutopilotOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
-
-                    case PresetFunction.Heading:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "HDG", currentStatus.IsApHdgOn, currentStatus.ApHeading.ToString(),
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
-
-                    case PresetFunction.Nav:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "NAV", currentStatus.IsApNavOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
-
-                    case PresetFunction.Altitude:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "ALT", currentStatus.IsApAltOn, currentStatus.ApAltitude1.ToString(),
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
-
-                    case PresetFunction.VerticalSpeed:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "VS", currentStatus.IsApVsOn, currentStatus.ApVs.ToString(),
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
-
-                    case PresetFunction.FLC:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "FLC", currentStatus.IsApFlcOn,
-                            value: currentStatus.IsApFlcOn ? currentStatus.ApAirspeed.ToString() : null,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
-
-                    case PresetFunction.Approach:
-                        await SetImageSafeAsync(imageLogic.GetImage(settings.HideHeader ? "" : "APR", currentStatus.IsApAprOn,
-                            imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                            imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
-                        break;
+                    await SetImageSafeAsync(image);
                 }
             }
         }

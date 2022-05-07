@@ -230,16 +230,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        private byte[]? GetImageBytes()
-        {
-            byte[]? imageBackgroundBytes = null;
-            if (settings?.ImageBackground_base64 != null)
-            {
-                imageBackgroundBytes = Convert.FromBase64String(settings.ImageBackground_base64);
-            }
-
-            return imageBackgroundBytes;
-        }
+        private byte[]? GetImageBytes() => settings?.ImageBackground_base64 != null ? Convert.FromBase64String(settings.ImageBackground_base64) : null;
 
         private void SwitchTo(string? type, TOGGLE_VALUE? batteryVariable, TOGGLE_VALUE? avionicsVariable)
         {

@@ -362,25 +362,19 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                byte[]? imageOnBytes = null;
-                byte[]? imageOffBytes = null;
-                if (settings.ImageOn_base64 != null)
-                {
-                    imageOnBytes = Convert.FromBase64String(settings.ImageOn_base64);
-                }
-                if (settings.ImageOff_base64 != null)
-                {
-                    imageOffBytes = Convert.FromBase64String(settings.ImageOff_base64);
-                }
+                var imageOnBytes = settings.ImageOn_base64 != null ? Convert.FromBase64String(settings.ImageOn_base64) : null;
+                var imageOffBytes = settings.ImageOff_base64 != null ? Convert.FromBase64String(settings.ImageOff_base64) : null;
 
                 var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
                     currentValueTime :
                     (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "";
 
-                await SetImageSafeAsync(imageLogic.GetImage(settings.Header, currentStatus,
+                var image = imageLogic.GetImage(settings.Header, currentStatus,
                     value: valueToShow,
                     imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes));
+                    imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes);
+
+                await SetImageSafeAsync(image);
             }
         }
 

@@ -316,7 +316,7 @@ namespace FlightStreamDeck.Logics
             {
                 try
                 {
-                    return Image.Load(imageBytes, new PngDecoder());
+                    return Image.Load(imageBytes);
                 }
                 catch (InvalidImageContentException)
                 {
