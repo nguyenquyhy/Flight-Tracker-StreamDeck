@@ -39,18 +39,17 @@ namespace FlightStreamDeck.Logics
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
-            bool hasValue = value != null && value.Length > 0;
 
             // Note: logic to choose with image to show
             // 1. If user did not select custom images, the active image (with light) is used
             //    only when Feedback value is true AND Display value is empty.
             // 2. If user select custom images (esp Active one), the custom Active image is used based on Feedback value
             //    ignoring Display value.
-            var img = active ?
-                GetBackgroundImage(imageOnBytes, imageOnFilePath, !hasValue ? defaultActiveBackground : defaultBackground) :
-                GetBackgroundImage(imageOffBytes, imageOffFilePath, defaultBackground);
+            using var img = active ?
+                GetBackgroundImage(imageOnBytes, imageOnFilePath, () => (string.IsNullOrEmpty(value) ? defaultActiveBackground : defaultBackground).Clone(_ => { })) :
+                GetBackgroundImage(imageOffBytes, imageOffFilePath, () => defaultBackground.Clone(_ => { }));
 
-            using var img2 = img.Clone(ctx =>
+            img.Mutate(ctx =>
             {
                 ctx.Resize(WIDTH, WIDTH); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
 
@@ -73,14 +72,14 @@ namespace FlightStreamDeck.Logics
                     ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
                 }
 
-                if (hasValue)
+                if (!string.IsNullOrEmpty(value))
                 {
                     size = TextMeasurer.Measure(value, new TextOptions(valueFont));
                     ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
                 }
             });
 
-            return ToBase64PNG(img2);
+            return ToBase64PNG(img);
         }
 
         /// <returns>Base64 image data</returns>
@@ -104,9 +103,9 @@ namespace FlightStreamDeck.Logics
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
 
-            var img = GetBackgroundImage(imageBytes, imageFilePath, defaultBackground);
+            using var img = GetBackgroundImage(imageBytes, imageFilePath, () => defaultBackground.Clone(_ => { }));
 
-            using var img2 = img.Clone(ctx =>
+            img.Mutate(ctx =>
             {
                 ctx.Resize(WIDTH, WIDTH); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
 
@@ -133,7 +132,7 @@ namespace FlightStreamDeck.Logics
                 }
             });
 
-            return ToBase64PNG(img2);
+            return ToBase64PNG(img);
         }
 
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees)
@@ -142,7 +141,7 @@ namespace FlightStreamDeck.Logics
             //var valueFont = SystemFonts.CreateFont("Arial", 12, FontStyle.Regular);
             var pen = new Pen(Color.Yellow, 3);
 
-            var shiftedRolledHorizon = new Image<Rgba32>(105, 105);
+            using var shiftedRolledHorizon = new Image<Rgba32>(105, 105);
             shiftedRolledHorizon.Mutate(ctx =>
             {
                 var size = horizon.Size();
@@ -153,28 +152,25 @@ namespace FlightStreamDeck.Logics
                 ctx.Rotate((float)rollInDegrees);
             });
 
-            using (var img = new Image<Rgba32>(WIDTH, WIDTH))
+            using var img = new Image<Rgba32>(WIDTH, WIDTH);
+            img.Mutate(ctx =>
             {
-                img.Mutate(ctx =>
-                {
-                    var size = shiftedRolledHorizon.Size();
-                    ctx.DrawImage(shiftedRolledHorizon, new Point(
-                        (int)Math.Round((float)-size.Width / 2 + HALF_WIDTH),
-                        (int)Math.Round((float)-size.Height / 2 + HALF_WIDTH)
-                        ), new GraphicsOptions());
+                var size = shiftedRolledHorizon.Size();
+                ctx.DrawImage(shiftedRolledHorizon, new Point(
+                    (int)Math.Round((float)-size.Width / 2 + HALF_WIDTH),
+                    (int)Math.Round((float)-size.Height / 2 + HALF_WIDTH)
+                    ), new GraphicsOptions());
 
                     // Draw bug
                     PointF[] leftLine = { new PointF(6, 36), new PointF(26, 36) };
-                    PointF[] rightLine = { new PointF(46, 36), new PointF(66, 36) };
-                    PointF[] bottomLine = { new PointF(36, 41), new PointF(36, 51) };
-                    ctx.DrawLines(pen, leftLine);
-                    ctx.DrawLines(pen, rightLine);
-                    ctx.DrawLines(pen, bottomLine);
-                });
+                PointF[] rightLine = { new PointF(46, 36), new PointF(66, 36) };
+                PointF[] bottomLine = { new PointF(36, 41), new PointF(36, 51) };
+                ctx.DrawLines(pen, leftLine);
+                ctx.DrawLines(pen, rightLine);
+                ctx.DrawLines(pen, bottomLine);
+            });
 
-
-                return ToBase64PNG(img);
-            }
+            return ToBase64PNG(img);
         }
 
         public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string? subValueText = null)
@@ -229,7 +225,6 @@ namespace FlightStreamDeck.Logics
 
             return ToBase64PNG(img);
         }
-
 
         public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize, bool displayAbsoluteValue, bool hideHeaderTop, bool hideHeaderBottom)
         {
@@ -310,7 +305,7 @@ namespace FlightStreamDeck.Logics
             return ToBase64PNG(img);
         }
 
-        private Image GetBackgroundImage(byte[]? imageBytes, string? imageFilePath, Image imageDefault)
+        private Image GetBackgroundImage(byte[]? imageBytes, string? imageFilePath, Func<Image> imageDefaultFactory)
         {
             if (imageBytes != null && imageBytes.Length > 0)
             {
@@ -337,7 +332,7 @@ namespace FlightStreamDeck.Logics
                 }
             }
 
-            return imageDefault;
+            return imageDefaultFactory();
         }
 
         private string ToBase64PNG(Image image)
