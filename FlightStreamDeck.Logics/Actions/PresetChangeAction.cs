@@ -108,8 +108,8 @@ namespace FlightStreamDeck.Logics.Actions
                 // NOTE: switch to AP ALT:1 due to current issue with the WT NXi
                 ValueChangeFunction.Altitude => (uint)status.ApAltitude1,
                 ValueChangeFunction.VerticalSpeed => (uint)status.ApVs,
-                ValueChangeFunction.AirSpeed => (uint)status.IndicatedAirSpeed,
-                ValueChangeFunction.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.IndicatedAirSpeed : (uint)status.ApVs,
+                ValueChangeFunction.AirSpeed => (uint)status.ApAirspeed,
+                ValueChangeFunction.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.ApAirspeed : (uint)status.ApVs,
                 ValueChangeFunction.VOR1 => (uint)status.Nav1OBS,
                 ValueChangeFunction.VOR2 => (uint)status.Nav2OBS,
                 ValueChangeFunction.ADF => (uint)status.ADFCard,
@@ -149,13 +149,13 @@ namespace FlightStreamDeck.Logics.Actions
                     break;
 
                 case ValueChangeFunction.AirSpeed:
-                    ChangeAirSpeed(sign);
+                    ChangeAirSpeed(originalValue.Value, sign, increment);
                     break;
 
                 case ValueChangeFunction.VerticalSpeedAirSpeed:
                     if (status.IsApFlcOn)
                     {
-                        ChangeAirSpeed(sign);
+                        ChangeAirSpeed(originalValue.Value, sign, increment);
                     }
                     else
                     {
@@ -230,16 +230,9 @@ namespace FlightStreamDeck.Logics.Actions
             flightConnector.ApVsSet(originalValue);
         }
 
-        private void ChangeAirSpeed(int sign)
+        private void ChangeAirSpeed(uint value, int sign, int increment)
         {
-            if (sign == 1)
-            {
-                flightConnector.ApAirSpeedInc();
-            }
-            else
-            {
-                flightConnector.ApAirSpeedDec();
-            }
+            flightConnector.ApAirSpeedSet((uint)Math.Max(0, value + increment * sign));
         }
 
         private void ChangeHeading(uint value, int sign, int increment)
