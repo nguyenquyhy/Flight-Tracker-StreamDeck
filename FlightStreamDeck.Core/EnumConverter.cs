@@ -4,9 +4,10 @@ namespace FlightStreamDeck.Core
 {
     public class EnumConverter
     {
-        public TOGGLE_VALUE? GetVariableEnum(string value)
+        public TOGGLE_VALUE? GetVariableEnum(string? value)
         {
-            if (value != null && !float.TryParse(value, out _) && Enum.TryParse(value.Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_VALUE result))
+            if (value != null && !float.TryParse(value, out _) 
+                && Enum.TryParse(value.Trim().Replace(":", "__").Replace(" ", "_"), true, out TOGGLE_VALUE result))
             {
                 return result;
             }
