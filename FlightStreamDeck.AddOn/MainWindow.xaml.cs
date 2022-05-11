@@ -108,14 +108,29 @@ namespace FlightStreamDeck.AddOn
 
         private async Task InitializeSimConnectAsync(SimConnectFlightConnector simConnect)
         {
-            myNotifyIcon.Icon = new Icon("Images/button@2x.ico");
+            try
+            {
+                myNotifyIcon.Icon = new Icon("Images/button@2x.ico");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Cannot set System tray icon");
+            }
             while (true)
             {
                 try
                 {
                     simConnect.Initialize(Handle);
                     eventRegistrar.ReInitializeEvents();
-                    myNotifyIcon.Icon = new Icon("Images/button_active@2x.ico");
+                    try
+                    {
+                        myNotifyIcon.Icon = new Icon("Images/button_active@2x.ico");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Cannot set System tray icon");
+                    }
+
                     simConnect.Send("Connected to Stream Deck plugin");
                     break;
                 }
