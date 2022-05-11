@@ -313,7 +313,7 @@ namespace FlightStreamDeck.Logics
                 {
                     return Image.Load(imageBytes);
                 }
-                catch (InvalidImageContentException)
+                catch (ImageFormatException)
                 {
                     // Let it fall through to default image
                     // TODO: maybe show a warning background
@@ -325,7 +325,7 @@ namespace FlightStreamDeck.Logics
                 {
                     return Image.Load(imageFilePath);
                 }
-                catch (InvalidImageContentException)
+                catch (ImageFormatException)
                 {
                     // Let it fall through to default image
                     // TODO: maybe show a warning background
