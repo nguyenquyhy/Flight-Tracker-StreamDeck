@@ -209,7 +209,7 @@ namespace FlightStreamDeck.Logics
                 fsize = TextMeasurer.Measure(txtDir, new TextOptions(fontDegree));
                 ctx.DrawText(txtDir + "°", fontDegree, Color.Yellow, new PointF(HALF_WIDTH - fsize.Width / 2, 53));
 
-                string text = intVel.ToString() + " kn";
+                string text = intVel.ToString() + " kt";
                 fsize = TextMeasurer.Measure(text, new TextOptions(fontStrength));
                 ctx.DrawText(text, fontStrength, Color.Cyan, new PointF(HALF_WIDTH - fsize.Width / 2, 0));
 
