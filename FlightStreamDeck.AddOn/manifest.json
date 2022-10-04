@@ -42,6 +42,19 @@
       "UUID": "tech.flighttracker.streamdeck.artificial.horizon"
     },
     {
+      "Icon": "Images/windIcon",
+      "Name": "Wind Button",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Wind Direction and Velocity",
+      "UUID": "tech.flighttracker.streamdeck.wind.direction"
+    },
+    {
       "Icon": "Images/toggleIcon",
       "Name": "NAV & COM",
       "States": [
