@@ -420,6 +420,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IndicatedAirSpeed = flightStatus.Value.IndicatedAirSpeed,
                                     VerticalSpeed = flightStatus.Value.VerticalSpeed,
                                     FuelTotalQuantity = flightStatus.Value.FuelTotalQuantity,
+                                    WindDirection = flightStatus.Value.WindDirection,
+                                    WindVelocity = flightStatus.Value.WindVelocity,
                                     IsOnGround = flightStatus.Value.IsOnGround == 1,
                                     StallWarning = flightStatus.Value.StallWarning == 1,
                                     OverspeedWarning = flightStatus.Value.OverspeedWarning == 1,

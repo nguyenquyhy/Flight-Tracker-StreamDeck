@@ -98,6 +98,9 @@ namespace FlightStreamDeck.Logics
         public double Heading { get; set; }
         public double TrueHeading { get; set; }
 
+        public double WindDirection { get; set; }
+        public double WindVelocity { get; set; }
+
         public double GroundSpeed { get; set; }
         public double IndicatedAirSpeed { get; set; }
         public double VerticalSpeed { get; set; }
