@@ -17,6 +17,7 @@ namespace FlightStreamDeck.Logics
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
         public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string? subValueText = null);
         public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
+        public string GetWindImage(double windDirectionInDegrees, double windVelocity, double headingInDegrees, bool relative);
     }
 
     public class ImageLogic : IImageLogic
@@ -25,6 +26,7 @@ namespace FlightStreamDeck.Logics
         readonly Image defaultActiveBackground = Image.Load("Images/button_active.png");
         readonly Image horizon = Image.Load("Images/horizon.png");
         readonly Image gaugeImage = Image.Load("Images/gauge.png");
+        readonly Image windImage = Image.Load("Images/wind.png");
 
         private const int WIDTH = 72;
         private const int HALF_WIDTH = 36;
@@ -161,8 +163,8 @@ namespace FlightStreamDeck.Logics
                     (int)Math.Round((float)-size.Height / 2 + HALF_WIDTH)
                     ), new GraphicsOptions());
 
-                    // Draw bug
-                    PointF[] leftLine = { new PointF(6, 36), new PointF(26, 36) };
+                // Draw bug
+                PointF[] leftLine = { new PointF(6, 36), new PointF(26, 36) };
                 PointF[] rightLine = { new PointF(46, 36), new PointF(66, 36) };
                 PointF[] bottomLine = { new PointF(36, 41), new PointF(36, 51) };
                 ctx.DrawLines(pen, leftLine);
@@ -171,6 +173,70 @@ namespace FlightStreamDeck.Logics
             });
 
             return ToBase64PNG(img);
+        }
+
+        public string GetWindImage(double windDirectionInDegrees, double windVelocity, double headingInDegrees, bool relative)
+        {
+            var fontDegree = SystemFonts.CreateFont("Arial", 16, FontStyle.Regular);
+            var fontStrength = SystemFonts.CreateFont("Arial", 16, FontStyle.Regular);
+
+            int intDir = Convert.ToInt32(windDirectionInDegrees);
+            int intVel = Convert.ToInt32(windVelocity);
+            int intHdg = Convert.ToInt32(headingInDegrees);
+            string txtDir = intDir.ToString();
+
+            if (relative)
+            {
+                intDir = intDir - intHdg;
+            }
+
+            using var rotatedImg = windImage.Clone(ctx =>
+            {
+                // Rotate
+                ctx.Rotate((float)intDir);
+            });
+
+            using var img = new Image<Rgba32>(WIDTH, WIDTH);
+            img.Mutate(ctx =>
+            {
+                var size = rotatedImg.Size();
+                ctx.DrawImage(rotatedImg, new Point(
+                    (int)Math.Round((float)-size.Width / 2 + HALF_WIDTH),
+                    (int)Math.Round((float)-size.Height / 2 + HALF_WIDTH)
+                    ), new GraphicsOptions());
+
+                FontRectangle fsize = new FontRectangle(0, 0, 0, 0);
+                fsize = TextMeasurer.Measure(txtDir, new TextOptions(fontDegree));
+                ctx.DrawText(txtDir + "°", fontDegree, Color.Yellow, new PointF(HALF_WIDTH - fsize.Width / 2, 53));
+
+                string text = intVel.ToString() + " kt";
+                fsize = TextMeasurer.Measure(text, new TextOptions(fontStrength));
+                ctx.DrawText(text, fontStrength, Color.Cyan, new PointF(HALF_WIDTH - fsize.Width / 2, 0));
+
+
+                var pen = new Pen(Color.Cyan, 4);
+                var penSmall = new Pen(Color.Cyan, 3);
+
+                if (relative)
+                {
+                    PointF[] wingLine = { new PointF(1, 59), new PointF(17, 59) };
+                    PointF[] middleLine = { new PointF(9, 54), new PointF(9, 68) };
+                    PointF[] rudderLine = { new PointF(5, 67), new PointF(13, 67) };
+                    ctx.DrawLines(pen, middleLine);
+                    ctx.DrawLines(pen, wingLine);
+                    ctx.DrawLines(penSmall, rudderLine);
+                }
+                else
+                {
+                    text = "N";
+                    fsize = TextMeasurer.Measure(text, new TextOptions(fontDegree));
+                    ctx.DrawText(text, fontDegree, Color.Cyan, new PointF(3, 53));
+                }
+
+            });
+
+            return ToBase64PNG(img);
+
         }
 
         public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string? subValueText = null)
