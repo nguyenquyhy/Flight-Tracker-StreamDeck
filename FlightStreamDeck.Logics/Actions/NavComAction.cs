@@ -321,7 +321,7 @@ namespace FlightStreamDeck.Logics.Actions
                         TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__1,
                         batteryVariable,
                         avionicsVariable,
-                        null,
+                        KnownEvents.ADF1_RADIO_SWAP,
                         null,
                         "",
                         ""
@@ -336,7 +336,7 @@ namespace FlightStreamDeck.Logics.Actions
                         TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__2,
                         batteryVariable,
                         avionicsVariable,
-                        null,
+                        KnownEvents.ADF2_RADIO_SWAP,
                         null,
                         "",
                         ""
