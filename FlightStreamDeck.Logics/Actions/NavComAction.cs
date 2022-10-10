@@ -36,6 +36,7 @@ namespace FlightStreamDeck.Logics.Actions
         private const string maxComVal = "136990";
         private const string minXpdrVal = "0000";
         private const string maxXpdrVal = "7777";
+        private const string minAdfVal = "0100";
 
         private readonly RegistrationParameters registration;
         private readonly ILogger<NavComAction> logger;
@@ -322,8 +323,8 @@ namespace FlightStreamDeck.Logics.Actions
                         batteryVariable,
                         avionicsVariable,
                         KnownEvents.ADF1_RADIO_SWAP,
-                        null,
-                        "",
+                        KnownEvents.ADF_STBY_SET,
+                        minAdfVal,
                         ""
                     );
                     break;
@@ -337,8 +338,8 @@ namespace FlightStreamDeck.Logics.Actions
                         batteryVariable,
                         avionicsVariable,
                         KnownEvents.ADF2_RADIO_SWAP,
-                        null,
-                        "",
+                        KnownEvents.ADF2_STBY_SET,
+                        minAdfVal,
                         ""
                     );
                     break;

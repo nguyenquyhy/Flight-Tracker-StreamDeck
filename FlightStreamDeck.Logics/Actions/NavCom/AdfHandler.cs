@@ -21,5 +21,21 @@ namespace FlightStreamDeck.Logics.Actions.NavCom
         {
             return ((int)Math.Round(value * 1000)).ToString();
         }
+
+        /// <summary>
+        /// BCD encode of Hz value
+        /// </summary>
+        protected override uint FormatValueForSimConnect(string value)
+        {
+            uint data = 0;
+            // NOTE: SimConnect ignore first 1
+            value += "0000";
+            for (var i = 0; i < value.Length; i++)
+            {
+                uint digit = (byte)value[i] - (uint)48;
+                data = data * 16 + digit;
+            }
+            return data;
+        }
     }
 }
