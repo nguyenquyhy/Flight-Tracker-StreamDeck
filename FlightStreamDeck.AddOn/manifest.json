@@ -360,7 +360,7 @@
   "Name": "Flight Tracker",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
-  "Version": "0.44",
+  "Version": "0.45",
   "OS": [
     {
       "Platform": "windows",
