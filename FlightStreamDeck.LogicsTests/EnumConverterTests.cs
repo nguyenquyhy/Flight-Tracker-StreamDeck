@@ -1,5 +1,4 @@
 ﻿using FlightStreamDeck.Core;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FlightStreamDeck.Logics.Tests
 {

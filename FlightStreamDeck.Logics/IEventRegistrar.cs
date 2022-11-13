@@ -1,8 +1,10 @@
-﻿namespace FlightStreamDeck.Logics
+﻿using static FlightStreamDeck.Logics.SimEventManager;
+
+namespace FlightStreamDeck.Logics
 {
     public interface IEventRegistrar
     {
-        void RegisterEvent(string? eventName);
+        (EventEnum eventEnum, bool isValid)? RegisterEvent(string? eventName);
         void ReInitializeEvents();
     }
 }

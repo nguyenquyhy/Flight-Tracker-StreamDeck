@@ -8,10 +8,19 @@ namespace FlightStreamDeck.Logics.Actions.NavCom
         public AdfHandler(
             IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, 
             TOGGLE_VALUE active, TOGGLE_VALUE? standby, TOGGLE_VALUE? batteryVariable, TOGGLE_VALUE? avionicsVariable, 
-            KnownEvents? toggle, KnownEvents? set, 
-            string minPattern, string mask) : 
-            base(flightConnector, eventRegistrar, eventDispatcher, active, standby, batteryVariable, avionicsVariable, toggle, set, minPattern, mask)
+            KnownEvents? toggle, KnownEvents? set) : 
+            base(
+                flightConnector, eventRegistrar, eventDispatcher, active, standby, batteryVariable, avionicsVariable, toggle, set,
+                "0100", 
+                ""
+            )
         {
+        }
+
+        protected override string AddDefaultPattern(string value)
+        {
+            // no-op
+            return value;
         }
 
         /// <summary>

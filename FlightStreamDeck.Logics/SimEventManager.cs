@@ -27,14 +27,14 @@ namespace FlightStreamDeck.Logics
             flightConnector.InvalidEventRegistered += FlightConnector_InvalidEventRegistered;
         }
 
-        public void RegisterEvent(string? eventName)
+        public (EventEnum eventEnum, bool isValid)? RegisterEvent(string? eventName)
         {
             if (IsValid(eventName))
             {
                 eventName = NormalizeEventName(eventName);
                 lock (registeredEvents)
                 {
-                    registeredEvents.AddOrUpdate(
+                    return registeredEvents.AddOrUpdate(
                         eventName,
                         addValueFactory: eventName =>
                         {
@@ -68,6 +68,7 @@ namespace FlightStreamDeck.Logics
                     );
                 }
             }
+            return null;
         }
 
         public void ReInitializeEvents()

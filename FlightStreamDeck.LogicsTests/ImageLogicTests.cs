@@ -1,13 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.IO;
 
 namespace FlightStreamDeck.Logics.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class ImageLogicTests
     {
-        [TestMethod()]
+        [TestMethod]
         public void GetHorizonImageTest()
         {
             ImageLogic images = new ImageLogic();
@@ -28,7 +27,7 @@ namespace FlightStreamDeck.Logics.Tests
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetHorizonImageBoundaryTest()
         {
             ImageLogic images = new ImageLogic();
@@ -43,7 +42,7 @@ namespace FlightStreamDeck.Logics.Tests
             images.GetHorizonImage(10, -20, -3000);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetGaugeImageTest()
         {
             ImageLogic images = new ImageLogic();
@@ -64,7 +63,7 @@ namespace FlightStreamDeck.Logics.Tests
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetCustomImageTest_NoCoordinateRangeError()
         {
             ImageLogic images = new ImageLogic();

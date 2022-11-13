@@ -66,11 +66,7 @@ namespace FlightStreamDeck.Logics.Actions.NavCom
 
         public async Task TriggerAsync(string value, bool swap)
         {
-            if (value.Length < MinPattern.Length)
-            {
-                // Add the default mask
-                value += MinPattern.Substring(value.Length);
-            }
+            value = AddDefaultPattern(value);
 
             uint data = FormatValueForSimConnect(value);
             eventDispatcher.Trigger(set.ToString(), data);
@@ -116,6 +112,16 @@ namespace FlightStreamDeck.Logics.Actions.NavCom
             {
                 eventDispatcher.Trigger(toggle.Value.ToString());
             }
+        }
+
+        protected virtual string AddDefaultPattern(string value)
+        {
+            if (value.Length < MinPattern.Length)
+            {
+                value += MinPattern.Substring(value.Length);
+            }
+
+            return value;
         }
 
         protected abstract uint FormatValueForSimConnect(string value);
