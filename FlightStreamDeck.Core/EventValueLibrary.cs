@@ -414,6 +414,10 @@ namespace FlightStreamDeck.Core
             { TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__2, new ValueEntry("Psi", 0) },
             { TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__3, new ValueEntry("Psi", 0) },
             { TOGGLE_VALUE.GENERAL_ENG_OIL_PRESSURE__4, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.RECIP_CARBURETOR_TEMPERATURE__1, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.RECIP_CARBURETOR_TEMPERATURE__2, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.RECIP_CARBURETOR_TEMPERATURE__3, new ValueEntry("Celsius", 0) },
+            { TOGGLE_VALUE.RECIP_CARBURETOR_TEMPERATURE__4, new ValueEntry("Celsius", 0) },
             { TOGGLE_VALUE.GYRO_DRIFT_ERROR, new ValueEntry("Degrees", 0) },
             { TOGGLE_VALUE.HEADING_INDICATOR, new ValueEntry("Degrees", 0) },
         };
