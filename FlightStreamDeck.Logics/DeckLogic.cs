@@ -1,55 +1,51 @@
-﻿using Microsoft.Extensions.Logging;
-using SharpDeck;
-using System;
+﻿using System;
 using System.Reflection;
-using System.Threading.Tasks;
 
-namespace FlightStreamDeck.Logics
+namespace FlightStreamDeck.Logics;
+
+public class NumpadParams
 {
-    public class NumpadParams
+    public NumpadParams(string type, string min, string mask, string imageBackgroundFilePath, byte[]? imageBackground_base64)
     {
-        public NumpadParams(string type, string min, string mask, string imageBackgroundFilePath, byte[]? imageBackground_base64)
-        {
-            Type = type;
-            MinPattern = min;
-            Mask = mask;
-            ImageBackgroundFilePath = imageBackgroundFilePath;
-            ImageBackground_base64 = imageBackground_base64;
-        }
-
-        public string Type { get; }
-        public string MinPattern { get; }
-        public string Value { get; set; } = "";
-        public string Mask { get; set; } = "xxx.xx";
-        public string ImageBackgroundFilePath { get; set; }
-        public byte[]? ImageBackground_base64 { get; set; }
+        Type = type;
+        MinPattern = min;
+        Mask = mask;
+        ImageBackgroundFilePath = imageBackgroundFilePath;
+        ImageBackground_base64 = imageBackground_base64;
     }
 
-    public class DeckLogic
+    public string Type { get; }
+    public string MinPattern { get; }
+    public string Value { get; set; } = "";
+    public string Mask { get; set; } = "xxx.xx";
+    public string ImageBackgroundFilePath { get; set; }
+    public byte[]? ImageBackground_base64 { get; set; }
+}
+
+public class DeckLogic
+{
+    public static NumpadParams? NumpadParams { get; set; }
+    public static TaskCompletionSource<(string? value, bool swap)>? NumpadTcs { get; set; }
+
+    private readonly ILoggerFactory loggerFactory;
+    private readonly IServiceProvider serviceProvider;
+
+    public DeckLogic(ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
     {
-        public static NumpadParams? NumpadParams { get; set; }
-        public static TaskCompletionSource<(string? value, bool swap)>? NumpadTcs { get; set; }
+        this.loggerFactory = loggerFactory;
+        this.serviceProvider = serviceProvider;
+    }
 
-        private readonly ILoggerFactory loggerFactory;
-        private readonly IServiceProvider serviceProvider;
+    public void Initialize()
+    {
+        var args = Environment.GetCommandLineArgs();
+        loggerFactory.CreateLogger<DeckLogic>().LogInformation("Initialize with args: {args}", string.Join("|", args));
 
-        public DeckLogic(ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
+        var plugin = StreamDeckPlugin.Create(args[1..], Assembly.GetAssembly(GetType())).WithServiceProvider(serviceProvider);
+
+        Task.Run(() =>
         {
-            this.loggerFactory = loggerFactory;
-            this.serviceProvider = serviceProvider;
-        }
-
-        public void Initialize()
-        {
-            var args = Environment.GetCommandLineArgs();
-            loggerFactory.CreateLogger<DeckLogic>().LogInformation("Initialize with args: {args}", string.Join("|", args));
-
-            var plugin = StreamDeckPlugin.Create(args[1..], Assembly.GetAssembly(GetType())).WithServiceProvider(serviceProvider);
-
-            Task.Run(() =>
-            {
-                plugin.Run(); // continuously listens until the connection closes
-            });
-        }
+            plugin.Run(); // continuously listens until the connection closes
+        });
     }
 }
