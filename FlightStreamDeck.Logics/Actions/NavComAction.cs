@@ -32,13 +32,13 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     private const string minXpdrVal = "0000";
     private const string maxXpdrVal = "7777";
 
-    private readonly RegistrationParameters registration;
     private readonly ILogger<NavComAction> logger;
     private readonly IImageLogic imageLogic;
     private readonly IFlightConnector flightConnector;
     private readonly IEventRegistrar eventRegistrar;
     private readonly IEventDispatcher eventDispatcher;
     private readonly EnumConverter enumConverter;
+    private readonly RegistrationParameters registrationParameters;
 
     private readonly Timer timer;
     private readonly EmbedLinkLogic embedLinkLogic;
@@ -59,16 +59,17 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         IFlightConnector flightConnector,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        EnumConverter enumConverter)
+        EnumConverter enumConverter,
+        RegistrationParameters registrationParameters
+    )
     {
-        registration = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]);
-
         this.logger = logger;
         this.imageLogic = imageLogic;
         this.flightConnector = flightConnector;
         this.eventRegistrar = eventRegistrar;
         this.eventDispatcher = eventDispatcher;
         this.enumConverter = enumConverter;
+        this.registrationParameters = registrationParameters;
         timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
         timer.Elapsed += Timer_Elapsed;
 
@@ -122,7 +123,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     {
         if (lastDependant)
         {
-            var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
+            var device = registrationParameters.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
             if (device != null && device.Type != DeviceType.StreamDeckMini)
             {
                 this.device = device;
@@ -136,8 +137,8 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     {
         if (lastDependant)
         {
-            var device = registration.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
-            if (timer.Enabled || device.Type == DeviceType.StreamDeckMini)
+            var device = registrationParameters.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
+            if (timer.Enabled || device?.Type == DeviceType.StreamDeckMini)
             {
                 timer.Stop();
 
@@ -161,7 +162,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
     {
 
-        if (args.Payload.TryGetValue("convertToEmbed", out JToken fileKeyObject))
+        if (args.Payload.TryGetValue("convertToEmbed", out JToken? fileKeyObject))
         {
             var fileKey = fileKeyObject.Value<string>();
             await embedLinkLogic.ConvertLinkToEmbedAsync(fileKey);
@@ -179,9 +180,10 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         await UpdateImage(false, string.Empty, string.Empty, false);
     }
 
-    public override Task InitializeSettingsAsync(NavComSettings settings)
+    public override Task InitializeSettingsAsync(NavComSettings? settings)
     {
         this.settings = settings;
+        if (settings == null) return Task.CompletedTask;
 
         lastDependant = !lastDependant;
         lastValue1 = null;
@@ -343,7 +345,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     private async Task SwitchToNumpad()
     {
         var handler = this.handler;
-        if (settings?.Type != null && handler?.IsSettable == true && lastDependant)
+        if (settings?.Type != null && handler?.IsSettable == true && lastDependant && device != null)
         {
             DeckLogic.NumpadParams = new NumpadParams(
                 settings.Type,
@@ -356,7 +358,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
 
             this.initializationTcs = new TaskCompletionSource<bool>();
 
-            await StreamDeck.SwitchToProfileAsync(registration.PluginUUID,
+            await StreamDeck.SwitchToProfileAsync(registrationParameters.PluginUUID,
                 device.Id,
                 device.Type == DeviceType.StreamDeckXL ? "Profiles/Numpad_XL" : "Profiles/Numpad");
 

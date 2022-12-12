@@ -104,8 +104,7 @@ namespace FlightStreamDeck.SimConnectFSX
         public int IsApNavOn;
         public int IsApAprOn;
         public int IsApAltOn;
-        public int ApAlt0;
-        public int ApAlt1;
+        public int ApAlt;
         public int IsApVsOn;
         public int ApVs;
         public int IsApFlcOn;

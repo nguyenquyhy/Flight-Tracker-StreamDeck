@@ -5,14 +5,33 @@ namespace FlightStreamDeck.Logics.Actions;
 #region Action Registration
 
 [StreamDeckAction("tech.flighttracker.streamdeck.number.enter")]
-public class NumberEnterAction : NumberFunctionAction { }
+public class NumberEnterAction : NumberFunctionAction
+{
+    public NumberEnterAction(RegistrationParameters registrationParameters) : base(registrationParameters)
+    {
+    }
+}
 [StreamDeckAction("tech.flighttracker.streamdeck.number.backspace")]
-public class NumberBackspaceAction : NumberFunctionAction { }
+public class NumberBackspaceAction : NumberFunctionAction
+{
+    public NumberBackspaceAction(RegistrationParameters registrationParameters) : base(registrationParameters)
+    {
+    }
+}
 [StreamDeckAction("tech.flighttracker.streamdeck.number.cancel")]
-public class NumberCancelAction : NumberFunctionAction { }
+public class NumberCancelAction : NumberFunctionAction
+{
+    public NumberCancelAction(RegistrationParameters registrationParameters) : base(registrationParameters)
+    {
+    }
+}
 [StreamDeckAction("tech.flighttracker.streamdeck.number.transfer")]
 public class NumberTransferAction : NumberFunctionAction
 {
+    public NumberTransferAction(RegistrationParameters registrationParameters) : base(registrationParameters)
+    {
+    }
+
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
         if (DeckLogic.NumpadParams?.Type == "XPDR")
@@ -30,11 +49,17 @@ public class NumberTransferAction : NumberFunctionAction
 
 public class NumberFunctionAction : StreamDeckAction
 {
+    private readonly RegistrationParameters registrationParameters;
+
+    public NumberFunctionAction(RegistrationParameters registrationParameters)
+    {
+        this.registrationParameters = registrationParameters;
+    }
+
     protected override async Task OnKeyDown(ActionEventArgs<KeyPayload> args)
     {
         if (DeckLogic.NumpadParams != null)
         {
-            var param = new RegistrationParameters(Environment.GetCommandLineArgs()[1..]);
             switch (args.Action)
             {
                 case "tech.flighttracker.streamdeck.number.enter":
@@ -42,32 +67,26 @@ public class NumberFunctionAction : StreamDeckAction
                     {
                         DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, false));
                     }
-                    await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
+                    await StreamDeck.SwitchToProfileAsync(registrationParameters.PluginUUID, args.Device);
                     break;
                 case "tech.flighttracker.streamdeck.number.cancel":
                     if (DeckLogic.NumpadTcs != null)
                     {
                         DeckLogic.NumpadTcs.SetResult((null, false));
                     }
-                    await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
+                    await StreamDeck.SwitchToProfileAsync(registrationParameters.PluginUUID, args.Device);
                     break;
                 case "tech.flighttracker.streamdeck.number.transfer":
                     if (DeckLogic.NumpadParams.Type == "XPDR")
                     {
                         DeckLogic.NumpadParams.Value = "1200";
-                        if (DeckLogic.NumpadTcs != null)
-                        {
-                            DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, false));
-                        }
+                        DeckLogic.NumpadTcs?.SetResult((DeckLogic.NumpadParams.Value, false));
                     }
                     else
                     {
-                        if (DeckLogic.NumpadTcs != null)
-                        {
-                            DeckLogic.NumpadTcs.SetResult((DeckLogic.NumpadParams.Value, true));
-                        }
+                        DeckLogic.NumpadTcs?.SetResult((DeckLogic.NumpadParams.Value, true));
                     }
-                    await StreamDeck.SwitchToProfileAsync(param.PluginUUID, args.Device, null);
+                    await StreamDeck.SwitchToProfileAsync(registrationParameters.PluginUUID, args.Device);
                     break;
                 case "tech.flighttracker.streamdeck.number.backspace":
                     if (DeckLogic.NumpadParams.Value.Length > 0)

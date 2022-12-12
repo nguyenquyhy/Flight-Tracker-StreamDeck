@@ -18,7 +18,7 @@ public class NumberDisplayAction : BaseAction
 
     private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
     {
-        if (lastValue != DeckLogic.NumpadParams.Value)
+        if (DeckLogic.NumpadParams != null && lastValue != DeckLogic.NumpadParams.Value)
         {
             lastValue = DeckLogic.NumpadParams.Value;
 

@@ -8,7 +8,7 @@ public abstract class BaseAction<TSettings> : StreamDeckAction<TSettings> where 
 {
     protected TSettings? settings = null;
 
-    public abstract Task InitializeSettingsAsync(TSettings settings);
+    public abstract Task InitializeSettingsAsync(TSettings? settings);
 
     public async Task RefreshSettingsAsync()
     {

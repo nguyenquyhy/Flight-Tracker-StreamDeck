@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-
-namespace FlightStreamDeck.Logics;
+﻿namespace FlightStreamDeck.Logics;
 
 public class NumpadParams
 {
@@ -22,30 +19,8 @@ public class NumpadParams
     public byte[]? ImageBackground_base64 { get; set; }
 }
 
-public class DeckLogic
+public static class DeckLogic
 {
     public static NumpadParams? NumpadParams { get; set; }
     public static TaskCompletionSource<(string? value, bool swap)>? NumpadTcs { get; set; }
-
-    private readonly ILoggerFactory loggerFactory;
-    private readonly IServiceProvider serviceProvider;
-
-    public DeckLogic(ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
-    {
-        this.loggerFactory = loggerFactory;
-        this.serviceProvider = serviceProvider;
-    }
-
-    public void Initialize()
-    {
-        var args = Environment.GetCommandLineArgs();
-        loggerFactory.CreateLogger<DeckLogic>().LogInformation("Initialize with args: {args}", string.Join("|", args));
-
-        var plugin = StreamDeckPlugin.Create(args[1..], Assembly.GetAssembly(GetType())).WithServiceProvider(serviceProvider);
-
-        Task.Run(() =>
-        {
-            plugin.Run(); // continuously listens until the connection closes
-        });
-    }
 }

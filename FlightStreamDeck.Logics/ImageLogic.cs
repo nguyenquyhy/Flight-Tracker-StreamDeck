@@ -441,7 +441,7 @@ namespace FlightStreamDeck.Logics
                 ctx.DrawText(valueText, font, textColor, valuePoint);
 
                 ctx.DrawPolygon(pen, needle);
-                var text = labelText != string.Empty ? labelText[0].ToString() : string.Empty;
+                var text = !string.IsNullOrEmpty(labelText) ? labelText[0].ToString() : string.Empty;
                 size = TextMeasurer.Measure(text, new TextOptions(SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular)));
                 startPoint.Y -= top ? size.Height : 0;
                 startPoint.X -= size.Width / 2;

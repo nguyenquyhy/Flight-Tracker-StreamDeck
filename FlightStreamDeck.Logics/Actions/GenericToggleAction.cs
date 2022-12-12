@@ -112,9 +112,10 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         await UpdateImage();
     }
 
-    public override Task InitializeSettingsAsync(GenericToggleSettings settings)
+    public override Task InitializeSettingsAsync(GenericToggleSettings? settings)
     {
         this.settings = settings;
+        if (settings == null) return Task.CompletedTask;
 
         var newToggleEvent = settings.ToggleValue;
         (var newToggleEventDataUInt, var newToggleEventDataVariable) = enumConverter.GetUIntOrVariable(settings.ToggleValueData);
@@ -225,7 +226,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
     protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
     {
-        if (args.Payload.TryGetValue("convertToEmbed", out JToken fileKeyObject))
+        if (args.Payload.TryGetValue("convertToEmbed", out JToken? fileKeyObject))
         {
             var fileKey = fileKeyObject.Value<string>();
             await embedLinkLogic.ConvertLinkToEmbedAsync(fileKey);
@@ -323,7 +324,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         {
             holdEventTriggerred = true;
 
-            if (!settings.HoldValueRepeat && timer != null)
+            if (settings?.HoldValueRepeat != true && timer != null)
             {
                 timer?.Stop();
                 timer = null;

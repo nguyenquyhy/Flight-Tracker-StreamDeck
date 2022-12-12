@@ -16,17 +16,15 @@ namespace FlightStreamDeck.AddOn
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly DeckLogic deckLogic;
         private readonly IFlightConnector flightConnector;
         private readonly IEventRegistrar eventRegistrar;
         private readonly ILogger<MainWindow> logger;
         private readonly ThrottlingLogic throttlingLogic;
         private IntPtr Handle;
 
-        public MainWindow(DeckLogic deckLogic, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, ILogger<MainWindow> logger, ThrottlingLogic throttlingLogic)
+        public MainWindow(IFlightConnector flightConnector, IEventRegistrar eventRegistrar, ILogger<MainWindow> logger, ThrottlingLogic throttlingLogic)
         {
             InitializeComponent();
-            this.deckLogic = deckLogic;
             this.flightConnector = flightConnector;
             this.eventRegistrar = eventRegistrar;
             this.logger = logger;
@@ -44,8 +42,6 @@ namespace FlightStreamDeck.AddOn
                 Application.Current.Shutdown();
                 return;
             }
-
-            deckLogic.Initialize();
 
             // Initialize SimConnect
             if (flightConnector is SimConnectFlightConnector simConnect)
@@ -97,7 +93,7 @@ namespace FlightStreamDeck.AddOn
         {
             try
             {
-                (flightConnector as SimConnectFlightConnector).HandleSimConnectEvents(message, ref isHandled);
+                (flightConnector as SimConnectFlightConnector)?.HandleSimConnectEvents(message, ref isHandled);
                 return IntPtr.Zero;
             }
             catch (BadImageFormatException)
@@ -136,20 +132,22 @@ namespace FlightStreamDeck.AddOn
                 }
                 catch (COMException ex)
                 {
-                    logger.LogDebug(ex, "SimConnect error.");
+                    logger.LogTrace(ex, "SimConnect error.");
                     await Task.Delay(5000).ConfigureAwait(true);
                 }
             }
         }
 
-        private void SimConnect_Closed(object sender, EventArgs e)
+        private void SimConnect_Closed(object? sender, EventArgs e)
         {
             logger.LogDebug("SimConnect is closed.");
             throttlingLogic.RunAsync(async () =>
             {
                 logger.LogDebug("Start reconnecting...");
-                var simConnect = sender as SimConnectFlightConnector;
-                await InitializeSimConnectAsync(simConnect);
+                if (sender is SimConnectFlightConnector simConnect)
+                {
+                    await InitializeSimConnectAsync(simConnect);
+                }
             }).Forget();
         }
 

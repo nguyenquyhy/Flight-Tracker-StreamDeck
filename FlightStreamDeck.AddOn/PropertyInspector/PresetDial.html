@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Property Inspector</title>
+    <link rel="stylesheet" href="css/sdpi.css">
+</head>
+<body>
+    <div class="sdpi-wrapper">
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Function</div>
+            <select class="sdpi-item-value select" id="Type">
+                <option disabled selected>Select a function</option>
+                <option value="Heading">Heading</option>
+                <option value="Altitude">Altitude</option>
+                <option value="VerticalSpeed">Vertical Speed</option>
+                <option value="FLC">FLC</option>
+            </select>
+        </div>
+
+        <div type="checkbox" class="sdpi-item">
+            <div class="sdpi-item-label">Hide header</div>
+            <input class="sdpi-item-value" id="HideHeader" type="checkbox">
+            <label for="HideHeader"><span></span></label>
+        </div>
+
+        <div type="group" class="sdpi-item" id="messagegroup">
+            <div class="sdpi-item-label">Custom ON/OFF images</div>
+            <div class="sdpi-item-group">
+                <div class="sdpi-item" id="on_image_file_selector">
+                    <div class="sdpi-item-label">ON image</div>
+                    <div class="sdpi-item-group file">
+                        <input class="sdpi-item-value" type="file" id="ImageOn" accept=".jpg, .jpeg, .png">
+                        <label class="sdpi-file-info">no file...</label>
+                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleEmbed(this)">Embed</label>
+                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleLink(this)">Link</label>
+                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn">Clear</label>
+                    </div>
+                    <input type="hidden" id="ImageOnEmbed" />
+                </div>
+                <div class="sdpi-item" id="off_image_file_selector">
+                    <div class="sdpi-item-label">OFF image</div>
+                    <div class="sdpi-item-group file">
+                        <input class="sdpi-item-value" type="file" id="ImageOff" accept=".jpg, .jpeg, .png">
+                        <label class="sdpi-file-info">no file...</label>
+                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleEmbed(this)">Embed</label>
+                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleLink(this)">Link</label>
+                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOff">Clear</label>
+                    </div>
+                </div>
+                <input type="hidden" id="IsEmbedding" />
+            </div>
+        </div>
+    </div>
+    <script src="common.js"></script>
+    <script src="embedimages.js"></script>
+    <script language="JavaScript" type="text/javascript">
+        function loadSettings(settings) {
+            if (settings['Type']) {
+                Type.value = settings['Type'];
+            };
+            if (settings['HideHeader']) {
+                HideHeader.checked = settings['HideHeader'];
+            };
+            if (settings['ImageOn']) {
+                setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
+            };
+            if (settings['ImageOff']) {
+                setFileLabel(off_image_file_selector, settings['ImageOff'], !!settings['ImageOff_base64']);
+            };
+        }
+    </script>
+    <script src="init.js"></script>
+</body>
+</html>

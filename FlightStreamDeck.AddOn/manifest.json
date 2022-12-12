@@ -84,6 +84,29 @@
     },
 
     {
+      "Icon": "Images/toggleIcon",
+      "Name": "Preset Dial Buttons",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": true
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "PropertyInspector/PresetDial.html",
+      "Tooltip": "Activate/Deactivate different functions",
+      "UUID": "tech.flighttracker.streamdeck.preset.dial",
+      "Controllers": [ "Encoder" ],
+      "Encoder": {
+        "layout": "$B2",
+        "TriggerDescription": {
+          "Push": "Toggle",
+          "Rotate": "Change value"
+        }
+      }
+    },
+
+    {
       "Icon": "Images/plusIcon",
       "Name": "Increase value",
       "States": [

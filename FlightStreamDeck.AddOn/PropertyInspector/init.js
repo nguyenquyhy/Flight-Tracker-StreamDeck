@@ -47,15 +47,6 @@ function initPropertyInspector(initDelay) {
     prepareDOMElements(document);
 }
 
-/** the beforeunload event is fired, right before the PI will remove all nodes */
-window.addEventListener('beforeunload', function (e) {
-    e.preventDefault();
-    // since 4.1 this is no longer needed, as the plugin will receive a notification
-    // right before the Property Inspector goes away
-    sendValueToPlugin('propertyInspectorWillDisappear', 'property_inspector');
-    // Don't set a returnValue to the event, otherwise Chromium with throw an error.  // e.returnValue = '';
-});
-
 // our method to pass values to the plugin
 function sendValueToPlugin(payload) {
     if (websocket) {

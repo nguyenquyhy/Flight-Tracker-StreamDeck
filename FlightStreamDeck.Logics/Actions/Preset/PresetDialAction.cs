@@ -1,0 +1,154 @@
+﻿using SharpDeck.Layouts;
+using System;
+
+namespace FlightStreamDeck.Logics.Actions;
+
+[StreamDeckAction("tech.flighttracker.streamdeck.preset.dial")]
+public class PresetDialAction : PresetBaseAction
+{
+    public PresetDialAction(ILogger<PresetDialAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic, PresetLogicFactory logicFactory)
+        : base(logger, flightConnector, imageLogic, logicFactory)
+    {
+    }
+
+    protected override async Task OnTouchTap(ActionEventArgs<TouchTapPayload> args)
+    {
+        if (!args.Payload.Hold)
+        {
+            await ToggleAsync();
+        }
+        else
+        {
+            await SyncAsync();
+        }
+    }
+
+    protected override async Task OnDialPress(ActionEventArgs<DialPayload> args)
+    {
+        if (!args.Payload.Pressed)
+        {
+            if (logic != null && status != null)
+            {
+                logic.Toggle(status);
+            }
+            else
+            {
+                await ShowAlertAsync();
+            }
+        }
+    }
+
+    protected override async Task OnDialRotate(ActionEventArgs<DialRotatePayload> args)
+    {
+        if (status != null && logic is IPresetValueLogic valueLogic)
+        {
+            valueLogic.ChangeValue(status, args.Payload.Ticks, 1);
+        }
+        else
+        {
+            await ShowAlertAsync();
+        }
+    }
+
+    protected override async Task UpdateImageAsync()
+    {
+        await base.UpdateImageAsync();
+
+        var currentStatus = status;
+        if (currentStatus != null && settings != null && logic is IPresetValueLogic valueLogic)
+        {
+            var value = valueLogic.GetValue(currentStatus);
+
+            byte[]? imageOnBytes = settings.ImageOn_base64 != null ? Convert.FromBase64String(settings.ImageOn_base64) : null;
+            byte[]? imageOffBytes = settings.ImageOff_base64 != null ? Convert.FromBase64String(settings.ImageOff_base64) : null;
+
+            var active = logic.GetActive(currentStatus);
+            var image = imageLogic.GetImage(
+                "",
+                active,
+                imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
+                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes
+            );
+
+            var min = GetMin(settings.Type);
+            var max = GetMax(settings.Type);
+            var indicator = Math.Clamp(((int)(value ?? 0) - min) * 100 / (max - min), 0, 100);
+            var showValue = active || GetShowValueWhenInactive(settings.Type);
+            await SetFeedbackAsync(new LayoutB2
+            {
+                Title = GetHeader(settings.Type),
+                Value = new Text
+                {
+                    Opacity = showValue ? 1 : 0,
+                    Value = value?.ToString("#,0") + GetValueUnit(settings.Type),
+                },
+                Icon = image,
+                Indicator = value == null ? null : new GBar
+                {
+                    Opacity = showValue ? 1 : 0,
+                    Value = indicator,
+                    BackgroundColor = GetBackgroundColor(settings.Type),
+                }
+            });
+        }
+    }
+
+    private string GetHeader(string type) =>
+        type switch
+        {
+            PresetFunction.Heading => "Heading",
+            PresetFunction.Altitude => "Altitude",
+            PresetFunction.VerticalSpeed => "Vertical Speed",
+            PresetFunction.FLC => "FLC",
+            _ => ""
+        };
+
+    private bool GetShowValueWhenInactive(string type) =>
+        type switch
+        {
+            PresetFunction.Heading => true,
+            PresetFunction.Altitude => true,
+            PresetFunction.VerticalSpeed => false,
+            PresetFunction.FLC => false,
+            _ => false
+        };
+
+    private string GetValueUnit(string type) =>
+        type switch
+        {
+            PresetFunction.Heading => "°",
+            PresetFunction.Altitude => " ft",
+            PresetFunction.VerticalSpeed => " ft/m",
+            PresetFunction.FLC => " kt",
+            _ => ""
+        };
+
+    private int GetMax(string type) =>
+        type switch
+        {
+            PresetFunction.Heading => 360,
+            PresetFunction.Altitude => 50000,
+            PresetFunction.VerticalSpeed => 2000,
+            PresetFunction.FLC => 400,
+            _ => 1
+        };
+
+    private int GetMin(string type) =>
+        type switch
+        {
+            PresetFunction.Heading => 0,
+            PresetFunction.Altitude => 0,
+            PresetFunction.VerticalSpeed => -2000,
+            PresetFunction.FLC => 0,
+            _ => 0
+        };
+
+    private string GetBackgroundColor(string type) =>
+        type switch
+        {
+            PresetFunction.Heading => "0:#ffffff,0.05:#999999,0.225:#999999,0.25:#ffffff,0.275:#999999,0.475:#999999,0.5:#ffffff,0.525:#999999,0.725:#999999,0.75:#ffffff,0.775:#999999,0.95:#999999,1:#ffffff",
+            PresetFunction.Altitude => "0:#ffffff,1:#87ceeb",
+            PresetFunction.VerticalSpeed => "0.4:#a52a2a,0.5:#ffffff,0.6:#87ceeb",
+            _ => "0:#ffffff,1:#ffffff"
+        };
+}

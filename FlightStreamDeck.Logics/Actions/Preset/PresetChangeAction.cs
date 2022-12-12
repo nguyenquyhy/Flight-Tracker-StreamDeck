@@ -9,14 +9,14 @@ namespace FlightStreamDeck.Logics.Actions;
 [StreamDeckAction("tech.flighttracker.streamdeck.preset.increase")]
 public class ValueIncreaseAction : PresetChangeAction
 {
-    public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher)
-        : base(logger, flightConnector, eventRegistrar, eventDispatcher) { }
+    public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, PresetLogicFactory logicFactory)
+        : base(logger, flightConnector, eventRegistrar, eventDispatcher, logicFactory) { }
 }
 [StreamDeckAction("tech.flighttracker.streamdeck.preset.decrease")]
 public class ValueDecreaseAction : PresetChangeAction
 {
-    public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher)
-        : base(logger, flightConnector, eventRegistrar, eventDispatcher) { }
+    public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, PresetLogicFactory logicFactory)
+        : base(logger, flightConnector, eventRegistrar, eventDispatcher, logicFactory) { }
 }
 
 #endregion
@@ -39,28 +39,32 @@ public class ValueChangeSettings
     public string Type { get; set; }
 }
 
-public abstract class PresetChangeAction : StreamDeckAction
+public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
 {
     private readonly ILogger logger;
     private readonly IFlightConnector flightConnector;
     private readonly IEventDispatcher eventDispatcher;
+    private readonly PresetLogicFactory logicFactory;
     private Timer timer;
     private string? action;
     private bool timerHaveTick = false;
     private uint? originalValue = null;
     private AircraftStatus? status;
-    private ValueChangeSettings? settings;
+
+    private IPresetToggleLogic? logic;
 
     public PresetChangeAction(
         ILogger logger,
         IFlightConnector flightConnector,
         IEventRegistrar eventRegistrar,
-        IEventDispatcher eventDispatcher)
+        IEventDispatcher eventDispatcher,
+        PresetLogicFactory logicFactory
+    )
     {
         this.logger = logger;
         this.flightConnector = flightConnector;
         this.eventDispatcher = eventDispatcher;
-
+        this.logicFactory = logicFactory;
         timer = new Timer { Interval = 400 };
         timer.Elapsed += Timer_Elapsed;
         eventRegistrar.RegisterEvent(KnownEvents.VOR1_SET.ToString());
@@ -69,13 +73,20 @@ public abstract class PresetChangeAction : StreamDeckAction
         eventRegistrar.RegisterEvent(KnownEvents.KOHLSMAN_SET.ToString());
     }
 
-    private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
+    public override Task InitializeSettingsAsync(ValueChangeSettings? settings)
     {
-        timerHaveTick = true;
-        Process(false);
+        this.settings = settings;
+        this.logic = logicFactory.Create(settings?.Type);
+        return Task.CompletedTask;
     }
 
-    private void Process(bool isUp)
+    private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
+    {
+        timerHaveTick = true;
+        await ProcessAsync(false);
+    }
+
+    private async Task ProcessAsync(bool isUp)
     {
         if (string.IsNullOrEmpty(action) || status == null) return;
         if (isUp && timerHaveTick) return;
@@ -99,11 +110,10 @@ public abstract class PresetChangeAction : StreamDeckAction
 
         if (originalValue == null) originalValue = buttonType switch
         {
-            ValueChangeFunction.Heading => (uint)status.ApHeading,
-            // NOTE: switch to AP ALT:1 due to current issue with the WT NXi
-            ValueChangeFunction.Altitude => (uint)status.ApAltitude1,
-            ValueChangeFunction.VerticalSpeed => (uint)status.ApVs,
-            ValueChangeFunction.AirSpeed => (uint)status.ApAirspeed,
+            ValueChangeFunction.Heading => 0,
+            ValueChangeFunction.Altitude => 0,
+            ValueChangeFunction.VerticalSpeed => 0,
+            ValueChangeFunction.AirSpeed => 0,
             ValueChangeFunction.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.ApAirspeed : (uint)status.ApVs,
             ValueChangeFunction.VOR1 => (uint)status.Nav1OBS,
             ValueChangeFunction.VOR2 => (uint)status.Nav2OBS,
@@ -116,35 +126,17 @@ public abstract class PresetChangeAction : StreamDeckAction
         switch (buttonType)
         {
             case ValueChangeFunction.Heading:
-                ChangeHeading(originalValue.Value, sign, increment);
-                break;
-
+            case ValueChangeFunction.VerticalSpeed:
             case ValueChangeFunction.Altitude:
-                if (status.ApAltitude0 == 99000)
+            case ValueChangeFunction.AirSpeed:
+                if (logic is IPresetValueLogic valueLogic)
                 {
-                    // HACK: workaround since right now WT NXi doesn't recognize AP_ALT_VAR_SET_ENGLISH
-                    if (sign == 1)
-                    {
-                        flightConnector.ApAltInc();
-                    }
-                    else
-                    {
-                        flightConnector.ApAltDec();
-                    }
+                    valueLogic.ChangeValue(status, sign, increment);
                 }
                 else
                 {
-                    originalValue = (uint)(originalValue + 100 * sign * increment);
-                    flightConnector.ApAltSet(originalValue.Value);
+                    await ShowAlertAsync();
                 }
-                break;
-
-            case ValueChangeFunction.VerticalSpeed:
-                ChangeVerticalSpeed(originalValue.Value, sign);
-                break;
-
-            case ValueChangeFunction.AirSpeed:
-                ChangeAirSpeed(originalValue.Value, sign, increment);
                 break;
 
             case ValueChangeFunction.VerticalSpeedAirSpeed:
@@ -185,25 +177,22 @@ public abstract class PresetChangeAction : StreamDeckAction
         timerHaveTick = false;
         timer.Start();
         return Task.CompletedTask;
-
     }
 
-    protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
+    protected override async Task OnKeyUp(ActionEventArgs<KeyPayload> args)
     {
         timer.Stop();
-        Process(true);
+        await ProcessAsync(true);
         action = null;
         originalValue = null;
         timerHaveTick = false;
-        return Task.CompletedTask;
     }
 
-    protected override Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+    protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
-        settings = args.Payload.GetSettings<ValueChangeSettings>();
+        await InitializeSettingsAsync(args.Payload.GetSettings<ValueChangeSettings>());
         status = null;
         this.flightConnector.AircraftStatusUpdated += FlightConnector_AircraftStatusUpdated;
-        return Task.CompletedTask;
     }
 
     protected override Task OnWillDisappear(ActionEventArgs<AppearancePayload> args)
@@ -213,10 +202,10 @@ public abstract class PresetChangeAction : StreamDeckAction
         return Task.CompletedTask;
     }
 
-    protected override Task OnSendToPlugin(ActionEventArgs<JObject> args)
+    protected override async Task OnSendToPlugin(ActionEventArgs<JObject> args)
     {
-        this.settings = args.Payload.ToObject<ValueChangeSettings>();
-        return Task.CompletedTask;
+        await InitializeSettingsAsync(args.Payload.ToObject<ValueChangeSettings>());
+        this.logic = logicFactory.Create(settings?.Type);
     }
 
     private void ChangeVerticalSpeed(uint originalValue, int sign)
@@ -228,13 +217,6 @@ public abstract class PresetChangeAction : StreamDeckAction
     private void ChangeAirSpeed(uint value, int sign, int increment)
     {
         flightConnector.ApAirSpeedSet((uint)Math.Max(0, value + increment * sign));
-    }
-
-    private void ChangeHeading(uint value, int sign, int increment)
-    {
-        value = CalculateSphericalIncrement(value, sign, increment);
-        originalValue = value;
-        flightConnector.ApHdgSet(value);
     }
 
     private void ChangeSphericalValue(uint value, int sign, int increment, KnownEvents evt)

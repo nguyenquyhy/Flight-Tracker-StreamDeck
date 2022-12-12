@@ -147,7 +147,7 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
         }
     }
 
-    public override async Task InitializeSettingsAsync(GenericGaugeSettings settings)
+    public override async Task InitializeSettingsAsync(GenericGaugeSettings? settings)
     {
         //keep constructor'd settings if the gauge is newly added.
         bool emptyPayload = settings?.IsEmptyPayload() == true;
