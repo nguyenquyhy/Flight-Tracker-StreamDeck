@@ -12,5 +12,5 @@ Below are some useful information that you can include to help with troubleshoot
 - Description of the issue & expected behavior
 - Steps to reproduce the issue
 - If the issue happens consistently, an export of your profile would help tremendously.
-- Log files at `%appdata%\Elgato\StreamDeck\Plugins\tech.flighttracker.streamdeck.sdPlugin\flightstreamdeck*.log`
+- Log files in folder `%appdata%\Elgato\StreamDeck\Plugins\tech.flighttracker.streamdeck.sdPlugin\logs\`
 - Screenshots

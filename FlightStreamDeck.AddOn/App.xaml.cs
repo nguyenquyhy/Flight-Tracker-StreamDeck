@@ -74,7 +74,7 @@ public partial class App : Application
             .WriteTo.Debug()
             .WriteTo.Logger(config => config
                 .MinimumLevel.Information()
-                .WriteTo.File("flightstreamdeck.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 3)
+                .WriteTo.File("logs/flightstreamdeck.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 3)
             )
             .CreateLogger();
 
