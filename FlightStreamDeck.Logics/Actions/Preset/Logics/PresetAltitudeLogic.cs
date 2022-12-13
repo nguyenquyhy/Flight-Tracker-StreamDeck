@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions;
 
 public class PresetAltitudeLogic : PresetBaseValueLogic
 {
-    private readonly ILogger<PresetAltitudeLogic> logger;
-
-    public PresetAltitudeLogic(ILogger<PresetAltitudeLogic> logger, IFlightConnector flightConnector) : base(flightConnector)
+    public PresetAltitudeLogic(ILogger<PresetAltitudeLogic> logger, IFlightConnector flightConnector) : base(logger, flightConnector)
     {
-        this.logger = logger;
     }
 
     public override bool GetActive(AircraftStatus status) => status.IsApAltOn;

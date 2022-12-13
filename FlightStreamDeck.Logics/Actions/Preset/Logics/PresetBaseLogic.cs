@@ -18,11 +18,14 @@ public interface IPresetValueLogic : IPresetToggleLogic
 
 public abstract class PresetBaseValueLogic : PresetBaseToggleLogic, IPresetValueLogic
 {
+    protected readonly ILogger logger;
+
     private double? cachedValue = null;
     private CancellationTokenSource? cts = null;
 
-    public PresetBaseValueLogic(IFlightConnector flightConnector) : base(flightConnector)
+    public PresetBaseValueLogic(ILogger logger, IFlightConnector flightConnector) : base(flightConnector)
     {
+        this.logger = logger;
     }
 
     public abstract double? GetValue(AircraftStatus status);
@@ -34,9 +37,11 @@ public abstract class PresetBaseValueLogic : PresetBaseToggleLogic, IPresetValue
     {
         if (cachedValue == null)
         {
+            logger.LogDebug("No cached value, fetch from status");
             var value = GetValue(status);
             cachedValue ??= value;
         }
+        logger.LogDebug("Cached value {value}", cachedValue);
         if (cachedValue != null)
         {
             var newValue = CalculateNewValue(cachedValue.Value, sign, increment);

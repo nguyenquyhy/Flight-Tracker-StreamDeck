@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace FlightStreamDeck.Logics.Actions;
 
 public class PresetFlcLogic : PresetBaseValueLogic
 {
-    private readonly ILogger<PresetFlcLogic> logger;
-
-    public PresetFlcLogic(ILogger<PresetFlcLogic> logger, IFlightConnector flightConnector) : base(flightConnector)
+    public PresetFlcLogic(ILogger<PresetFlcLogic> logger, IFlightConnector flightConnector) : base(logger, flightConnector)
     {
-        this.logger = logger;
     }
 
     public override bool GetActive(AircraftStatus status) => status.IsApFlcOn;

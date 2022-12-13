@@ -208,15 +208,18 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
         this.logic = logicFactory.Create(settings?.Type);
     }
 
-    private void ChangeVerticalSpeed(uint originalValue, int sign)
+    private void ChangeVerticalSpeed(uint value, int sign)
     {
-        originalValue = (uint)(originalValue + 100 * sign);
-        flightConnector.ApVsSet(originalValue);
+        value = (uint)(value + 100 * sign);
+        originalValue = value;
+        flightConnector.ApVsSet(value);
     }
 
     private void ChangeAirSpeed(uint value, int sign, int increment)
     {
-        flightConnector.ApAirSpeedSet((uint)Math.Max(0, value + increment * sign));
+        value = (uint)Math.Max(0, value + increment * sign);
+        originalValue = value;
+        flightConnector.ApAirSpeedSet(value);
     }
 
     private void ChangeSphericalValue(uint value, int sign, int increment, KnownEvents evt)

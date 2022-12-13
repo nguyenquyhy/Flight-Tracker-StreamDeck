@@ -2,11 +2,8 @@
 
 public class PresetVerticalSpeedLogic : PresetBaseValueLogic
 {
-    private readonly ILogger<PresetVerticalSpeedLogic> logger;
-
-    public PresetVerticalSpeedLogic(ILogger<PresetVerticalSpeedLogic> logger, IFlightConnector flightConnector) : base(flightConnector)
+    public PresetVerticalSpeedLogic(ILogger<PresetVerticalSpeedLogic> logger, IFlightConnector flightConnector) : base(logger, flightConnector)
     {
-        this.logger = logger;
     }
 
     public override bool GetActive(AircraftStatus status) => status.IsApVsOn;

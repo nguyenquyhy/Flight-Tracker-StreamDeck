@@ -2,11 +2,8 @@
 
 public class PresetHeadingLogic : PresetBaseValueLogic
 {
-    private readonly ILogger<PresetHeadingLogic> logger;
-
-    public PresetHeadingLogic(ILogger<PresetHeadingLogic> logger, IFlightConnector flightConnector) : base(flightConnector)
+    public PresetHeadingLogic(ILogger<PresetHeadingLogic> logger, IFlightConnector flightConnector) : base(logger, flightConnector)
     {
-        this.logger = logger;
     }
 
     public override bool GetActive(AircraftStatus status) => status.IsApHdgOn;
