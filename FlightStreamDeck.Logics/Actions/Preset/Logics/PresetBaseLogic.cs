@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace FlightStreamDeck.Logics.Actions;
+namespace FlightStreamDeck.Logics.Actions.Preset;
 
 public interface IPresetToggleLogic
 {

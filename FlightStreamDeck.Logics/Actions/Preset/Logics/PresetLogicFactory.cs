@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace FlightStreamDeck.Logics.Actions;
+namespace FlightStreamDeck.Logics.Actions.Preset;
 
 public class PresetLogicFactory
 {

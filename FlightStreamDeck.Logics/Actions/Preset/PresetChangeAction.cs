@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using FlightStreamDeck.Logics.Actions.Preset;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Timers;
 
@@ -224,11 +225,8 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
 
     private void ChangeSphericalValue(uint value, int sign, int increment, KnownEvents evt)
     {
-        value = CalculateSphericalIncrement(value, sign, increment);
+        value = value.IncreaseSpherical(increment * sign);
         originalValue = value;
         eventDispatcher.Trigger(evt.ToString(), value);
     }
-
-    private uint CalculateSphericalIncrement(uint originalValue, int sign, int increment)
-        => (uint)(originalValue + 360 + sign * increment) % 360;
 }

@@ -1,4 +1,4 @@
-﻿namespace FlightStreamDeck.Logics.Actions;
+﻿namespace FlightStreamDeck.Logics.Actions.Preset;
 
 public class PresetHeadingLogic : PresetBaseValueLogic
 {
@@ -23,11 +23,8 @@ public class PresetHeadingLogic : PresetBaseValueLogic
     }
 
     protected override double CalculateNewValue(double currentValue, int sign, int increment)
-        => CalculateSphericalIncrement((uint)currentValue, sign, increment);
+        => ((uint)currentValue).IncreaseSpherical(increment * sign);
 
     protected override void UpdateSimValue(double value)
         => flightConnector.ApHdgSet((uint)value);
-
-    private uint CalculateSphericalIncrement(uint currentValue, int sign, int increment)
-        => (uint)(currentValue + 360 + sign * increment) % 360;
 }

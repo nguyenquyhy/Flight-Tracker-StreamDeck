@@ -1,4 +1,4 @@
-﻿using FlightStreamDeck.Logics.Actions;
+﻿using FlightStreamDeck.Logics.Actions.Preset;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FlightStreamDeck.Logics;
