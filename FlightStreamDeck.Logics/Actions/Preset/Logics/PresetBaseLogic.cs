@@ -46,19 +46,6 @@ public abstract class PresetBaseValueLogic : PresetBaseToggleLogic, IPresetValue
         {
             var newValue = CalculateNewValue(cachedValue.Value, sign, increment);
             UpdateValue(newValue);
-
-            // Clear cache after 500ms
-            cts?.Cancel();
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
-            Task.Run(async () =>
-            {
-                await Task.Delay(500);
-                if (!token.IsCancellationRequested)
-                {
-                    cachedValue = null;
-                }
-            });
         }
     }
 
@@ -66,6 +53,19 @@ public abstract class PresetBaseValueLogic : PresetBaseToggleLogic, IPresetValue
     {
         cachedValue = value;
         UpdateSimValue(value);
+
+        // Clear cache after 500ms
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        var token = cts.Token;
+        Task.Run(async () =>
+        {
+            await Task.Delay(500);
+            if (!token.IsCancellationRequested)
+            {
+                cachedValue = null;
+            }
+        });
     }
 
     protected abstract double CalculateNewValue(double currentValue, int sign, int increment);
