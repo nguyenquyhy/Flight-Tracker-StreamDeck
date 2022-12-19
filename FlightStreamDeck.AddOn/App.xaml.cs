@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using SharpDeck.Connectivity;
 using SharpDeck.Extensions.Hosting;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -43,6 +44,30 @@ public partial class App : Application
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
 
+        var host = InitializeStreamDeckHost(serviceCollection);
+        if (host != null)
+        {
+            using var scope = host.Services.CreateScope();
+
+            // By default SharpDeck register only those from the entry Assembly. We need to also register all actions from .Logics project.
+            var registry = scope.ServiceProvider.GetRequiredService<IStreamDeckActionRegistry>();
+            registry.RegisterAll(typeof(BaseAction).Assembly);
+
+            mainWindow = scope.ServiceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+        }
+    }
+
+    private IHost? InitializeStreamDeckHost(ServiceCollection serviceCollection)
+    {
+        if (Environment.GetCommandLineArgs().Length <= 1)
+        {
+            MessageBox.Show($"This plugin must be launched by Stream Deck software!\nPlease install it properly by double clicking the .streamDeckPlugin file or find it in Stream Deck's More Actions.",
+                "Flight Tracker", MessageBoxButton.OK, MessageBoxImage.Error);
+            Current.Shutdown();
+            return null;
+        }
+
         // Create a custom factory here so we can register our own dependency in addition to those from SharpDeck
         var factory = new ServiceProviderFactory(serviceCollection);
 
@@ -56,15 +81,7 @@ public partial class App : Application
             host.Start();
         });
 
-        using (var scope = host.Services.CreateScope())
-        {
-            // By default SharpDeck register only those from the entry Assembly. We need to also register all actions from .Logics project.
-            var registry = scope.ServiceProvider.GetRequiredService<IStreamDeckActionRegistry>();
-            registry.RegisterAll(typeof(BaseAction).Assembly);
-
-            mainWindow = scope.ServiceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
-        }
+        return host;
     }
 
     private void ConfigureServices(ServiceCollection services)
