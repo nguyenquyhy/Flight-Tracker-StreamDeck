@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 
@@ -41,6 +42,44 @@ public abstract class BaseAction<TSettings> : StreamDeckAction<TSettings> where 
         catch (ObjectDisposedException)
         {
             // Ignore
+        }
+    }
+
+    /// <summary>
+    /// Gets the stack responsible for monitoring dial interactions; this is used to determine if the press was a long-press.
+    /// </summary>
+    private ConcurrentStack<ActionEventArgs<DialPayload>> DialPressStack { get; } = new();
+
+    protected virtual Task OnDialShortPress(ActionEventArgs<DialPayload> args) => Task.CompletedTask;
+
+    protected virtual Task OnDialLongPress(ActionEventArgs<DialPayload> args) => Task.CompletedTask;
+
+    protected override Task OnDialPress(ActionEventArgs<DialPayload> args)
+    {
+        if (args.Payload.Pressed)
+        {
+            DialPressStack.Push(args);
+            if (LongKeyPressInterval > TimeSpan.Zero)
+            {
+                Task.Run(async delegate
+                {
+                    await Task.Delay(LongKeyPressInterval);
+                    TryHandleDialPress(OnDialLongPress);
+                });
+            }
+        }
+        else
+        {
+            TryHandleDialPress(OnDialShortPress);
+        }
+        return Task.CompletedTask;
+    }
+
+    private void TryHandleDialPress(Func<ActionEventArgs<DialPayload>, Task> handler)
+    {
+        if (DialPressStack.TryPop(out var result))
+        {
+            handler(result);
         }
     }
 }

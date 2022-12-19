@@ -24,18 +24,27 @@ public class PresetDialAction : PresetBaseAction
         }
     }
 
-    protected override async Task OnDialPress(ActionEventArgs<DialPayload> args)
+    protected override async Task OnDialShortPress(ActionEventArgs<DialPayload> args)
     {
-        if (!args.Payload.Pressed)
+        if (logic != null && status != null)
         {
-            if (logic != null && status != null)
-            {
-                logic.Toggle(status);
-            }
-            else
-            {
-                await ShowAlertAsync();
-            }
+            logic.Toggle(status);
+        }
+        else
+        {
+            await ShowAlertAsync();
+        }
+    }
+
+    protected override async Task OnDialLongPress(ActionEventArgs<DialPayload> args)
+    {
+        if (status != null && logic is IPresetValueLogic valueLogic)
+        {
+            valueLogic.Sync(status);
+        }
+        else
+        {
+            await ShowAlertAsync();
         }
     }
 
