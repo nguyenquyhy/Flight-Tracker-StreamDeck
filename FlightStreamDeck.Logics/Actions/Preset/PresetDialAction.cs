@@ -106,59 +106,68 @@ public class PresetDialAction : PresetBaseAction
     private string GetHeader(string type) =>
         type switch
         {
-            PresetFunction.Heading => "Heading",
-            PresetFunction.Altitude => "Altitude",
-            PresetFunction.VerticalSpeed => "Vertical Speed",
-            PresetFunction.FLC => "FLC",
-            _ => ""
+            PresetFunctions.VerticalSpeed => "Vertical Speed",
+            _ => type.ToString()
         };
 
     private bool GetShowValueWhenInactive(string type) =>
         type switch
         {
-            PresetFunction.Heading => true,
-            PresetFunction.Altitude => true,
-            PresetFunction.VerticalSpeed => false,
-            PresetFunction.FLC => false,
+            PresetFunctions.Heading => true,
+            PresetFunctions.Altitude => true,
+            PresetFunctions.VerticalSpeed => false,
+            PresetFunctions.FLC => false,
+            PresetFunctions.VOR1 => true,
+            PresetFunctions.VOR2 => true,
             _ => false
         };
 
     private string GetValueUnit(string type) =>
         type switch
         {
-            PresetFunction.Heading => "°",
-            PresetFunction.Altitude => " ft",
-            PresetFunction.VerticalSpeed => " ft/m",
-            PresetFunction.FLC => " kt",
+            PresetFunctions.Heading => "°",
+            PresetFunctions.Altitude => " ft",
+            PresetFunctions.VerticalSpeed => " ft/m",
+            PresetFunctions.FLC => " kt",
+            PresetFunctions.VOR1 => "°",
+            PresetFunctions.VOR2 => "°",
             _ => ""
         };
 
     private int GetMax(string type) =>
         type switch
         {
-            PresetFunction.Heading => 360,
-            PresetFunction.Altitude => 50000,
-            PresetFunction.VerticalSpeed => 2000,
-            PresetFunction.FLC => 400,
+            PresetFunctions.Heading => 360,
+            PresetFunctions.Altitude => 50000,
+            PresetFunctions.VerticalSpeed => 2000,
+            PresetFunctions.FLC => 400,
+            PresetFunctions.VOR1 => 360,
+            PresetFunctions.VOR2 => 360,
             _ => 1
         };
 
     private int GetMin(string type) =>
         type switch
         {
-            PresetFunction.Heading => 0,
-            PresetFunction.Altitude => 0,
-            PresetFunction.VerticalSpeed => -2000,
-            PresetFunction.FLC => 0,
+            PresetFunctions.Heading => 0,
+            PresetFunctions.Altitude => 0,
+            PresetFunctions.VerticalSpeed => -2000,
+            PresetFunctions.FLC => 0,
+            PresetFunctions.VOR1 => 0,
+            PresetFunctions.VOR2 => 0,
             _ => 0
         };
+
+    private const string ColorDegreeMarking = "0:#ffffff,0.05:#999999,0.225:#999999,0.25:#ffffff,0.275:#999999,0.475:#999999,0.5:#ffffff,0.525:#999999,0.725:#999999,0.75:#ffffff,0.775:#999999,0.95:#999999,1:#ffffff";
 
     private string GetBackgroundColor(string type) =>
         type switch
         {
-            PresetFunction.Heading => "0:#ffffff,0.05:#999999,0.225:#999999,0.25:#ffffff,0.275:#999999,0.475:#999999,0.5:#ffffff,0.525:#999999,0.725:#999999,0.75:#ffffff,0.775:#999999,0.95:#999999,1:#ffffff",
-            PresetFunction.Altitude => "0:#ffffff,1:#87ceeb",
-            PresetFunction.VerticalSpeed => "0.4:#a52a2a,0.5:#ffffff,0.6:#87ceeb",
+            PresetFunctions.Heading => ColorDegreeMarking,
+            PresetFunctions.Altitude => "0:#ffffff,1:#87ceeb",
+            PresetFunctions.VerticalSpeed => "0.4:#a52a2a,0.5:#ffffff,0.6:#87ceeb",
+            PresetFunctions.VOR1 => ColorDegreeMarking,
+            PresetFunctions.VOR2 => ColorDegreeMarking,
             _ => "0:#ffffff,1:#ffffff"
         };
 }

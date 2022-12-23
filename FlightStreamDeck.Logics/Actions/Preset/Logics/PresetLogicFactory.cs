@@ -14,16 +14,20 @@ public class PresetLogicFactory
 
     public IPresetToggleLogic? Create(string? type) => type switch
     {
-        PresetFunction.Heading => serviceProvider.GetRequiredService<PresetHeadingLogic>(),
-        PresetFunction.VerticalSpeed => serviceProvider.GetRequiredService<PresetVerticalSpeedLogic>(),
-        PresetFunction.Altitude => serviceProvider.GetRequiredService<PresetAltitudeLogic>(),
-        PresetFunction.FLC => serviceProvider.GetRequiredService<PresetFlcLogic>(),
-        ValueChangeFunction.AirSpeed => serviceProvider.GetRequiredService<PresetFlcLogic>(),
+        PresetFunctions.Heading => serviceProvider.GetRequiredService<PresetHeadingLogic>(),
+        PresetFunctions.VerticalSpeed => serviceProvider.GetRequiredService<PresetVerticalSpeedLogic>(),
+        PresetFunctions.Altitude => serviceProvider.GetRequiredService<PresetAltitudeLogic>(),
+        PresetFunctions.FLC => serviceProvider.GetRequiredService<PresetFlcLogic>(),
+        PresetFunctions.AirSpeed => serviceProvider.GetRequiredService<PresetFlcLogic>(),
 
-        PresetFunction.Avionics => serviceProvider.GetRequiredService<PresetAvionicsLogic>(),
-        PresetFunction.ApMaster => serviceProvider.GetRequiredService<PresetApMasterLogic>(),
-        PresetFunction.Nav => serviceProvider.GetRequiredService<PresetNavLogic>(),
-        PresetFunction.Approach => serviceProvider.GetRequiredService<PresetApproachLogic>(),
+        PresetFunctions.Avionics => serviceProvider.GetRequiredService<PresetAvionicsLogic>(),
+        PresetFunctions.ApMaster => serviceProvider.GetRequiredService<PresetApMasterLogic>(),
+        PresetFunctions.Nav => serviceProvider.GetRequiredService<PresetNavLogic>(),
+        PresetFunctions.Approach => serviceProvider.GetRequiredService<PresetApproachLogic>(),
+
+        PresetFunctions.VOR1 => serviceProvider.GetRequiredService<PresetVor1Logic>(),
+        PresetFunctions.VOR2 => serviceProvider.GetRequiredService<PresetVor2Logic>(),
+
         _ => null,
     };
 }

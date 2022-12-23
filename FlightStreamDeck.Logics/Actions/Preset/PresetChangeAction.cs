@@ -22,19 +22,6 @@ public class ValueDecreaseAction : PresetChangeAction
 
 #endregion
 
-public class ValueChangeFunction
-{
-    public const string Heading = "Heading";
-    public const string Altitude = "Altitude";
-    public const string VerticalSpeed = "VerticalSpeed";
-    public const string AirSpeed = "AirSpeed";
-    public const string VerticalSpeedAirSpeed = "VerticalSpeedAirSpeed";
-    public const string VOR1 = "VOR1";
-    public const string VOR2 = "VOR2";
-    public const string ADF = "ADF";
-    public const string QNH = "QNH";
-}
-
 public class ValueChangeSettings
 {
     public string Type { get; set; }
@@ -111,25 +98,27 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
 
         if (originalValue == null) originalValue = buttonType switch
         {
-            ValueChangeFunction.Heading => 0,
-            ValueChangeFunction.Altitude => 0,
-            ValueChangeFunction.VerticalSpeed => 0,
-            ValueChangeFunction.AirSpeed => 0,
-            ValueChangeFunction.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.ApAirspeed : (uint)status.ApVs,
-            ValueChangeFunction.VOR1 => (uint)status.Nav1OBS,
-            ValueChangeFunction.VOR2 => (uint)status.Nav2OBS,
-            ValueChangeFunction.ADF => (uint)status.ADFCard,
-            ValueChangeFunction.QNH => (uint)status.QNHMbar,
+            PresetFunctions.Heading => 0,
+            PresetFunctions.Altitude => 0,
+            PresetFunctions.VerticalSpeed => 0,
+            PresetFunctions.AirSpeed => 0,
+            PresetFunctions.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.ApAirspeed : (uint)status.ApVs,
+            PresetFunctions.VOR1 => (uint)status.Nav1OBS,
+            PresetFunctions.VOR2 => (uint)status.Nav2OBS,
+            PresetFunctions.ADF => (uint)status.ADFCard,
+            PresetFunctions.QNH => (uint)status.QNHMbar,
 
             _ => throw new NotImplementedException($"Value type: {buttonType}")
         };
 
         switch (buttonType)
         {
-            case ValueChangeFunction.Heading:
-            case ValueChangeFunction.VerticalSpeed:
-            case ValueChangeFunction.Altitude:
-            case ValueChangeFunction.AirSpeed:
+            case PresetFunctions.Heading:
+            case PresetFunctions.VerticalSpeed:
+            case PresetFunctions.Altitude:
+            case PresetFunctions.AirSpeed:
+            case PresetFunctions.VOR1:
+            case PresetFunctions.VOR2:
                 if (logic is IPresetValueLogic valueLogic)
                 {
                     valueLogic.ChangeValue(status, sign, increment);
@@ -140,7 +129,7 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
                 }
                 break;
 
-            case ValueChangeFunction.VerticalSpeedAirSpeed:
+            case PresetFunctions.VerticalSpeedAirSpeed:
                 if (status.IsApFlcOn)
                 {
                     ChangeAirSpeed(originalValue.Value, sign, increment);
@@ -150,17 +139,11 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
                     ChangeVerticalSpeed(originalValue.Value, sign);
                 }
                 break;
-            case ValueChangeFunction.QNH:
+            case PresetFunctions.QNH:
                 double newValue = (double)originalValue + (sign * increment * 50);  // Value is in nanobar, increment per 50 nanobar (0.5 mbar)
                 flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
                 break;
-            case ValueChangeFunction.VOR1:
-                ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.VOR1_SET);
-                break;
-            case ValueChangeFunction.VOR2:
-                ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.VOR2_SET);
-                break;
-            case ValueChangeFunction.ADF:
+            case PresetFunctions.ADF:
                 ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.ADF_SET);
                 break;
 

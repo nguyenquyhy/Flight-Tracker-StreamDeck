@@ -25,18 +25,6 @@ public class PresetToggleSettings
     public string? ImageOff_base64 { get; set; }
 }
 
-public class PresetFunction
-{
-    public const string Avionics = "Avionics";
-    public const string ApMaster = "ApMaster";
-    public const string Heading = "Heading";
-    public const string Nav = "Nav";
-    public const string Altitude = "Altitude";
-    public const string VerticalSpeed = "VerticalSpeed";
-    public const string Approach = "Approach";
-    public const string FLC = "FLC";
-}
-
 [StreamDeckAction("tech.flighttracker.streamdeck.preset.toggle")]
 public class PresetToggleAction : PresetBaseAction
 {
@@ -161,14 +149,14 @@ public abstract class PresetBaseAction : BaseAction<PresetToggleSettings>, Embed
     protected string GetImageText(string type) =>
         type switch
         {
-            PresetFunction.Avionics => "AV",
-            PresetFunction.ApMaster => "AP",
-            PresetFunction.Heading => "HDG",
-            PresetFunction.Nav => "NAV",
-            PresetFunction.Altitude => "ALT",
-            PresetFunction.VerticalSpeed => "VS",
-            PresetFunction.FLC => "FLC",
-            PresetFunction.Approach => "APR",
+            PresetFunctions.Avionics => "AV",
+            PresetFunctions.ApMaster => "AP",
+            PresetFunctions.Heading => "HDG",
+            PresetFunctions.Nav => "NAV",
+            PresetFunctions.Altitude => "ALT",
+            PresetFunctions.VerticalSpeed => "VS",
+            PresetFunctions.FLC => "FLC",
+            PresetFunctions.Approach => "APR",
             _ => ""
         };
 

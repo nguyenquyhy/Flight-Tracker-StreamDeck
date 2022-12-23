@@ -15,5 +15,7 @@ public static class Extensions
             .AddScoped<PresetAvionicsLogic>()
             .AddScoped<PresetApMasterLogic>()
             .AddScoped<PresetNavLogic>()
-            .AddScoped<PresetApproachLogic>();
+            .AddScoped<PresetApproachLogic>()
+            .AddScoped<PresetVor1Logic>()
+            .AddScoped<PresetVor2Logic>();
 }
