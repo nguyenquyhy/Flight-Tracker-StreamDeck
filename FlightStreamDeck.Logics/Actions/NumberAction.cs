@@ -25,7 +25,7 @@ public class Number8Action : NumberAction
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
-        if (DeckLogic.NumpadParams?.Type == "XPDR")
+        if (NumpadStorage.NumpadParams?.Type == "XPDR")
         {
             await SetImageSafeAsync(null);
         }
@@ -42,7 +42,7 @@ public class Number9Action : NumberAction
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
-        if (DeckLogic.NumpadParams?.Type == "XPDR")
+        if (NumpadStorage.NumpadParams?.Type == "XPDR")
         {
             await SetImageSafeAsync(null);
         }
@@ -74,16 +74,16 @@ public class NumberAction : BaseAction
 
     protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
     {
-        if (DeckLogic.NumpadParams != null)
+        if (NumpadStorage.NumpadParams != null)
         {
             var tokens = args.Action.Split(".");
             var number = int.Parse(tokens[^1]);
 
-            if (DeckLogic.NumpadParams.Type == "XPDR" && number > 7) return Task.CompletedTask;
+            if (NumpadStorage.NumpadParams.Type == "XPDR" && number > 7) return Task.CompletedTask;
 
-            if (DeckLogic.NumpadParams.Value.Length < DeckLogic.NumpadParams.MinPattern.Length)
+            if (NumpadStorage.NumpadParams.Value.Length < NumpadStorage.NumpadParams.MinPattern.Length)
             {
-                DeckLogic.NumpadParams.Value += number.ToString();
+                NumpadStorage.NumpadParams.Value += number.ToString();
             }
         }
 

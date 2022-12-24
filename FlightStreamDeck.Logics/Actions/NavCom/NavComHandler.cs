@@ -16,6 +16,7 @@ public abstract class NavComHandler
     private readonly KnownEvents? set;
 
     public string MinPattern { get; }
+    public string MaxPattern { get; }
     public string Mask { get; }
 
     public bool IsSettable => set != null;
@@ -31,6 +32,7 @@ public abstract class NavComHandler
         KnownEvents? toggle,
         KnownEvents? set,
         string minPattern,
+        string maxPattern,
         string mask
     )
     {
@@ -44,6 +46,7 @@ public abstract class NavComHandler
         this.toggle = toggle;
         this.set = set;
         MinPattern = minPattern;
+        MaxPattern = maxPattern;
         Mask = mask;
     }
 

@@ -246,6 +246,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                     KnownEvents.NAV1_RADIO_SWAP,
                     KnownEvents.NAV1_STBY_SET,
                     minNavVal,
+                    maxNavVal,
                     "108.00"
                 );
                 break;
@@ -261,6 +262,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                     KnownEvents.NAV2_RADIO_SWAP,
                     KnownEvents.NAV2_STBY_SET,
                     minNavVal,
+                    maxNavVal,
                     "108.00"
                 );
                 break;
@@ -276,6 +278,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                     KnownEvents.COM_STBY_RADIO_SWAP,
                     KnownEvents.COM_STBY_RADIO_SET_HZ,
                     minComVal,
+                    maxComVal,
                     "118.000"
                 );
                 break;
@@ -291,6 +294,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                     KnownEvents.COM2_RADIO_SWAP,
                     KnownEvents.COM2_STBY_RADIO_SET_HZ,
                     minComVal,
+                    maxComVal,
                     "118.000"
                 );
                 break;
@@ -306,6 +310,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                     null,
                     KnownEvents.XPNDR_SET,
                     minXpdrVal,
+                    maxXpdrVal,
                     "1200"
                 );
                 break;
@@ -347,20 +352,27 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         var handler = this.handler;
         if (settings?.Type != null && handler?.IsSettable == true && lastDependant && device != null)
         {
-            DeckLogic.NumpadParams = new NumpadParams(
+            NumpadStorage.NumpadParams = new NumpadParams(
                 settings.Type,
                 handler.MinPattern,
+                handler.MaxPattern,
                 handler.Mask,
+                lastValue2,
                 settings.ImageBackground,
                 GetImageBytes()
             );
-            DeckLogic.NumpadTcs = new TaskCompletionSource<(string?, bool)>();
+            NumpadStorage.NumpadTcs = new TaskCompletionSource<(string?, bool)>();
 
             this.initializationTcs = new TaskCompletionSource<bool>();
 
             await StreamDeck.SwitchToProfileAsync(registrationParameters.PluginUUID,
                 device.Id,
-                device.Type == DeviceType.StreamDeckXL ? "Profiles/Numpad_XL" : "Profiles/Numpad");
+                device.Type switch
+                {
+                    DeviceType.StreamDeckXL => "Profiles/Numpad_XL",
+                    (DeviceType)7 => "Profiles/Numpad_Plus",
+                    _ => "Profiles/Numpad"
+                });
 
             try
             {
@@ -371,7 +383,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                 initializationTcs = null;
             }
 
-            var (value, swap) = await DeckLogic.NumpadTcs.Task;
+            var (value, swap) = await NumpadStorage.NumpadTcs.Task;
             if (handler != null && !string.IsNullOrEmpty(value))
             {
                 await handler.TriggerAsync(value, swap);

@@ -352,6 +352,46 @@
       "VisibleInActionsList": false,
       "Tooltip": "Number 0",
       "UUID": "tech.flighttracker.streamdeck.number.0"
+    },
+    {
+      "Icon": "Images/numberIcon",
+      "Name": "Number Outer Dial",
+      "States": [
+        {
+          "Image": "Images/button"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "VisibleInActionsList": false,
+      "Tooltip": "Number Outer Dial",
+      "UUID": "tech.flighttracker.streamdeck.number.dial.outer",
+      "Controllers": [ "Encoder" ],
+      "Encoder": {
+        "layout": "$A0",
+        "TriggerDescription": {
+          "Rotate": "Change value"
+        }
+      }
+    },
+    {
+      "Icon": "Images/numberIcon",
+      "Name": "Number Inner Dial",
+      "States": [
+        {
+          "Image": "Images/button"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "VisibleInActionsList": false,
+      "Tooltip": "Number Inner Dial",
+      "UUID": "tech.flighttracker.streamdeck.number.dial.inner",
+      "Controllers": [ "Encoder" ],
+      "Encoder": {
+        "layout": "$A0",
+        "TriggerDescription": {
+          "Rotate": "Change value"
+        }
+      }
     }
   ],
   "Profiles": [
@@ -371,6 +411,12 @@
       "Name": "Profiles/Numpad",
       "ReadOnly": true,
       "DeviceType": 3,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "Profiles/Numpad_Plus",
+      "ReadOnly": true,
+      "DeviceType": 7,
       "DontAutoSwitchWhenInstalled": true
     }
   ],

@@ -18,25 +18,25 @@ public class NumberDisplayAction : BaseAction
 
     private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
     {
-        if (DeckLogic.NumpadParams != null && lastValue != DeckLogic.NumpadParams.Value)
+        if (NumpadStorage.NumpadParams != null && lastValue != NumpadStorage.NumpadParams.Value)
         {
-            lastValue = DeckLogic.NumpadParams.Value;
+            lastValue = NumpadStorage.NumpadParams.Value;
 
-            var value = DeckLogic.NumpadParams.Value;
-            var decIndex = DeckLogic.NumpadParams.Mask.IndexOf(".");
+            var value = NumpadStorage.NumpadParams.Value;
+            var decIndex = NumpadStorage.NumpadParams.Mask.IndexOf(".");
 
             if (value.Length > decIndex && decIndex >= 0)
             {
                 value = value.Insert(decIndex, ".");
             }
 
-            await SetImageSafeAsync(imageLogic.GetNavComImage(DeckLogic.NumpadParams.Type, true, "", value, imageOnFilePath: DeckLogic.NumpadParams.ImageBackgroundFilePath, imageOnBytes: DeckLogic.NumpadParams.ImageBackground_base64));
+            await SetImageSafeAsync(imageLogic.GetNavComImage(NumpadStorage.NumpadParams.Type, true, "", value, imageOnFilePath: NumpadStorage.NumpadParams.ImageBackgroundFilePath, imageOnBytes: NumpadStorage.NumpadParams.ImageBackground_base64));
         }
     }
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
-        if (DeckLogic.NumpadParams == null)
+        if (NumpadStorage.NumpadParams == null)
         {
             // User open the profile on their own
             await ShowAlertAsync();

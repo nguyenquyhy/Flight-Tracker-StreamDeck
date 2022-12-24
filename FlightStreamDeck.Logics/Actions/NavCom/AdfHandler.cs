@@ -11,7 +11,7 @@ public class AdfHandler : HzHandler
         KnownEvents? toggle, KnownEvents? set) : 
         base(
             flightConnector, eventRegistrar, eventDispatcher, active, standby, batteryVariable, avionicsVariable, toggle, set,
-            "0100", 
+            "0100", "8888",
             ""
         )
     {
