@@ -352,6 +352,12 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         var handler = this.handler;
         if (settings?.Type != null && handler?.IsSettable == true && lastDependant && device != null)
         {
+            if (device.Type == (DeviceType)7 && settings.Type != "COM1" && settings.Type != "COM1" && settings.Type != "NAV1" && settings.Type != "NAV2")
+            {
+                // Support only COM/NAV for SD+
+                return;
+            }
+
             NumpadStorage.NumpadParams = new NumpadParams(
                 settings.Type,
                 handler.MinPattern,
