@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SharpDeck.Connectivity;
 using System;
 
 namespace FlightStreamDeck.AddOn;

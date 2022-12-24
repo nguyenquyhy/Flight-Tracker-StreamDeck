@@ -23,7 +23,7 @@ public class PresetAltitudeLogic : PresetBaseValueLogic
 
     public override void Sync(AircraftStatus status)
     {
-        logger.LogInformation("Sync AP ALT. Current value: {value}.", status.ApAltitude);
+        logger.LogInformation("Sync AP ALT.");
         UpdateValue(Math.Max(0, Math.Floor(status.Altitude / 100)) * 100);
     }
 
