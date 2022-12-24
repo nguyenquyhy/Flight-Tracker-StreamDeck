@@ -46,6 +46,8 @@ public class GenericToggleSettings
     public string ImageOff { get; set; }
     [JsonProperty(nameof(ImageOff_base64))]
     public string? ImageOff_base64 { get; set; }
+    [JsonProperty(nameof(FontSize))]
+    public string? FontSize { get; set; }
 }
 
 [StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
@@ -360,6 +362,11 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         {
             var imageOnBytes = settings.ImageOn_base64 != null ? Convert.FromBase64String(settings.ImageOn_base64) : null;
             var imageOffBytes = settings.ImageOff_base64 != null ? Convert.FromBase64String(settings.ImageOff_base64) : null;
+            int? fontSize = null;
+            if (int.TryParse(settings.FontSize, out var size))
+            {
+                fontSize = size;
+            }
 
             var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
                 currentValueTime :
@@ -367,6 +374,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
             var image = imageLogic.GetImage(settings.Header, currentStatus,
                 value: valueToShow,
+                fontSize: fontSize,
                 imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                 imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes);
 

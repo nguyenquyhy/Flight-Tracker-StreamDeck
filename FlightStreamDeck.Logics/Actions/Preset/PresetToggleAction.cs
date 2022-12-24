@@ -15,6 +15,8 @@ public class PresetToggleSettings
     public string Type { get; set; }
     [JsonProperty(nameof(HideHeader))]
     public bool HideHeader { get; set; }
+    [JsonProperty(nameof(FontSize))]
+    public string FontSize { get; set; }
     [JsonProperty(nameof(ImageOn))]
     public string ImageOn { get; set; }
     [JsonProperty(nameof(ImageOn_base64))]
@@ -167,11 +169,17 @@ public abstract class PresetBaseAction : BaseAction<PresetToggleSettings>, Embed
         {
             byte[]? imageOnBytes = settings.ImageOn_base64 != null ? Convert.FromBase64String(settings.ImageOn_base64) : null;
             byte[]? imageOffBytes = settings.ImageOff_base64 != null ? Convert.FromBase64String(settings.ImageOff_base64) : null;
+            int? fontSize = null;
+            if (int.TryParse(settings.FontSize, out var size))
+            {
+                fontSize = size;
+            }
 
             var image = imageLogic.GetImage(
                 settings.HideHeader ? "" : GetImageText(settings.Type),
                 logic.GetActive(currentStatus),
                 logic is IPresetValueLogic valueLogic ? valueLogic.GetValue(currentStatus)?.ToString() : null,
+                fontSize: fontSize,
                 imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
                 imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes
             );

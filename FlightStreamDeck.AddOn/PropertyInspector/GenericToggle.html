@@ -52,30 +52,37 @@
                 <summary>Setting invalid unit affects the whole page.</summary>
             </details>
         </div>
-        <div type="group" class="sdpi-item" id="messagegroup">
-            <div class="sdpi-item-label">Custom ON/OFF images</div>
-            <div class="sdpi-item-group">
-                <div class="sdpi-item" id="on_image_file_selector">
-                    <div class="sdpi-item-label">ON image</div>
-                    <div class="sdpi-item-group file">
-                        <input class="sdpi-item-value" type="file" id="ImageOn" accept=".jpg, .jpeg, .png">
-                        <label class="sdpi-file-info">no file...</label>
-                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleEmbed(this)">Embed</label>
-                        <label class="sdpi-file-label" data-for="ImageOn" onclick="handleLink(this)">Link</label>
-                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn">Clear</label>
+        <div id="simpleFields">
+            <div class="sdpi-heading">More Settings</div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Font Size</div>
+                <input class="sdpi-item-value" id="FontSize" value="" placeholder="17" pattern="[0-9]*">
+            </div>
+            <div type="group" class="sdpi-item" id="messagegroup">
+                <div class="sdpi-item-label">Custom ON/OFF images</div>
+                <div class="sdpi-item-group">
+                    <div class="sdpi-item" id="on_image_file_selector">
+                        <div class="sdpi-item-label">ON image</div>
+                        <div class="sdpi-item-group file">
+                            <input class="sdpi-item-value" type="file" id="ImageOn" accept=".jpg, .jpeg, .png">
+                            <label class="sdpi-file-info">no file...</label>
+                            <label class="sdpi-file-label" data-for="ImageOn" onclick="handleEmbed(this)">Embed</label>
+                            <label class="sdpi-file-label" data-for="ImageOn" onclick="handleLink(this)">Link</label>
+                            <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOn">Clear</label>
+                        </div>
                     </div>
-                </div>
-                <div class="sdpi-item" id="off_image_file_selector">
-                    <div class="sdpi-item-label">OFF image</div>
-                    <div class="sdpi-item-group file">
-                        <input class="sdpi-item-value" type="file" id="ImageOff" accept=".jpg, .jpeg, .png">
-                        <label class="sdpi-file-info">no file...</label>
-                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleEmbed(this)">Embed</label>
-                        <label class="sdpi-file-label" data-for="ImageOff" onclick="handleLink(this)">Link</label>
-                        <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOff">Clear</label>
+                    <div class="sdpi-item" id="off_image_file_selector">
+                        <div class="sdpi-item-label">OFF image</div>
+                        <div class="sdpi-item-group file">
+                            <input class="sdpi-item-value" type="file" id="ImageOff" accept=".jpg, .jpeg, .png">
+                            <label class="sdpi-file-info">no file...</label>
+                            <label class="sdpi-file-label" data-for="ImageOff" onclick="handleEmbed(this)">Embed</label>
+                            <label class="sdpi-file-label" data-for="ImageOff" onclick="handleLink(this)">Link</label>
+                            <label class="sdpi-file-label sdpi-file-clear" data-for="ImageOff">Clear</label>
+                        </div>
                     </div>
+                    <input type="hidden" id="IsEmbedding" />
                 </div>
-                <input type="hidden" id="IsEmbedding" />
             </div>
         </div>
     </div>
@@ -93,6 +100,7 @@
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
             if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
             if (settings['DisplayValuePrecision']) { DisplayValuePrecision.value = settings['DisplayValuePrecision'] };
+            if (settings['FontSize']) { FontSize.value = settings['FontSize'] };
             if (settings['ImageOn']) {
                 setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
             };

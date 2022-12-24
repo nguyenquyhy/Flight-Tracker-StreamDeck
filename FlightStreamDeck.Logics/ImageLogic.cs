@@ -11,7 +11,7 @@ namespace FlightStreamDeck.Logics
 {
     public interface IImageLogic
     {
-        string GetImage(string text, bool active, string? value = null, string? imageOnFilePath = null, byte[]? imageOnBytes = null, string? imageOffFilePath = null, byte[]? imageOffBytes = null);
+        string GetImage(string text, bool active, string? value = null, int? fontSize = null, string? imageOnFilePath = null, byte[]? imageOnBytes = null, string? imageOffFilePath = null, byte[]? imageOffBytes = null);
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageOnFilePath = null, byte[]? imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
@@ -36,11 +36,12 @@ namespace FlightStreamDeck.Logics
         /// </summary>
         /// <returns>Base64 image data</returns>
         public string GetImage(string text, bool active, string? value = null,
+            int? fontSize = null,
             string? imageOnFilePath = null, byte[]? imageOnBytes = null,
             string? imageOffFilePath = null, byte[]? imageOffBytes = null)
         {
             var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
-            var valueFont = SystemFonts.CreateFont("Arial", 15, FontStyle.Regular);
+            var valueFont = SystemFonts.CreateFont("Arial", fontSize ?? 15, FontStyle.Regular);
 
             // Note: logic to choose with image to show
             // 1. If user did not select custom images, the active image (with light) is used
@@ -67,17 +68,16 @@ namespace FlightStreamDeck.Logics
                     valueFont = new Font(valueFont, valueFont.Size * scale);
                 }
 
-                FontRectangle size;
                 if (!string.IsNullOrWhiteSpace(text))
                 {
-                    size = TextMeasurer.Measure(text, new TextOptions(font));
+                    var size = TextMeasurer.Measure(text, new TextOptions(font));
                     ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
                 }
 
                 if (!string.IsNullOrEmpty(value))
                 {
-                    size = TextMeasurer.Measure(value, new TextOptions(valueFont));
-                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 46 * scale));
+                    var size = TextMeasurer.Measure(value, new TextOptions(valueFont));
+                    ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 64 * scale - size.Height));
                 }
             });
 
