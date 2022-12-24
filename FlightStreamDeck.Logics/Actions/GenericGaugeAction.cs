@@ -10,6 +10,7 @@ namespace FlightStreamDeck.Logics.Actions;
 public class GenericGaugeSettings
 {
     public string Header { get; set; }
+    public string FontSize { get; set; }
     public string MinValue { get; set; }
     public string MaxValue { get; set; }
     public string ToggleValue { get; set; }
@@ -335,6 +336,11 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
                     {
                         var numberFormat = "F" + (displayValue.HasValue ? EventValueLibrary.GetDecimals(displayValue.Value, customDecimals) : 2);
                         var subValueText = subDisplayValue.HasValue ? currentSubValue.ToString("F" + EventValueLibrary.GetDecimals(subDisplayValue.Value)) : null;
+                        int? fontSize = null;
+                        if (int.TryParse(settings.FontSize, out var size))
+                        {
+                            fontSize = size;
+                        }
 
                         await SetImageSafeAsync(
                             imageLogic.GetGenericGaugeImage(
@@ -342,6 +348,7 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
                                 currentValue,
                                 currentMinValue.Value,
                                 currentMaxValue.Value,
+                                fontSize,
                                 numberFormat,
                                 subValueText
                             )

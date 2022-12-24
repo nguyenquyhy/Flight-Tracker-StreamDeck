@@ -15,7 +15,7 @@ namespace FlightStreamDeck.Logics
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageOnFilePath = null, byte[]? imageOnBytes = null);
         public string GetHorizonImage(double pitchInDegrees, double rollInDegrees, double headingInDegrees);
-        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string? subValueText = null);
+        public string GetGenericGaugeImage(string text, double value, double min, double max, int? fontSize, string valueFormat, string? subValueText = null);
         public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
         public string GetWindImage(double windDirectionInDegrees, double windVelocity, double headingInDegrees, bool relative);
     }
@@ -239,9 +239,9 @@ namespace FlightStreamDeck.Logics
 
         }
 
-        public string GetGenericGaugeImage(string text, double value, double min, double max, string valueFormat, string? subValueText = null)
+        public string GetGenericGaugeImage(string text, double value, double min, double max, int? fontSize, string valueFormat, string? subValueText = null)
         {
-            var font = SystemFonts.CreateFont("Arial", 22, FontStyle.Regular);
+            var font = SystemFonts.CreateFont("Arial", fontSize ?? 22, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
             var pen = new Pen(Color.DarkRed, 5);
             var range = max - min;
@@ -278,15 +278,15 @@ namespace FlightStreamDeck.Logics
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     size = TextMeasurer.Measure(text, new TextOptions(titleFont));
-                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
+                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 43));
                 }
 
                 var valueText = value.ToString(valueFormat);
                 var sizeValue = TextMeasurer.Measure(valueText, new TextOptions(font));
-                Color textColor = value > max ? Color.Red : Color.White;
-                ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
+                var textColor = value > max ? Color.Red : Color.White;
+                ctx.DrawText(valueText, font, textColor, new PointF(18, 46 - sizeValue.Height));
 
-                if (!string.IsNullOrWhiteSpace(subValueText)) ctx.DrawText(subValueText, titleFont, textColor, new PointF(18, 20 + sizeValue.Height + size.Height));
+                if (!string.IsNullOrWhiteSpace(subValueText)) ctx.DrawText(subValueText, titleFont, textColor, new PointF(20, 41 + size.Height));
             });
 
             return ToBase64PNG(img);

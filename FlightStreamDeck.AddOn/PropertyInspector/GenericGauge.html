@@ -73,7 +73,11 @@
         <div id="simpleFields">
             <div class="sdpi-heading">More Settings</div>
             <div class="sdpi-item" type="field">
-                <div class="sdpi-item-label">Sub value</div>
+                <div class="sdpi-item-label">Font Size</div>
+                <input class="sdpi-item-value" id="FontSize" value="" placeholder="22" onchange="updateData()" pattern="[0-9]">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Secondary value</div>
                 <input class="sdpi-item-value" id="SubDisplayValue" value="" placeholder="e.g. KOHLSMAN_SETTING_HG" onchange="updateData()" pattern="[A-Z_]">
             </div>
         </div>
@@ -119,6 +123,7 @@
             if (settings['DisplayValueBottom']) { DisplayValueBottom.value = settings['DisplayValueBottom'] };
             if (settings['MinValue']) { MinValue.value = settings['MinValue'] };
             if (settings['MaxValue']) { MaxValue.value = settings['MaxValue'] };
+            if (settings['FontSize']) { FontSize.value = settings['FontSize'] };
             if (settings['Type']) { Type.value = settings['Type'] };
             if (settings['DisplayHorizontalValue']) { DisplayHorizontalValue.value = settings['DisplayHorizontalValue'] };
             if (settings['ChartSplitValue']) { ChartSplitValue.value = settings['ChartSplitValue'] };
@@ -142,6 +147,7 @@
                 "DisplayValueBottom": DisplayValueBottom.value,
                 "MinValue": MinValue.value,
                 "MaxValue": MaxValue.value,
+                "FontSize": FontSize.value,
                 "Type": Type.value,
                 "DisplayHorizontalValue": DisplayHorizontalValue.value,
                 "ChartSplitValue": ChartSplitValue.value,
@@ -171,7 +177,6 @@
                 case "Generic":
                     break;
                 case "Custom":
-
                     break;
             }
         }
