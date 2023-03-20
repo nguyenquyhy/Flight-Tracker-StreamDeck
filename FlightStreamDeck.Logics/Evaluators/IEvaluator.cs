@@ -1,16 +1,13 @@
-﻿using FlightStreamDeck.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace FlightStreamDeck.Logics
+namespace FlightStreamDeck.Logics;
+
+public interface IExpression
 {
-    public interface IExpression
-    {
+    bool Evaluate(Dictionary<SimVarRegistration, double> values);
+}
 
-    }
-
-    public interface IEvaluator
-    {
-        (IEnumerable<TOGGLE_VALUE>, IExpression?) Parse(string feedbackValue);
-        bool Evaluate(Dictionary<TOGGLE_VALUE, double> values, IExpression expression);
-    }
+public interface IEvaluator
+{
+    (IEnumerable<SimVarRegistration>, IExpression?) Parse(string feedbackValue);
 }

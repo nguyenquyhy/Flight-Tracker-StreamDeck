@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using EnumConverter = FlightStreamDeck.Core.EnumConverter;
 
 namespace FlightStreamDeck.Logics.Actions;
 
@@ -58,15 +57,14 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
     private readonly IImageLogic imageLogic;
     private readonly IEventRegistrar eventRegistrar;
     private readonly IEventDispatcher eventDispatcher;
-    private readonly EnumConverter enumConverter;
+    private readonly SimVarManager simVarManager;
 
     private string? toggleEvent = null;
-    private TOGGLE_VALUE? displayValue = null;
-    private TOGGLE_VALUE? subDisplayValue = null;
-    private TOGGLE_VALUE? displayValueBottom = null;
-    private TOGGLE_VALUE? minValue = null;
-    private TOGGLE_VALUE? maxValue = null;
-    private string? customUnit = null;
+    private SimVarRegistration? displayValue = null;
+    private SimVarRegistration? subDisplayValue = null;
+    private SimVarRegistration? displayValueBottom = null;
+    private SimVarRegistration? minValue = null;
+    private SimVarRegistration? maxValue = null;
     private int? customDecimals = null;
 
     private double currentValue = 0;
@@ -84,7 +82,7 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
         ChartThicknessValue = "13",
         ChartChevronSizeValue = "3",
         Header = "L",
-        DisplayValue = TOGGLE_VALUE.FUEL_LEFT_QUANTITY.ToString(),
+        DisplayValue = "FUEL LEFT QUANTITY",
         HeaderBottom = string.Empty,
         DisplayValueBottom = string.Empty,
         MinValue = "0",
@@ -102,7 +100,7 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
         IImageLogic imageLogic,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        EnumConverter enumConverter)
+        SimVarManager simVarManager)
     {
         this.settings = DefaultSettings;
         this.logger = logger;
@@ -110,7 +108,7 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
         this.imageLogic = imageLogic;
         this.eventRegistrar = eventRegistrar;
         this.eventDispatcher = eventDispatcher;
-        this.enumConverter = enumConverter;
+        this.simVarManager = simVarManager;
     }
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -162,12 +160,12 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
         }
 
         var newToggleEvent = settings.ToggleValue;
-        TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
-        TOGGLE_VALUE? newSubDisplayValue = enumConverter.GetVariableEnum(settings.SubDisplayValue);
-        TOGGLE_VALUE? newDisplayValueBottom = enumConverter.GetVariableEnum(settings.DisplayValueBottom);
+        var newDisplayValue = simVarManager.GetRegistration(settings.DisplayValue, settings.ValueUnit);
+        var newSubDisplayValue = simVarManager.GetRegistration(settings.SubDisplayValue, settings.ValueUnit);
+        var newDisplayValueBottom = simVarManager.GetRegistration(settings.DisplayValueBottom, settings.ValueUnit);
 
-        TOGGLE_VALUE? newMinValue = enumConverter.GetVariableEnum(settings.MinValue);
-        TOGGLE_VALUE? newMaxValue = enumConverter.GetVariableEnum(settings.MaxValue);
+        var newMinValue = simVarManager.GetRegistration(settings.MinValue);
+        var newMaxValue = simVarManager.GetRegistration(settings.MaxValue);
 
         if (double.TryParse(string.IsNullOrWhiteSpace(settings.MinValue) ? DefaultSettings.MinValue : settings.MinValue, out var min))
         {
@@ -187,18 +185,14 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
             customDecimals = null;
         }
 
-        var newUnit = settings.ValueUnit?.Trim();
-        if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
-
         if (newDisplayValue != displayValue || newDisplayValueBottom != displayValueBottom || newSubDisplayValue != subDisplayValue ||
-            newMinValue != minValue || newMaxValue != maxValue || newUnit != customUnit)
+            newMinValue != minValue || newMaxValue != maxValue)
         {
             DeRegisterValues();
         }
 
         toggleEvent = newToggleEvent;
         displayValue = newDisplayValue;
-        customUnit = newUnit;
         subDisplayValue = newSubDisplayValue;
         displayValueBottom = newDisplayValueBottom;
         minValue = newMinValue;
@@ -212,15 +206,14 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
         await SendToPropertyInspectorAsync(this.settings);
     }
 
-    private bool SetFromGenericValueStatus(Dictionary<(TOGGLE_VALUE variable, string? unit), double> genericValueStatus, TOGGLE_VALUE? variable, string? unit, ref double currentValue)
+    private bool SetFromGenericValueStatus(Dictionary<SimVarRegistration, double> genericValueStatus, SimVarRegistration? variable, ref double currentValue)
     {
         bool isUpdated = false;
-        if (variable.HasValue)
+        if (variable != null)
         {
-            var tuple = (variable.Value, unit);
-            if (genericValueStatus.ContainsKey(tuple))
+            if (genericValueStatus.ContainsKey(variable))
             {
-                var newValue = genericValueStatus[tuple];
+                var newValue = genericValueStatus[variable];
                 isUpdated = currentValue != newValue;
                 currentValue = newValue;
             }
@@ -234,17 +227,17 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
 
         bool isUpdated = false;
 
-        isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValue, customUnit, ref currentValue);
-        isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValueBottom, customUnit, ref currentValueBottom);
-        isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, subDisplayValue, null, ref currentSubValue);
+        isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValue, ref currentValue);
+        isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, displayValueBottom, ref currentValueBottom);
+        isUpdated |= SetFromGenericValueStatus(e.GenericValueStatus, subDisplayValue, ref currentSubValue);
         double min = 0;
-        if (SetFromGenericValueStatus(e.GenericValueStatus, minValue, null, ref min))
+        if (SetFromGenericValueStatus(e.GenericValueStatus, minValue, ref min))
         {
             currentMinValue = min;
             isUpdated = true;
         }
         double max = 0;
-        if (SetFromGenericValueStatus(e.GenericValueStatus, maxValue, null, ref max))
+        if (SetFromGenericValueStatus(e.GenericValueStatus, maxValue, ref max))
         {
             currentMaxValue = max;
             isUpdated = true;
@@ -260,31 +253,31 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
     {
         eventRegistrar.RegisterEvent(toggleEvent);
 
-        var values = new List<(TOGGLE_VALUE variables, string? unit)>();
-        if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-        if (subDisplayValue.HasValue) values.Add((subDisplayValue.Value, customUnit));
-        if (displayValueBottom.HasValue) values.Add((displayValueBottom.Value, customUnit));
-        if (minValue.HasValue) values.Add((minValue.Value, null));
-        if (maxValue.HasValue) values.Add((maxValue.Value, null));
+        var values = new List<SimVarRegistration>();
+        if (displayValue != null) values.Add(displayValue);
+        if (subDisplayValue != null) values.Add(subDisplayValue);
+        if (displayValueBottom != null) values.Add(displayValueBottom);
+        if (minValue != null) values.Add(minValue);
+        if (maxValue != null) values.Add(maxValue);
 
         if (values.Count > 0)
         {
-            flightConnector.RegisterSimValues(values.ToArray());
+            simVarManager.RegisterSimValues(values.ToArray());
         }
     }
 
     private void DeRegisterValues()
     {
-        var values = new List<(TOGGLE_VALUE variables, string? unit)>();
-        if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-        if (subDisplayValue.HasValue) values.Add((subDisplayValue.Value, customUnit));
-        if (displayValueBottom.HasValue) values.Add((displayValueBottom.Value, customUnit));
-        if (minValue.HasValue) values.Add((minValue.Value, null));
-        if (maxValue.HasValue) values.Add((maxValue.Value, null));
+        var values = new List<SimVarRegistration>();
+        if (displayValue != null) values.Add(displayValue);
+        if (subDisplayValue != null) values.Add(subDisplayValue);
+        if (displayValueBottom != null) values.Add(displayValueBottom);
+        if (minValue != null) values.Add(minValue);
+        if (maxValue != null) values.Add(maxValue);
 
         if (values.Count > 0)
         {
-            flightConnector.DeRegisterSimValues(values.ToArray());
+            simVarManager.DeRegisterSimValues(values.ToArray());
         }
 
         currentValue = 0;
@@ -300,10 +293,10 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
             switch (settings.Type)
             {
                 case "Custom":
-                    if (displayValue.HasValue || displayValueBottom.HasValue)
+                    if (displayValue != null || displayValueBottom != null)
                     {
                         var chartSplit = string.IsNullOrEmpty(settings.ChartSplitValue) ? DefaultSettings.ChartSplitValue : settings.ChartSplitValue;
-                        var numberFormat = $"F{EventValueLibrary.GetDecimals(displayValue ?? displayValueBottom.Value, customDecimals)}";
+                        var numberFormat = $"F{KnownVariables.GetDecimals(displayValue?.variableName ?? displayValueBottom?.variableName, customDecimals)}";
 
                         bool.TryParse(settings.AbsValText, out bool absValueText);
 
@@ -332,10 +325,10 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
                     }
                     break;
                 default:
-                    if (displayValue.HasValue || displayValueBottom.HasValue)
+                    if (displayValue != null || displayValueBottom != null)
                     {
-                        var numberFormat = "F" + (displayValue.HasValue ? EventValueLibrary.GetDecimals(displayValue.Value, customDecimals) : 2);
-                        var subValueText = subDisplayValue.HasValue ? currentSubValue.ToString("F" + EventValueLibrary.GetDecimals(subDisplayValue.Value)) : null;
+                        var numberFormat = "F" + (displayValue != null ? displayValue.variableName.GetDecimals(customDecimals) : 2);
+                        var subValueText = subDisplayValue != null ? currentSubValue.ToString("F" + subDisplayValue.variableName.GetDecimals()) : null;
                         int? fontSize = null;
                         if (int.TryParse(settings.FontSize, out var size))
                         {

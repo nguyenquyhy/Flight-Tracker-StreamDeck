@@ -1,6 +1,4 @@
-﻿using FlightStreamDeck.Core;
-
-namespace FlightStreamDeck.Logics.Actions;
+﻿namespace FlightStreamDeck.Logics.Actions;
 
 [StreamDeckAction("tech.flighttracker.streamdeck.wind.direction")]
 public class WindAction : BaseAction
@@ -8,21 +6,22 @@ public class WindAction : BaseAction
     private readonly ILogger<WindAction> logger;
     private readonly IFlightConnector flightConnector;
     private readonly IImageLogic imageLogic;
+    private readonly SimVarManager simVarManager;
+    private string windDirectionValue = "AMBIENT WIND DIRECTION";
+    private string windVelocityValue = "AMBIENT WIND VELOCITY";
+    private string headingValue = "PLANE HEADING DEGREES TRUE";
 
-    private TOGGLE_VALUE windDirectionValue = TOGGLE_VALUE.AMBIENT_WIND_DIRECTION;
-    private TOGGLE_VALUE windVelocityValue = TOGGLE_VALUE.AMBIENT_WIND_VELOCITY;
-    private TOGGLE_VALUE headingValue = TOGGLE_VALUE.PLANE_HEADING_DEGREES_TRUE;
-
-    private double currentWwindDirectionValue = 0;
+    private double currentWindDirectionValue = 0;
     private double currentWindVelocityValue = 0;
     private double currentHeadingValue = 0;
     private bool currentRelative = true;
 
-    public WindAction(ILogger<WindAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic)
+    public WindAction(ILogger<WindAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic, SimVarManager simVarManager)
     {
         this.logger = logger;
         this.flightConnector = flightConnector;
         this.imageLogic = imageLogic;
+        this.simVarManager = simVarManager;
     }
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -36,21 +35,32 @@ public class WindAction : BaseAction
 
     private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
     {
+        bool TryGetNewValue(string variable, double currentValue, out double value)
+        {
+            if (e.GenericValueStatus.TryGetValue(new SimVarRegistration(variable, null), out var newValue) && currentValue != newValue)
+            {
+                value = newValue;
+                return true;
+            }
+            value = 0;
+            return false;
+        }
+
         bool isUpdated = false;
 
-        if (e.GenericValueStatus.ContainsKey((windDirectionValue, null)) && currentWwindDirectionValue != e.GenericValueStatus[(windDirectionValue, null)])
+        if (TryGetNewValue(windDirectionValue, currentWindDirectionValue, out var newDirection))
         {
-            currentWwindDirectionValue = e.GenericValueStatus[(windDirectionValue, null)];
+            currentWindDirectionValue = newDirection;
             isUpdated = true;
         }
-        if (e.GenericValueStatus.ContainsKey((headingValue, null)) && currentHeadingValue != e.GenericValueStatus[(headingValue, null)])
+        if (TryGetNewValue(headingValue, currentHeadingValue, out var newHeading))
         {
-            currentHeadingValue = e.GenericValueStatus[(headingValue, null)];
+            currentHeadingValue = newHeading;
             isUpdated = true;
         }
-        if (e.GenericValueStatus.ContainsKey((windVelocityValue, null)) && currentWindVelocityValue != e.GenericValueStatus[(windVelocityValue, null)])
+        if (TryGetNewValue(windVelocityValue, currentWindVelocityValue, out var newVelocity))
         {
-            currentWindVelocityValue = e.GenericValueStatus[(windVelocityValue, null)];
+            currentWindVelocityValue = newVelocity;
             isUpdated = true;
         }
 
@@ -69,12 +79,12 @@ public class WindAction : BaseAction
 
     private void RegisterValues()
     {
-        flightConnector.RegisterSimValues((windDirectionValue, null), (windVelocityValue, null), (headingValue, null));
+        simVarManager.RegisterSimValues(simVarManager.GetRegistration(windDirectionValue), simVarManager.GetRegistration(windVelocityValue), simVarManager.GetRegistration(headingValue));
     }
 
     private void DeRegisterValues()
     {
-        flightConnector.DeRegisterSimValues((windDirectionValue, null), (windVelocityValue, null), (headingValue, null));
+        simVarManager.DeRegisterSimValues(simVarManager.GetRegistration(windDirectionValue), simVarManager.GetRegistration(windVelocityValue), simVarManager.GetRegistration(headingValue));
     }
 
     protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
@@ -86,6 +96,6 @@ public class WindAction : BaseAction
 
     private async Task UpdateImage()
     {
-        await SetImageSafeAsync(imageLogic.GetWindImage(currentWwindDirectionValue, currentWindVelocityValue, currentHeadingValue, currentRelative));
+        await SetImageSafeAsync(imageLogic.GetWindImage(currentWindDirectionValue, currentWindVelocityValue, currentHeadingValue, currentRelative));
     }
 }

@@ -1,17 +1,19 @@
 ﻿using FlightStreamDeck.Core;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace FlightStreamDeck.Logics.Actions.NavCom;
 
 public abstract class NavComHandler
 {
-    private readonly IFlightConnector flightConnector;
     private readonly IEventRegistrar eventRegistrar;
     private readonly IEventDispatcher eventDispatcher;
-    private readonly TOGGLE_VALUE active;
-    private readonly TOGGLE_VALUE? standby;
-    private readonly TOGGLE_VALUE? batteryVariable;
-    private readonly TOGGLE_VALUE? avionicsVariable;
+    private readonly SimVarManager simVarManager;
+    private readonly SimVarRegistration active;
+    private readonly SimVarRegistration? standby;
+    private readonly SimVarRegistration? batteryVariable;
+    private readonly SimVarRegistration? avionicsVariable;
     private readonly KnownEvents? toggle;
     private readonly KnownEvents? set;
 
@@ -22,13 +24,13 @@ public abstract class NavComHandler
     public bool IsSettable => set != null;
 
     public NavComHandler(
-        IFlightConnector flightConnector,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        TOGGLE_VALUE active,
-        TOGGLE_VALUE? standby,
-        TOGGLE_VALUE? batteryVariable,
-        TOGGLE_VALUE? avionicsVariable,
+        SimVarManager simVarManager,
+        string active,
+        string? standby,
+        string? batteryVariable,
+        string? avionicsVariable,
         KnownEvents? toggle,
         KnownEvents? set,
         string minPattern,
@@ -36,13 +38,13 @@ public abstract class NavComHandler
         string mask
     )
     {
-        this.flightConnector = flightConnector;
         this.eventRegistrar = eventRegistrar;
         this.eventDispatcher = eventDispatcher;
-        this.active = active;
-        this.standby = standby;
-        this.batteryVariable = batteryVariable;
-        this.avionicsVariable = avionicsVariable;
+        this.simVarManager = simVarManager;
+        this.active = simVarManager.GetRegistration(active) ?? throw new ArgumentException("Invalid Active variable!", "active");
+        this.standby = simVarManager.GetRegistration(standby);
+        this.batteryVariable = simVarManager.GetRegistration(batteryVariable);
+        this.avionicsVariable = simVarManager.GetRegistration(avionicsVariable);
         this.toggle = toggle;
         this.set = set;
         MinPattern = minPattern;
@@ -58,12 +60,12 @@ public abstract class NavComHandler
         }
         eventRegistrar.RegisterEvent(set.ToString());
 
-        flightConnector.RegisterSimValues(GetSimVars().ToArray());
+        simVarManager.RegisterSimValues(GetSimVars().ToArray());
     }
 
     public void DeRegisterSimValues()
     {
-        flightConnector.DeRegisterSimValues(GetSimVars().ToArray());
+        simVarManager.DeRegisterSimValues(GetSimVars().ToArray());
     }
 
     public async Task TriggerAsync(string value, bool swap)
@@ -80,14 +82,25 @@ public abstract class NavComHandler
         }
     }
 
-    public (string activeString, string standbyString, bool showActiveOnly, bool dependant) GetDisplayValues(Dictionary<(TOGGLE_VALUE variable, string? unit), double> genericValues)
+    public (string activeString, string standbyString, bool showActiveOnly, bool dependant) GetDisplayValues(Dictionary<SimVarRegistration, double> genericValues)
     {
+        bool TryGetValue([NotNullWhen(true)] SimVarRegistration? variable, out double value)
+        {
+            if (variable != null && genericValues.TryGetValue(variable, out var newValue))
+            {
+                value = newValue;
+                return true;
+            }
+            value = 0;
+            return false;
+        }
+
         bool dependant = true;
-        if (batteryVariable != null && genericValues.TryGetValue((batteryVariable.Value, null), out var batteryValue))
+        if (TryGetValue(batteryVariable, out var batteryValue))
         {
             dependant = dependant && batteryValue != 0;
         }
-        if (avionicsVariable != null && genericValues.TryGetValue((avionicsVariable.Value, null), out var avionicsValue))
+        if (TryGetValue(avionicsVariable, out var avionicsValue))
         {
             dependant = dependant && avionicsValue != 0;
         }
@@ -96,13 +109,13 @@ public abstract class NavComHandler
         var value2 = string.Empty;
         if (dependant)
         {
-            if (genericValues.TryGetValue((active, null), out var doubleValue1))
+            if (TryGetValue(active, out var doubleValue1))
             {
                 value1 = FormatValueForDisplay(doubleValue1, active);
             }
-            if (standby != null && genericValues.TryGetValue((standby.Value, null), out var doubleValue2))
+            if (TryGetValue(standby, out var doubleValue2))
             {
-                value2 = FormatValueForDisplay(doubleValue2, standby.Value);
+                value2 = FormatValueForDisplay(doubleValue2, standby);
             }
         }
         return (value1, value2, standby == null, dependant);
@@ -128,28 +141,28 @@ public abstract class NavComHandler
 
     protected abstract uint FormatValueForSimConnect(string value);
 
-    protected virtual string FormatValueForDisplay(double value, TOGGLE_VALUE simvar)
+    protected virtual string FormatValueForDisplay(double value, SimVarRegistration simvar)
     {
-        return value.ToString("F" + EventValueLibrary.GetDecimals(simvar));
+        return value.ToString("F" + simvar.variableName.GetDecimals());
     }
 
-    protected virtual List<(TOGGLE_VALUE variable, string? unit)> GetSimVars()
+    protected virtual List<SimVarRegistration> GetSimVars()
     {
-        var values = new List<(TOGGLE_VALUE variable, string? unit)>
+        var values = new List<SimVarRegistration>
         {
-            (active, null)
+            active
         };
         if (standby != null)
         {
-            values.Add((standby.Value, null));
+            values.Add(standby);
         }
         if (batteryVariable != null)
         {
-            values.Add((batteryVariable.Value, null));
+            values.Add(batteryVariable);
         }
         if (avionicsVariable != null)
         {
-            values.Add((avionicsVariable.Value, null));
+            values.Add(avionicsVariable);
         }
 
         return values;

@@ -1,5 +1,4 @@
-﻿using FlightStreamDeck.Core;
-using FlightStreamDeck.Logics.Actions.NavCom;
+﻿using FlightStreamDeck.Logics.Actions.NavCom;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpDeck.Enums;
@@ -37,7 +36,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     private readonly IFlightConnector flightConnector;
     private readonly IEventRegistrar eventRegistrar;
     private readonly IEventDispatcher eventDispatcher;
-    private readonly EnumConverter enumConverter;
+    private readonly SimVarManager simVarManager;
     private readonly RegistrationParameters registrationParameters;
 
     private readonly Timer timer;
@@ -59,7 +58,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         IFlightConnector flightConnector,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        EnumConverter enumConverter,
+        SimVarManager simVarManager,
         RegistrationParameters registrationParameters
     )
     {
@@ -68,7 +67,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         this.flightConnector = flightConnector;
         this.eventRegistrar = eventRegistrar;
         this.eventDispatcher = eventDispatcher;
-        this.enumConverter = enumConverter;
+        this.simVarManager = simVarManager;
         this.registrationParameters = registrationParameters;
         timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
         timer.Elapsed += Timer_Elapsed;
@@ -191,8 +190,8 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
 
         SwitchTo(
             settings.Type,
-            enumConverter.GetVariableEnum(settings.BattMasterValue),
-            enumConverter.GetVariableEnum(settings.AvionicsValue)
+            settings.BattMasterValue,
+            settings.AvionicsValue
         );
 
         return Task.CompletedTask;
@@ -229,18 +228,18 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
 
     private byte[]? GetImageBytes() => settings?.ImageBackground_base64 != null ? Convert.FromBase64String(settings.ImageBackground_base64) : null;
 
-    private void SwitchTo(string? type, TOGGLE_VALUE? batteryVariable, TOGGLE_VALUE? avionicsVariable)
+    private void SwitchTo(string? type, string? batteryVariable, string? avionicsVariable)
     {
         handler?.DeRegisterSimValues();
         switch (type)
         {
             case "NAV1":
                 handler = new BcdHandler(
-                    flightConnector,
                     eventRegistrar,
                     eventDispatcher,
-                    TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__1,
-                    TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__1,
+                    simVarManager,
+                    "NAV_ACTIVE_FREQUENCY__1",
+                    "NAV_STANDBY_FREQUENCY__1",
                     batteryVariable,
                     avionicsVariable,
                     KnownEvents.NAV1_RADIO_SWAP,
@@ -252,11 +251,11 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                 break;
             case "NAV2":
                 handler = new BcdHandler(
-                    flightConnector,
                     eventRegistrar,
                     eventDispatcher,
-                    TOGGLE_VALUE.NAV_ACTIVE_FREQUENCY__2,
-                    TOGGLE_VALUE.NAV_STANDBY_FREQUENCY__2,
+                    simVarManager,
+                    "NAV_ACTIVE_FREQUENCY__2",
+                    "NAV_STANDBY_FREQUENCY__2",
                     batteryVariable,
                     avionicsVariable,
                     KnownEvents.NAV2_RADIO_SWAP,
@@ -268,11 +267,11 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                 break;
             case "COM1":
                 handler = new HzHandler(
-                    flightConnector,
                     eventRegistrar,
                     eventDispatcher,
-                    TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__1,
-                    TOGGLE_VALUE.COM_STANDBY_FREQUENCY__1,
+                    simVarManager,
+                    "COM_ACTIVE_FREQUENCY__1",
+                    "COM_STANDBY_FREQUENCY__1",
                     batteryVariable,
                     avionicsVariable,
                     KnownEvents.COM_STBY_RADIO_SWAP,
@@ -284,11 +283,11 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                 break;
             case "COM2":
                 handler = new HzHandler(
-                    flightConnector,
                     eventRegistrar,
                     eventDispatcher,
-                    TOGGLE_VALUE.COM_ACTIVE_FREQUENCY__2,
-                    TOGGLE_VALUE.COM_STANDBY_FREQUENCY__2,
+                    simVarManager,
+                    "COM_ACTIVE_FREQUENCY__2",
+                    "COM_STANDBY_FREQUENCY__2",
                     batteryVariable,
                     avionicsVariable,
                     KnownEvents.COM2_RADIO_SWAP,
@@ -300,10 +299,10 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                 break;
             case "XPDR":
                 handler = new XpdrHandler(
-                    flightConnector,
                     eventRegistrar,
                     eventDispatcher,
-                    TOGGLE_VALUE.TRANSPONDER_CODE__1,
+                    simVarManager,
+                    "TRANSPONDER_CODE__1",
                     null,
                     batteryVariable,
                     avionicsVariable,
@@ -316,11 +315,11 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                 break;
             case "ADF1":
                 handler = new AdfHandler(
-                    flightConnector,
                     eventRegistrar,
                     eventDispatcher,
-                    TOGGLE_VALUE.ADF_ACTIVE_FREQUENCY__1,
-                    TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__1,
+                    simVarManager,
+                    "ADF_ACTIVE_FREQUENCY__1",
+                    "ADF_STANDBY_FREQUENCY__1",
                     batteryVariable,
                     avionicsVariable,
                     KnownEvents.ADF1_RADIO_SWAP,
@@ -329,11 +328,11 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
                 break;
             case "ADF2":
                 handler = new AdfHandler(
-                    flightConnector,
                     eventRegistrar,
                     eventDispatcher,
-                    TOGGLE_VALUE.ADF_ACTIVE_FREQUENCY__2,
-                    TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__2,
+                    simVarManager,
+                    "ADF_ACTIVE_FREQUENCY__2",
+                    "ADF_STANDBY_FREQUENCY__2",
                     batteryVariable,
                     avionicsVariable,
                     KnownEvents.ADF2_RADIO_SWAP,

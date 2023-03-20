@@ -1,5 +1,4 @@
-﻿using FlightStreamDeck.Core;
-using FlightStreamDeck.Logics;
+﻿using FlightStreamDeck.Logics;
 using FlightStreamDeck.Logics.Actions;
 using FlightStreamDeck.SimConnectFSX;
 using Microsoft.AppCenter;
@@ -109,9 +108,9 @@ public partial class App : Application
         services.AddTransient(typeof(MainWindow));
         services.AddSingleton<IImageLogic, ImageLogic>();
         services.AddTransient<IEvaluator, ComparisonEvaluator>();
-        services.AddTransient<EnumConverter>();
 
         services.AddSingleton<SimEventManager>();
+        services.AddSingleton<SimVarManager>();
         services.AddTransient<IEventRegistrar>(services => services.GetRequiredService<SimEventManager>());
         services.AddTransient<IEventDispatcher>(services => services.GetRequiredService<SimEventManager>());
 

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Timers;
 
@@ -59,24 +60,24 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
     private readonly IEvaluator evaluator;
     private readonly IEventRegistrar eventRegistrar;
     private readonly IEventDispatcher eventDispatcher;
-    private readonly EnumConverter enumConverter;
+    private readonly SimVarManager simVarManager;
     private readonly EmbedLinkLogic embedLinkLogic;
     private Timer? timer = null;
 
     private string? toggleEvent = null;
     private uint? toggleEventDataUInt = null;
-    private TOGGLE_VALUE? toggleEventDataVariable = null;
+    private SimVarRegistration? toggleEventDataVariable = null;
     private double? toggleEventDataVariableValue = null;
+
     private string? holdEvent = null;
     private uint? holdEventDataUInt = null;
-    private TOGGLE_VALUE? holdEventDataVariable = null;
+    private SimVarRegistration? holdEventDataVariable = null;
     private double? holdEventDataVariableValue = null;
 
-    private IEnumerable<TOGGLE_VALUE> feedbackVariables = new List<TOGGLE_VALUE>();
+    private IEnumerable<SimVarRegistration> feedbackVariables = new List<SimVarRegistration>();
     private IExpression? expression;
-    private TOGGLE_VALUE? displayValue = null;
+    private SimVarRegistration? displayVariable = null;
 
-    private string? customUnit = null;
     private int? customDecimals = null;
 
     private double? currentValue = null;
@@ -92,7 +93,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         IEvaluator evaluator,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        EnumConverter enumConverter)
+        SimVarManager simVarManager)
     {
         this.logger = logger;
         this.flightConnector = flightConnector;
@@ -100,7 +101,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         this.evaluator = evaluator;
         this.eventRegistrar = eventRegistrar;
         this.eventDispatcher = eventDispatcher;
-        this.enumConverter = enumConverter;
+        this.simVarManager = simVarManager;
         this.embedLinkLogic = new EmbedLinkLogic(this);
     }
 
@@ -120,22 +121,20 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         if (settings == null) return Task.CompletedTask;
 
         var newToggleEvent = settings.ToggleValue;
-        (var newToggleEventDataUInt, var newToggleEventDataVariable) = enumConverter.GetUIntOrVariable(settings.ToggleValueData);
+        (var newToggleEventDataUInt, var newToggleEventDataVariable) = GetUIntOrVariable(settings.ToggleValueData);
         var newHoldEvent = settings.HoldValue;
-        (var newHoldEventDataUInt, var newHoldEventDataVariable) = enumConverter.GetUIntOrVariable(settings.HoldValueData);
+        (var newHoldEventDataUInt, var newHoldEventDataVariable) = GetUIntOrVariable(settings.HoldValueData);
 
         (var newFeedbackVariables, var newExpression) = evaluator.Parse(settings.FeedbackValue);
-        TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
+        var newDisplayValue = simVarManager.GetRegistration(settings.DisplayValue, settings.DisplayValueUnit);
 
         if (int.TryParse(settings.DisplayValuePrecision, out int decimals))
         {
             customDecimals = decimals;
         }
-        var newUnit = settings.DisplayValueUnit?.Trim();
-        if (string.IsNullOrWhiteSpace(newUnit)) newUnit = null;
 
-        if (!newFeedbackVariables.SequenceEqual(feedbackVariables) || newDisplayValue != displayValue
-            || newUnit != customUnit
+        if (!newFeedbackVariables.SequenceEqual(feedbackVariables)
+            || newDisplayValue != displayVariable
             || newToggleEventDataVariable != toggleEventDataVariable
             || newHoldEventDataVariable != holdEventDataVariable
             )
@@ -151,31 +150,60 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         holdEventDataVariable = newHoldEventDataVariable;
         feedbackVariables = newFeedbackVariables;
         expression = newExpression;
-        displayValue = newDisplayValue;
-        customUnit = newUnit;
+        displayVariable = newDisplayValue;
 
         RegisterValues();
 
         return Task.CompletedTask;
     }
 
+    private (uint? number, SimVarRegistration? variable) GetUIntOrVariable(string? value)
+    {
+        if (uint.TryParse(value, out var result))
+        {
+            return (result, null);
+        }
+        else if (int.TryParse(value, out var intResult))
+        {
+            return (unchecked((uint)intResult), null);
+        }
+        else if (value != null)
+        {
+            var variable = simVarManager.GetRegistration(value, null);
+            return (null, variable);
+        }
+        else
+        {
+            return (null, null);
+        }
+    }
+
     private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
     {
         if (StreamDeck == null) return;
 
-        var valuesWithDefaultUnits = e.GenericValueStatus.Where(o => o.Key.unit == null).ToDictionary(o => o.Key.variable, o => o.Value);
-        var newStatus = expression != null && evaluator.Evaluate(valuesWithDefaultUnits, expression);
+        var newStatus = expression != null && expression.Evaluate(e.GenericValueStatus);
         var isUpdated = newStatus != currentStatus;
         currentStatus = newStatus;
 
-        if (displayValue.HasValue && e.GenericValueStatus.ContainsKey((displayValue.Value, customUnit)))
+        bool TryGetValue([NotNullWhen(true)] SimVarRegistration? variable, out double value)
         {
-            var newValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+            if (variable != null && e.GenericValueStatus.ContainsKey(variable))
+            {
+                value = e.GenericValueStatus[variable];
+                return true;
+            }
+            value = 0;
+            return false;
+        }
+
+        if (TryGetValue(displayVariable, out var newValue))
+        {
             isUpdated |= newValue != currentValue;
             currentValue = newValue;
 
-            if (displayValue.Value == TOGGLE_VALUE.ZULU_TIME
-                || displayValue.Value == TOGGLE_VALUE.LOCAL_TIME)
+            if (displayVariable.variableName == "ZULU TIME"
+                || displayVariable.variableName == "LOCAL TIME")
             {
                 string hours = Math.Floor(newValue / 3600).ToString().PadLeft(2, '0');
                 newValue = newValue % 3600;
@@ -188,29 +216,29 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
                 switch (customDecimals)
                 {
                     case 0: //HH:MM:SS
-                        currentValueTime = $"{hours}:{minutes}:{seconds}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
-                        currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                        currentValueTime = $"{hours}:{minutes}:{seconds}{(displayVariable.variableName == "ZULU TIME" ? "Z" : String.Empty)}";
+                        currentValue = e.GenericValueStatus[displayVariable];
                         break;
                     case 1: //HH:MM
-                        currentValueTime = $"{hours}:{minutes}{(displayValue.Value == TOGGLE_VALUE.ZULU_TIME ? "Z" : String.Empty)}";
-                        currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                        currentValueTime = $"{hours}:{minutes}{(displayVariable.variableName == "ZULU TIME" ? "Z" : String.Empty)}";
+                        currentValue = e.GenericValueStatus[displayVariable];
                         break;
                     default:
                         currentValueTime = string.Empty;
-                        currentValue = e.GenericValueStatus[(displayValue.Value, customUnit)];
+                        currentValue = e.GenericValueStatus[displayVariable];
                         break;
                 }
             }
         }
 
-        if (toggleEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey((toggleEventDataVariable.Value, null)))
+        if (TryGetValue(toggleEventDataVariable, out var newToggleValue))
         {
-            toggleEventDataVariableValue = e.GenericValueStatus[(toggleEventDataVariable.Value, null)];
+            toggleEventDataVariableValue = newToggleValue;
         }
 
-        if (holdEventDataVariable.HasValue && e.GenericValueStatus.ContainsKey((holdEventDataVariable.Value, null)))
+        if (TryGetValue(holdEventDataVariable, out var newHoldValue))
         {
-            holdEventDataVariableValue = e.GenericValueStatus[(holdEventDataVariable.Value, null)];
+            holdEventDataVariableValue = newHoldValue;
         }
 
         if (isUpdated)
@@ -250,29 +278,30 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         eventRegistrar.RegisterEvent(toggleEvent);
         eventRegistrar.RegisterEvent(holdEvent);
 
-        var values = new List<(TOGGLE_VALUE variables, string? unit)>();
-        foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
-        if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-        if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
-        if (holdEventDataVariable.HasValue) values.Add((holdEventDataVariable.Value, null));
+        var variables = new List<SimVarRegistration>();
+        foreach (var feedbackVariable in feedbackVariables) variables.Add(feedbackVariable);
 
-        if (values.Count > 0)
+        if (displayVariable != null) variables.Add(displayVariable);
+        if (toggleEventDataVariable != null) variables.Add(toggleEventDataVariable);
+        if (holdEventDataVariable != null) variables.Add(holdEventDataVariable);
+
+        if (variables.Count > 0)
         {
-            flightConnector.RegisterSimValues(values.ToArray());
+            simVarManager.RegisterSimValues(variables.ToArray());
         }
     }
 
     private void DeRegisterValues()
     {
-        var values = new List<(TOGGLE_VALUE variables, string? unit)>();
-        foreach (var feedbackVariable in feedbackVariables) values.Add((feedbackVariable, null));
-        if (displayValue.HasValue) values.Add((displayValue.Value, customUnit));
-        if (toggleEventDataVariable.HasValue) values.Add((toggleEventDataVariable.Value, null));
-        if (holdEventDataVariable.HasValue) values.Add((holdEventDataVariable.Value, null));
+        var variables = new List<SimVarRegistration>();
+        foreach (var feedbackVariable in feedbackVariables) variables.Add(feedbackVariable);
+        if (displayVariable != null) variables.Add(displayVariable);
+        if (toggleEventDataVariable != null) variables.Add(toggleEventDataVariable);
+        if (holdEventDataVariable != null) variables.Add(holdEventDataVariable);
 
-        if (values.Count > 0)
+        if (variables.Count > 0)
         {
-            flightConnector.DeRegisterSimValues(values.ToArray());
+            simVarManager.DeRegisterSimValues(variables.ToArray());
         }
 
         currentValue = null;
@@ -346,9 +375,9 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         return result;
     }
 
-    private uint CalculateEventParam(TOGGLE_VALUE? variable, double? variableValue, uint? inputValue)
+    private uint CalculateEventParam(SimVarRegistration? variable, double? variableValue, uint? inputValue)
     {
-        if (variable is not null && variableValue.HasValue)
+        if (variable != null && variableValue.HasValue)
         {
             var rounded = Math.Round(variableValue.Value);// - 360;
             return rounded < 0 ? unchecked((uint)(int)rounded) : (uint)rounded;
@@ -370,7 +399,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
             var valueToShow = !string.IsNullOrEmpty(currentValueTime) ?
                 currentValueTime :
-                (displayValue.HasValue && currentValue.HasValue) ? currentValue.Value.ToString("F" + EventValueLibrary.GetDecimals(displayValue.Value, customDecimals)) : "";
+                (displayVariable != null && currentValue.HasValue) ? currentValue.Value.ToString("F" + displayVariable.variableName.GetDecimals(customDecimals)) : "";
 
             var image = imageLogic.GetImage(settings.Header, currentStatus,
                 value: valueToShow,

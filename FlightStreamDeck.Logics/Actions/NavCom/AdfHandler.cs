@@ -1,16 +1,15 @@
-﻿using FlightStreamDeck.Core;
-using System;
+﻿using System;
 
 namespace FlightStreamDeck.Logics.Actions.NavCom;
 
 public class AdfHandler : HzHandler
 {
     public AdfHandler(
-        IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, 
-        TOGGLE_VALUE active, TOGGLE_VALUE? standby, TOGGLE_VALUE? batteryVariable, TOGGLE_VALUE? avionicsVariable, 
-        KnownEvents? toggle, KnownEvents? set) : 
+        IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, SimVarManager simVarManager,
+        string active, string? standby, string? batteryVariable, string? avionicsVariable,
+        KnownEvents? toggle, KnownEvents? set) :
         base(
-            flightConnector, eventRegistrar, eventDispatcher, active, standby, batteryVariable, avionicsVariable, toggle, set,
+            eventRegistrar, eventDispatcher, simVarManager, active, standby, batteryVariable, avionicsVariable, toggle, set,
             "0100", "8888",
             ""
         )
@@ -26,7 +25,7 @@ public class AdfHandler : HzHandler
     /// <summary>
     /// Convert from default MHz to kHz
     /// </summary>
-    protected override string FormatValueForDisplay(double value, TOGGLE_VALUE simvar)
+    protected override string FormatValueForDisplay(double value, SimVarRegistration simvar)
     {
         return ((int)Math.Round(value * 1000)).ToString();
     }

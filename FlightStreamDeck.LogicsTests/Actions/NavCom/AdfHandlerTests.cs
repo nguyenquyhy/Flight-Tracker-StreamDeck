@@ -14,16 +14,20 @@ public class AdfHandlerTests
             new LoggerFactory().CreateLogger<SimEventManager>(), 
             mockFlightConnector.Object
         );
+        var simVarManager = new SimVarManager(
+            new LoggerFactory().CreateLogger<SimVarManager>(),
+            mockFlightConnector.Object
+        );
 
         var registration = eventManager.RegisterEvent(KnownEvents.ADF_STBY_SET.ToString());
         Assert.IsNotNull(registration);
 
         var adfHandler = new AdfHandler(
-            mockFlightConnector.Object,
             eventManager,
             eventManager,
-            Core.TOGGLE_VALUE.ADF_ACTIVE_FREQUENCY__1,
-            Core.TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__1,
+            simVarManager,
+            "ADF ACTIVE FREQUENCY:1",
+            "ADF STANDBY FREQUENCY:1",
             null,
             null,
             KnownEvents.ADF1_RADIO_SWAP,
@@ -44,16 +48,20 @@ public class AdfHandlerTests
             new LoggerFactory().CreateLogger<SimEventManager>(),
             mockFlightConnector.Object
         );
+        var simVarManager = new SimVarManager(
+            new LoggerFactory().CreateLogger<SimVarManager>(),
+            mockFlightConnector.Object
+        );
 
         var registration = eventManager.RegisterEvent(KnownEvents.ADF_STBY_SET.ToString());
         Assert.IsNotNull(registration);
 
         var adfHandler = new AdfHandler(
-            mockFlightConnector.Object,
             eventManager,
             eventManager,
-            Core.TOGGLE_VALUE.ADF_ACTIVE_FREQUENCY__1,
-            Core.TOGGLE_VALUE.ADF_STANDBY_FREQUENCY__1,
+            simVarManager,
+            "ADF ACTIVE FREQUENCY:1",
+            "ADF STANDBY FREQUENCY:1",
             null,
             null,
             KnownEvents.ADF1_RADIO_SWAP,

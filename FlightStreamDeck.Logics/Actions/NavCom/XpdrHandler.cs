@@ -1,15 +1,13 @@
-﻿using FlightStreamDeck.Core;
-
-namespace FlightStreamDeck.Logics.Actions.NavCom;
+﻿namespace FlightStreamDeck.Logics.Actions.NavCom;
 
 internal class XpdrHandler : BcdHandler
 {
     public XpdrHandler(
-        IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, 
-        TOGGLE_VALUE active, TOGGLE_VALUE? standby, TOGGLE_VALUE? batteryVariable, TOGGLE_VALUE? avionicsVariable,
+        IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, SimVarManager simVarManager,
+        string active, string? standby, string? batteryVariable, string? avionicsVariable,
         KnownEvents? toggle, KnownEvents? set,
-        string minPattern, string maxPattern, string mask) : 
-        base(flightConnector, eventRegistrar, eventDispatcher, active, standby, batteryVariable, avionicsVariable, toggle, set, minPattern, maxPattern, mask)
+        string minPattern, string maxPattern, string mask) :
+        base(eventRegistrar, eventDispatcher, simVarManager, active, standby, batteryVariable, avionicsVariable, toggle, set, minPattern, maxPattern, mask)
     {
     }
 
@@ -24,7 +22,7 @@ internal class XpdrHandler : BcdHandler
         return data;
     }
 
-    protected override string FormatValueForDisplay(double value, TOGGLE_VALUE simvar)
+    protected override string FormatValueForDisplay(double value, SimVarRegistration simvar)
     {
         var stringValue = base.FormatValueForDisplay(value, simvar);
         if (stringValue != string.Empty) stringValue = stringValue.PadLeft(4, '0');
