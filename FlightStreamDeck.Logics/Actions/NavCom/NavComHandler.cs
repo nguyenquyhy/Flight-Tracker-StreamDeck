@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace FlightStreamDeck.Logics.Actions.NavCom;
 
@@ -143,7 +144,7 @@ public abstract class NavComHandler
 
     protected virtual string FormatValueForDisplay(double value, SimVarRegistration simvar)
     {
-        return value.ToString("F" + simvar.variableName.GetDecimals());
+        return value.ToString("F" + simvar.variableName.GetDecimals(), CultureInfo.InvariantCulture);
     }
 
     protected virtual List<SimVarRegistration> GetSimVars()
