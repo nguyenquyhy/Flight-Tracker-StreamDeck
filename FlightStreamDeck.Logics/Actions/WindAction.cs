@@ -1,4 +1,6 @@
-﻿namespace FlightStreamDeck.Logics.Actions;
+﻿using System;
+
+namespace FlightStreamDeck.Logics.Actions;
 
 [StreamDeckAction("tech.flighttracker.streamdeck.wind.direction")]
 public class WindAction : BaseAction
@@ -7,9 +9,9 @@ public class WindAction : BaseAction
     private readonly IFlightConnector flightConnector;
     private readonly IImageLogic imageLogic;
     private readonly SimVarManager simVarManager;
-    private string windDirectionValue = "AMBIENT WIND DIRECTION";
-    private string windVelocityValue = "AMBIENT WIND VELOCITY";
-    private string headingValue = "PLANE HEADING DEGREES TRUE";
+    private readonly SimVarRegistration windDirection;
+    private readonly SimVarRegistration windVelocity;
+    private readonly SimVarRegistration heading;
 
     private double currentWindDirectionValue = 0;
     private double currentWindVelocityValue = 0;
@@ -22,6 +24,10 @@ public class WindAction : BaseAction
         this.flightConnector = flightConnector;
         this.imageLogic = imageLogic;
         this.simVarManager = simVarManager;
+
+        this.windDirection = simVarManager.GetRegistration("AMBIENT WIND DIRECTION") ?? throw new InvalidOperationException("Cannot get registration for AMBIENT WIND DIRECTION");
+        this.windVelocity = simVarManager.GetRegistration("AMBIENT WIND VELOCITY") ?? throw new InvalidOperationException("Cannot get registration for AMBIENT WIND VELOCITY");
+        this.heading = simVarManager.GetRegistration("PLANE HEADING DEGREES TRUE") ?? throw new InvalidOperationException("Cannot get registration for PLANE HEADING DEGREES TRUE");
     }
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -35,9 +41,9 @@ public class WindAction : BaseAction
 
     private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
     {
-        bool TryGetNewValue(string variable, double currentValue, out double value)
+        bool TryGetNewValue(SimVarRegistration variable, double currentValue, out double value)
         {
-            if (e.GenericValueStatus.TryGetValue(new SimVarRegistration(variable, null), out var newValue) && currentValue != newValue)
+            if (e.GenericValueStatus.TryGetValue(variable, out var newValue) && currentValue != newValue)
             {
                 value = newValue;
                 return true;
@@ -48,17 +54,17 @@ public class WindAction : BaseAction
 
         bool isUpdated = false;
 
-        if (TryGetNewValue(windDirectionValue, currentWindDirectionValue, out var newDirection))
+        if (TryGetNewValue(windDirection, currentWindDirectionValue, out var newDirection))
         {
             currentWindDirectionValue = newDirection;
             isUpdated = true;
         }
-        if (TryGetNewValue(headingValue, currentHeadingValue, out var newHeading))
+        if (TryGetNewValue(heading, currentHeadingValue, out var newHeading))
         {
             currentHeadingValue = newHeading;
             isUpdated = true;
         }
-        if (TryGetNewValue(windVelocityValue, currentWindVelocityValue, out var newVelocity))
+        if (TryGetNewValue(windVelocity, currentWindVelocityValue, out var newVelocity))
         {
             currentWindVelocityValue = newVelocity;
             isUpdated = true;
@@ -79,12 +85,12 @@ public class WindAction : BaseAction
 
     private void RegisterValues()
     {
-        simVarManager.RegisterSimValues(simVarManager.GetRegistration(windDirectionValue), simVarManager.GetRegistration(windVelocityValue), simVarManager.GetRegistration(headingValue));
+        simVarManager.RegisterSimValues(windDirection, windVelocity, heading);
     }
 
     private void DeRegisterValues()
     {
-        simVarManager.DeRegisterSimValues(simVarManager.GetRegistration(windDirectionValue), simVarManager.GetRegistration(windVelocityValue), simVarManager.GetRegistration(headingValue));
+        simVarManager.DeRegisterSimValues(windDirection, windVelocity, heading);
     }
 
     protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
