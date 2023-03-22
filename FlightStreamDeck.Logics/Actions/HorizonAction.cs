@@ -1,4 +1,6 @@
-﻿namespace FlightStreamDeck.Logics.Actions;
+﻿using System;
+
+namespace FlightStreamDeck.Logics.Actions;
 
 [StreamDeckAction("tech.flighttracker.streamdeck.artificial.horizon")]
 public class HorizonAction : BaseAction
@@ -7,8 +9,8 @@ public class HorizonAction : BaseAction
     private readonly IFlightConnector flightConnector;
     private readonly IImageLogic imageLogic;
     private readonly SimVarManager simVarManager;
-    private string bankValue = "PLANE BANK DEGREES";
-    private string pitchValue = "PLANE PITCH DEGREES";
+    private readonly SimVarRegistration bank;
+    private readonly SimVarRegistration pitch;
 
     private double currentBankValue = 0;
     private double currentPitchValue = 0;
@@ -19,6 +21,9 @@ public class HorizonAction : BaseAction
         this.flightConnector = flightConnector;
         this.imageLogic = imageLogic;
         this.simVarManager = simVarManager;
+
+        this.bank = simVarManager.GetRegistration("PLANE BANK DEGREES") ?? throw new InvalidOperationException("Cannot get registration for AMBIENT WIND DIRECTION");
+        this.pitch = simVarManager.GetRegistration("PLANE PITCH DEGREES") ?? throw new InvalidOperationException("Cannot get registration for PLANE PITCH DEGREES");
     }
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -32,9 +37,9 @@ public class HorizonAction : BaseAction
 
     private async void FlightConnector_GenericValuesUpdated(object? sender, ToggleValueUpdatedEventArgs e)
     {
-        bool TryGetNewValue(string variable, double currentValue, out double value)
+        bool TryGetNewValue(SimVarRegistration variable, double currentValue, out double value)
         {
-            if (e.GenericValueStatus.TryGetValue(new SimVarRegistration(variable, null), out var newValue) && currentValue != newValue)
+            if (e.GenericValueStatus.TryGetValue(variable, out var newValue) && currentValue != newValue)
             {
                 value = newValue;
                 return true;
@@ -45,12 +50,12 @@ public class HorizonAction : BaseAction
 
         bool isUpdated = false;
 
-        if (TryGetNewValue(bankValue, currentBankValue, out var newBank))
+        if (TryGetNewValue(bank, currentBankValue, out var newBank))
         {
             currentBankValue = newBank;
             isUpdated = true;
         }
-        if (TryGetNewValue(pitchValue, currentPitchValue, out var newPitch))
+        if (TryGetNewValue(pitch, currentPitchValue, out var newPitch))
         {
             currentPitchValue = newPitch;
             isUpdated = true;
@@ -71,12 +76,12 @@ public class HorizonAction : BaseAction
 
     private void RegisterValues()
     {
-        simVarManager.RegisterSimValues(simVarManager.GetRegistration(bankValue), simVarManager.GetRegistration(pitchValue));
+        simVarManager.RegisterSimValues(bank, pitch);
     }
 
     private void DeRegisterValues()
     {
-        simVarManager.DeRegisterSimValues(simVarManager.GetRegistration(bankValue), simVarManager.GetRegistration(pitchValue));
+        simVarManager.DeRegisterSimValues(bank, pitch);
     }
 
     protected override Task OnKeyDown(ActionEventArgs<KeyPayload> args)
