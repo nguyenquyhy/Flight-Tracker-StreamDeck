@@ -51,14 +51,14 @@ public abstract class NumberDialAction : BaseAction<NumberDialActionSettings>
             switch (args.Action)
             {
                 case "tech.flighttracker.streamdeck.number.dial.outer":
-                    await SetFeedbackAsync(new LayoutA0
+                    await SetFeedbackSafeAsync(new LayoutA0
                     {
                         FullCanvas = "Images/dialouter.png",
                         Title = "Outer"
                     });
                     break;
                 case "tech.flighttracker.streamdeck.number.dial.inner":
-                    await SetFeedbackAsync(new LayoutA0
+                    await SetFeedbackSafeAsync(new LayoutA0
                     {
                         FullCanvas = "Images/dialinner.png",
                         Title = "Inner"

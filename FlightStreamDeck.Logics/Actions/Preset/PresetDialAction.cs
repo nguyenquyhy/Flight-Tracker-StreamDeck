@@ -84,7 +84,7 @@ public class PresetDialAction : PresetBaseAction
             var max = GetMax(settings.Type);
             var indicator = Math.Clamp(((int)(value ?? 0) - min) * 100 / (max - min), 0, 100);
             var showValue = active || GetShowValueWhenInactive(settings.Type);
-            await SetFeedbackAsync(new LayoutB2
+            await SetFeedbackSafeAsync(new LayoutB2
             {
                 Title = GetHeader(settings.Type),
                 Value = new Text

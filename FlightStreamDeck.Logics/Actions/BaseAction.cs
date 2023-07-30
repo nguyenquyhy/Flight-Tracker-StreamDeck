@@ -45,6 +45,26 @@ public abstract class BaseAction<TSettings> : StreamDeckAction<TSettings> where 
         }
     }
 
+    public async Task SetFeedbackSafeAsync(object feedback)
+    {
+        try
+        {
+            await SetFeedbackAsync(feedback);
+        }
+        catch (SocketException)
+        {
+            // Ignore as we can't really do anything here
+        }
+        catch (WebSocketException)
+        {
+            // Ignore as we can't really do anything here
+        }
+        catch (ObjectDisposedException)
+        {
+            // Ignore
+        }
+    }
+
     /// <summary>
     /// Gets the stack responsible for monitoring dial interactions; this is used to determine if the press was a long-press.
     /// </summary>
