@@ -18,19 +18,19 @@ public class NumberDisplayAction : BaseAction
 
     private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
     {
-        if (NumpadStorage.NumpadParams != null && lastValue != NumpadStorage.NumpadParams.Value)
+        if (NumpadStorage.NumpadParams is { } param && lastValue != param.Value)
         {
-            lastValue = NumpadStorage.NumpadParams.Value;
+            lastValue = param.Value;
 
-            var value = NumpadStorage.NumpadParams.Value;
-            var decIndex = NumpadStorage.NumpadParams.Mask.IndexOf(".");
+            var value = param.Value;
+            var decIndex = param.Mask.IndexOf(".");
 
             if (value.Length > decIndex && decIndex >= 0)
             {
                 value = value.Insert(decIndex, ".");
             }
 
-            await SetImageSafeAsync(imageLogic.GetNavComImage(NumpadStorage.NumpadParams.Type, true, "", value, imageOnFilePath: NumpadStorage.NumpadParams.ImageBackgroundFilePath, imageOnBytes: NumpadStorage.NumpadParams.ImageBackground_base64));
+            await SetImageSafeAsync(imageLogic.GetNavComImage(param.Type, true, "", value, imageOnFilePath: param.ImageBackgroundFilePath, imageOnBytes: param.ImageBackground_base64));
         }
     }
 
