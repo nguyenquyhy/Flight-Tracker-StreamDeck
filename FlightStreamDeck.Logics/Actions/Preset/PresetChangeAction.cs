@@ -1,6 +1,7 @@
 ﻿using FlightStreamDeck.Logics.Actions.Preset;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Runtime.InteropServices;
 using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions;
@@ -111,42 +112,50 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
             _ => throw new NotImplementedException($"Value type: {buttonType}")
         };
 
-        switch (buttonType)
+        try
         {
-            case PresetFunctions.Heading:
-            case PresetFunctions.VerticalSpeed:
-            case PresetFunctions.Altitude:
-            case PresetFunctions.AirSpeed:
-            case PresetFunctions.VOR1:
-            case PresetFunctions.VOR2:
-                if (logic is IPresetValueLogic valueLogic)
-                {
-                    valueLogic.ChangeValue(status, sign, increment);
-                }
-                else
-                {
-                    await ShowAlertAsync();
-                }
-                break;
+            switch (buttonType)
+            {
+                case PresetFunctions.Heading:
+                case PresetFunctions.VerticalSpeed:
+                case PresetFunctions.Altitude:
+                case PresetFunctions.AirSpeed:
+                case PresetFunctions.VOR1:
+                case PresetFunctions.VOR2:
+                    if (logic is IPresetValueLogic valueLogic)
+                    {
+                        valueLogic.ChangeValue(status, sign, increment);
+                    }
+                    else
+                    {
+                        await ShowAlertAsync();
+                    }
+                    break;
 
-            case PresetFunctions.VerticalSpeedAirSpeed:
-                if (status.IsApFlcOn)
-                {
-                    ChangeAirSpeed(originalValue.Value, sign, increment);
-                }
-                else
-                {
-                    ChangeVerticalSpeed(originalValue.Value, sign);
-                }
-                break;
-            case PresetFunctions.QNH:
-                double newValue = (double)originalValue + (sign * increment * 50);  // Value is in nanobar, increment per 50 nanobar (0.5 mbar)
-                flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
-                break;
-            case PresetFunctions.ADF:
-                ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.ADF_SET);
-                break;
+                case PresetFunctions.VerticalSpeedAirSpeed:
+                    if (status.IsApFlcOn)
+                    {
+                        ChangeAirSpeed(originalValue.Value, sign, increment);
+                    }
+                    else
+                    {
+                        ChangeVerticalSpeed(originalValue.Value, sign);
+                    }
+                    break;
+                case PresetFunctions.QNH:
+                    double newValue = (double)originalValue + (sign * increment * 50);  // Value is in nanobar, increment per 50 nanobar (0.5 mbar)
+                    flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
+                    break;
+                case PresetFunctions.ADF:
+                    ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.ADF_SET);
+                    break;
 
+            }
+        }
+        catch (COMException ex)
+        {
+            logger.LogError(ex, "Cannot set value!");
+            await ShowAlertAsync();
         }
     }
 
