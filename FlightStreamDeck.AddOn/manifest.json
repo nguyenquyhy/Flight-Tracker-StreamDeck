@@ -82,7 +82,30 @@
       "Tooltip": "Activate/Deactivate different functions",
       "UUID": "tech.flighttracker.streamdeck.preset.toggle"
     },
-
+    {
+      "Icon": "Images/toggleIcon",
+      "Name": "Generic Dial",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": true
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "PropertyInspector/GenericDial.html",
+      "Tooltip": "Activate/Deactivate different functions",
+      "UUID": "tech.flighttracker.streamdeck.generic.dial",
+      "Controllers": [ "Encoder" ],
+      "Encoder": {
+        "layout": "$B2",
+        "TriggerDescription": {
+          "Push": "Toggle",
+          "Rotate": "Change value/Toggle",
+          "Touch": "Toggle a value",
+          "LongTouch": "Toggle a value"
+        }
+      }
+    },
     {
       "Icon": "Images/toggleIcon",
       "Name": "Preset Dial Buttons",
@@ -426,7 +449,7 @@
   "Category": "Flight Tracker",
   "CategoryIcon": "Images/categoryIcon",
   "Description": "Interact with Microsoft Flight Simulator right from your Stream Deck!",
-  "Name": "Flight Tracker",
+  "Name": "Flight Tracker2",
   "Icon": "Images/aircraft",
   "URL": "https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck",
   "Version": "0.51",
