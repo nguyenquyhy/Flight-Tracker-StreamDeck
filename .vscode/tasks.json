@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Deploy to Streamdeck",
+            "type": "shell",
+            "command": "",
+            "options": {
+              "shell": {
+                "executable": "${workspaceFolder}/deploy.bat",
+                "args": []
+              }
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+              "group": "my-group"
+            }
+          }
+    ]
+}
