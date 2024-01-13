@@ -15,6 +15,9 @@ If you just want to use the plugin with your Stream Deck, take a look at [User G
 
 Copy the output to `%appdata%\Elgato\StreamDeck\Plugins\tech.flighttracker.streamdeck.sdPlugin` and restart Stream Deck software. You can find a deploy.bat file that does the same thing.
 
+Added the Elgato DistributionTool. Build.dat should build the files into the Build Folder, and the tool, now copied into the build folder, creates the plugin. Double click the .streamdeck file to import.
+No need to empty the build folder on subsequent builds, it is nuked every time.
+
 ### TODO
 
 - [ ] Data list for generic button
