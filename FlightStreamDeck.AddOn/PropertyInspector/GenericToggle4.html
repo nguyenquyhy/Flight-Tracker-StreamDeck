@@ -27,6 +27,24 @@
             <div class="sdpi-item-label">Toggle parameter2</div>
             <input class="sdpi-item-value" id="ToggleValueData2" value="" placeholder="">
         </div>
+
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event3</div>
+            <input class="sdpi-item-value" id="ToggleValue3" value="" placeholder="YAW_DAMPER_TOGGLE3" pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter3</div>
+            <input class="sdpi-item-value" id="ToggleValueData3" value="" placeholder="">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event4</div>
+            <input class="sdpi-item-value" id="ToggleValue4" value="" placeholder="YAW_DAMPER_TOGGLE4" pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter4</div>
+            <input class="sdpi-item-value" id="ToggleValueData4" value="" placeholder="">
+        </div> 
+
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Hold event</div>
             <input class="sdpi-item-value" id="HoldValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE" pattern="[A-Z_]*">
@@ -94,32 +112,36 @@
             </div>
         </div>
     </div>
-        <script src="common.js"></script>
-        <script src="embedimages.js"></script>
-        <script language="JavaScript" type="text/javascript">
-            function loadSettings(settings) {
-                if (settings['Header']) { Header.value = settings['Header'] };
-                if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
-                if (settings['ToggleValue2']) { ToggleValue2.value = settings['ToggleValue2'] };
-                if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
-                if (settings['ToggleValueData2']) { ToggleValueData2.value = settings['ToggleValueData2'] };
-                if (settings['HoldValue']) { HoldValue.value = settings['HoldValue'] };
-                if (settings['HoldValueData']) { HoldValueData.value = settings['HoldValueData'] };
-                if (settings['HoldValueRepeat']) { HoldValueRepeat.checked = settings['HoldValueRepeat'] };
-                if (settings['HoldValueSuppressToggle']) { HoldValueSuppressToggle.checked = settings['HoldValueSuppressToggle'] };
-                if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
-                if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
-                if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
-                if (settings['DisplayValuePrecision']) { DisplayValuePrecision.value = settings['DisplayValuePrecision'] };
-                if (settings['FontSize']) { FontSize.value = settings['FontSize'] };
-                if (settings['ImageOn']) {
-                    setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
-                };
-                if (settings['ImageOff']) {
-                    setFileLabel(off_image_file_selector, settings['ImageOff'], !!settings['ImageOff_base64']);
-                };
-            }
-        </script>
-        <script src="init.js"></script>
-    </body>
-    </html>
+    <script src="common.js"></script>
+    <script src="embedimages.js"></script>
+    <script language="JavaScript" type="text/javascript">
+        function loadSettings(settings) {
+            if (settings['Header']) { Header.value = settings['Header'] };
+            if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
+            if (settings['ToggleValue2']) { ToggleValue2.value = settings['ToggleValue2'] };
+            if (settings['ToggleValue3']) { ToggleValue3.value = settings['ToggleValue3'] };
+            if (settings['ToggleValue4']) { ToggleValue4.value = settings['ToggleValue4'] };
+            if (settings['ToggleValueData']) { ToggleValueData.value = settings['ToggleValueData'] };
+            if (settings['ToggleValueData2']) { ToggleValueData2.value = settings['ToggleValueData2'] };
+            if (settings['ToggleValueData3']) { ToggleValueData3.value = settings['ToggleValueData3'] };
+            if (settings['ToggleValueData4']) { ToggleValueData4.value = settings['ToggleValueData4'] };
+            if (settings['HoldValue']) { HoldValue.value = settings['HoldValue'] };
+            if (settings['HoldValueData']) { HoldValueData.value = settings['HoldValueData'] };
+            if (settings['HoldValueRepeat']) { HoldValueRepeat.checked = settings['HoldValueRepeat'] };
+            if (settings['HoldValueSuppressToggle']) { HoldValueSuppressToggle.checked = settings['HoldValueSuppressToggle'] };
+            if (settings['FeedbackValue']) { FeedbackValue.value = settings['FeedbackValue'] };
+            if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+            if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
+            if (settings['DisplayValuePrecision']) { DisplayValuePrecision.value = settings['DisplayValuePrecision'] };
+            if (settings['FontSize']) { FontSize.value = settings['FontSize'] };
+            if (settings['ImageOn']) {
+                setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
+            };
+            if (settings['ImageOff']) {
+                setFileLabel(off_image_file_selector, settings['ImageOff'], !!settings['ImageOff_base64']);
+            };
+        }
+    </script>
+    <script src="init.js"></script>
+</body>
+</html>
