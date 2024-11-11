@@ -12,7 +12,7 @@ namespace FlightStreamDeck.Logics.Actions;
 /// <summary>
 /// Note: We need to fix the JSON property names to avoid conversion to camel case
 /// </summary>
-public class GenericToggleSettings
+public class GenericToggleSettings4
 {
     [JsonProperty(nameof(Header))]
     public string Header { get; set; }
@@ -26,6 +26,16 @@ public class GenericToggleSettings
     public string ToggleValue2 { get; set; }
     [JsonProperty(nameof(ToggleValueData2))]
     public string ToggleValueData2 { get; set; }
+
+    [JsonProperty(nameof(ToggleValue3))]
+    public string ToggleValue3 { get; set; }
+    [JsonProperty(nameof(ToggleValueData3))]
+    public string ToggleValueData3 { get; set; }
+
+    [JsonProperty(nameof(ToggleValue4))]
+    public string ToggleValue4 { get; set; }
+    [JsonProperty(nameof(ToggleValueData4))]
+    public string ToggleValueData4 { get; set; }
 
     [JsonProperty(nameof(HoldValue))]
     public string HoldValue { get; set; }
@@ -56,10 +66,11 @@ public class GenericToggleSettings
     public string? FontSize { get; set; }
 }
 
-[StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle")]
-public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkLogic.IAction
+
+[StreamDeckAction("tech.flighttracker.streamdeck.generic.toggle4")]
+public class GenericToggleAction4 : BaseAction<GenericToggleSettings4>, EmbedLinkLogic.IAction
 {
-    private readonly ILogger<GenericToggleAction> logger;
+    private readonly ILogger<GenericToggleAction4> logger;
     private readonly IFlightConnector flightConnector;
     private readonly IImageLogic imageLogic;
     private readonly IEvaluator evaluator;
@@ -71,12 +82,20 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
     private string? toggleEvent = null;
     private string? toggleEvent2 = null;
+    private string? toggleEvent3 = null;
+    private string? toggleEvent4 = null;
     private uint? toggleEventDataUInt = null;
     private uint? toggleEventDataUInt2 = null;
+    private uint? toggleEventDataUInt3 = null;
+    private uint? toggleEventDataUInt4 = null;
     private SimVarRegistration? toggleEventDataVariable = null;
     private SimVarRegistration? toggleEventDataVariable2= null;
+    private SimVarRegistration? toggleEventDataVariable3 = null;
+    private SimVarRegistration? toggleEventDataVariable4 = null;
     private double? toggleEventDataVariableValue = null;
     private double? toggleEventDataVariableValue2 = null;
+    private double? toggleEventDataVariableValue3 = null;
+    private double? toggleEventDataVariableValue4 = null;
 
     private string? holdEvent = null;
     private uint? holdEventDataUInt = null;
@@ -95,8 +114,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
     private bool holdEventTriggerred = false;
 
-    public GenericToggleAction(
-        ILogger<GenericToggleAction> logger,
+    public GenericToggleAction4(
+        ILogger<GenericToggleAction4> logger,
         IFlightConnector flightConnector,
         IImageLogic imageLogic,
         IEvaluator evaluator,
@@ -116,7 +135,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
-        var settings = args.Payload.GetSettings<GenericToggleSettings>();
+        var settings = args.Payload.GetSettings<GenericToggleSettings4>();
         await InitializeSettingsAsync(settings);
 
         flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
@@ -124,15 +143,23 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         await UpdateImage();
     }
 
-    public override Task InitializeSettingsAsync(GenericToggleSettings? settings)
+    public override Task InitializeSettingsAsync(GenericToggleSettings4? settings)
     {
         this.settings = settings;
         if (settings == null) return Task.CompletedTask;
 
         var newToggleEvent = settings.ToggleValue;
         (var newToggleEventDataUInt, var newToggleEventDataVariable) = GetUIntOrVariable(settings.ToggleValueData);
+
         var newToggleEvent2 = settings.ToggleValue2;
         (var newToggleEventDataUInt2, var newToggleEventDataVariable2) = GetUIntOrVariable(settings.ToggleValueData2);
+
+        var newToggleEvent3 = settings.ToggleValue3;
+        (var newToggleEventDataUInt3, var newToggleEventDataVariable3) = GetUIntOrVariable(settings.ToggleValueData3);
+
+        var newToggleEvent4 = settings.ToggleValue4;
+        (var newToggleEventDataUInt4, var newToggleEventDataVariable4) = GetUIntOrVariable(settings.ToggleValueData4);
+
         var newHoldEvent = settings.HoldValue;
         (var newHoldEventDataUInt, var newHoldEventDataVariable) = GetUIntOrVariable(settings.HoldValueData);
 
@@ -155,8 +182,22 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
         toggleEvent = newToggleEvent;
         toggleEvent2 = newToggleEvent2;
+        toggleEvent3 = newToggleEvent3;
+        toggleEvent4 = newToggleEvent4;
+
         toggleEventDataUInt = newToggleEventDataUInt;
         toggleEventDataVariable = newToggleEventDataVariable;
+
+        toggleEventDataUInt2 = newToggleEventDataUInt2;
+        toggleEventDataVariable2 = newToggleEventDataVariable2;
+
+        toggleEventDataUInt3 = newToggleEventDataUInt3;
+        toggleEventDataVariable3 = newToggleEventDataVariable3;
+
+        toggleEventDataUInt4 = newToggleEventDataUInt4;
+        toggleEventDataVariable4 = newToggleEventDataVariable4;
+
+
         holdEvent = newHoldEvent;
         holdEventDataUInt = newHoldEventDataUInt;
         holdEventDataVariable = newHoldEventDataVariable;
@@ -280,7 +321,7 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         }
         else
         {
-            await InitializeSettingsAsync(args.Payload.ToObject<GenericToggleSettings>());
+            await InitializeSettingsAsync(args.Payload.ToObject<GenericToggleSettings4>());
         }
         await UpdateImage();
     }
@@ -289,6 +330,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
     {
         eventRegistrar.RegisterEvent(toggleEvent);
         eventRegistrar.RegisterEvent(toggleEvent2);
+        eventRegistrar.RegisterEvent(toggleEvent3);
+        eventRegistrar.RegisterEvent(toggleEvent4);
         eventRegistrar.RegisterEvent(holdEvent);
 
         var variables = new List<SimVarRegistration>();
@@ -297,6 +340,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         if (displayVariable != null) variables.Add(displayVariable);
         if (toggleEventDataVariable != null) variables.Add(toggleEventDataVariable);
         if (toggleEventDataVariable2 != null) variables.Add(toggleEventDataVariable2);
+        if (toggleEventDataVariable3 != null) variables.Add(toggleEventDataVariable3);
+        if (toggleEventDataVariable4 != null) variables.Add(toggleEventDataVariable4);
         if (holdEventDataVariable != null) variables.Add(holdEventDataVariable);
 
         if (variables.Count > 0)
@@ -312,6 +357,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         if (displayVariable != null) variables.Add(displayVariable);
         if (toggleEventDataVariable != null) variables.Add(toggleEventDataVariable);
         if (toggleEventDataVariable2 != null) variables.Add(toggleEventDataVariable2);
+        if (toggleEventDataVariable3 != null) variables.Add(toggleEventDataVariable3);
+        if (toggleEventDataVariable4 != null) variables.Add(toggleEventDataVariable4);
         if (holdEventDataVariable != null) variables.Add(holdEventDataVariable);
 
         if (variables.Count > 0)
@@ -323,6 +370,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         currentValueTime = string.Empty;
         toggleEventDataVariableValue = null;
         toggleEventDataVariableValue2 = null;
+        toggleEventDataVariableValue3 = null;
+        toggleEventDataVariableValue4 = null;
         holdEventDataVariableValue = null;
     }
 
@@ -383,6 +432,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
     {
         var result  = eventDispatcher.Trigger(toggleEvent, CalculateEventParam(toggleEventDataVariable, toggleEventDataVariableValue, toggleEventDataUInt));
         var result2 = eventDispatcher.Trigger(toggleEvent2, CalculateEventParam(toggleEventDataVariable2, toggleEventDataVariableValue2, toggleEventDataUInt2));
+        var result3 = eventDispatcher.Trigger(toggleEvent3, CalculateEventParam(toggleEventDataVariable3, toggleEventDataVariableValue3, toggleEventDataUInt3));
+        var result4 = eventDispatcher.Trigger(toggleEvent4, CalculateEventParam(toggleEventDataVariable4, toggleEventDataVariableValue4, toggleEventDataUInt4));
         if (!result)
         {
             await ShowAlertAsync();

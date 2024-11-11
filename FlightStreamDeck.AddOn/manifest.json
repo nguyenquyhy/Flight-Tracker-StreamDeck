@@ -15,6 +15,20 @@
       "UUID": "tech.flighttracker.streamdeck.generic.toggle"
     },
     {
+      "Icon": "Images/toggleIcon",
+      "Name": "Generic Toggle Button 4",
+      "States": [
+        {
+          "Image": "Images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "PropertyInspector/GenericToggle4.html",
+      "Tooltip": "Use the SimConnect variables to define up to 4 actions",
+      "UUID": "tech.flighttracker.streamdeck.generic.toggle4"
+    },
+    {
       "Icon": "Images/gaugeIcon",
       "Name": "Generic Gauge",
       "States": [
