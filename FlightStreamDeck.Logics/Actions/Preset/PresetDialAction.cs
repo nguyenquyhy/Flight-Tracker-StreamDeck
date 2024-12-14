@@ -7,9 +7,16 @@ namespace FlightStreamDeck.Logics.Actions;
 [StreamDeckAction("tech.flighttracker.streamdeck.preset.dial")]
 public class PresetDialAction : PresetBaseAction
 {
-    public PresetDialAction(ILogger<PresetDialAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic, PresetLogicFactory logicFactory)
-        : base(logger, flightConnector, imageLogic, logicFactory)
+    public PresetDialAction(
+        ILogger<PresetDialAction> logger, 
+        IFlightConnector flightConnector, 
+        IImageLogic imageLogic,
+        IEventRegistrar eventRegistrar, 
+        PresetLogicFactory logicFactory
+    ) : base(logger, flightConnector, imageLogic, logicFactory)
     {
+        eventRegistrar.RegisterEvent(KnownEvents.VOR1_SET.ToString());
+        eventRegistrar.RegisterEvent(KnownEvents.VOR2_SET.ToString());
     }
 
     protected override async Task OnTouchTap(ActionEventArgs<TouchTapPayload> args)
