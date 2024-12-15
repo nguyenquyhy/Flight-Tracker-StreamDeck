@@ -130,7 +130,7 @@ public class ImageLogic : IImageLogic
             {
                 var size2 = TextMeasurer.Measure(value2, new TextOptions(valueFont));
                 Color displayColor = dependant ? Color.White : Color.LightGray;
-                ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 6 + imgSize.Height / 4 + size2.Height));
+                ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 6 + imgSize.Height / 4 + size2.Height + 5));
             }
         });
 
