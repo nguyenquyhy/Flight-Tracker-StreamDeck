@@ -70,13 +70,13 @@ public class ImageLogic : IImageLogic
 
             if (!string.IsNullOrWhiteSpace(text))
             {
-                var size = TextMeasurer.Measure(text, new TextOptions(font));
+                var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
                 ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 4));
             }
 
             if (!string.IsNullOrEmpty(value))
             {
-                var size = TextMeasurer.Measure(value, new TextOptions(valueFont));
+                var size = TextMeasurer.MeasureSize(value, new TextOptions(valueFont));
                 ctx.DrawText(value, valueFont, active ? Color.Yellow : Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, 64 * scale - size.Height));
             }
         });
@@ -93,7 +93,7 @@ public class ImageLogic : IImageLogic
         using var img = defaultBackground.Clone(ctx =>
         {
             var imgSize = ctx.GetCurrentSize();
-            var size = TextMeasurer.Measure(text, new TextOptions(font));
+            var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
             ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 2 - size.Height / 2));
         });
 
@@ -115,20 +115,20 @@ public class ImageLogic : IImageLogic
 
             if (!string.IsNullOrWhiteSpace(type))
             {
-                var size = TextMeasurer.Measure(type, new TextOptions(font));
+                var size = TextMeasurer.MeasureSize(type, new TextOptions(font));
                 Color displayColor = dependant ? Color.White : Color.LightGray;
                 ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, showMainOnly ? imgSize.Height / 4 : imgSize.Height / 6));
             }
 
             if (!string.IsNullOrWhiteSpace(value1))
             {
-                var size1 = TextMeasurer.Measure(value1, new TextOptions(valueFont));
+                var size1 = TextMeasurer.MeasureSize(value1, new TextOptions(valueFont));
                 Color displayColor = dependant ? Color.Yellow : Color.LightGray;
                 ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, showMainOnly ? (imgSize.Height / 2) : (imgSize.Height / 6 + imgSize.Height / 4)));
             }
             if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
             {
-                var size2 = TextMeasurer.Measure(value2, new TextOptions(valueFont));
+                var size2 = TextMeasurer.MeasureSize(value2, new TextOptions(valueFont));
                 Color displayColor = dependant ? Color.White : Color.LightGray;
                 ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 6 + imgSize.Height / 4 + size2.Height + 5));
             }
@@ -141,12 +141,12 @@ public class ImageLogic : IImageLogic
     {
         //var font = SystemFonts.CreateFont("Arial", 10, FontStyle.Regular);
         //var valueFont = SystemFonts.CreateFont("Arial", 12, FontStyle.Regular);
-        var pen = new Pen(Color.Yellow, 3);
+        var pen = new SolidPen(Color.Yellow, 3);
 
         using var shiftedRolledHorizon = new Image<Rgba32>(105, 105);
         shiftedRolledHorizon.Mutate(ctx =>
         {
-            var size = horizon.Size();
+            var size = horizon.Size;
             ctx.DrawImage(horizon, new Point(
                 (int)Math.Round((float)-size.Width / 2 + 52),
                 Math.Clamp((int)Math.Round((float)-size.Height / 2 + 52 - (pitchInDegrees * 2)), -size.Height + 50, 55)
@@ -157,7 +157,7 @@ public class ImageLogic : IImageLogic
         using var img = new Image<Rgba32>(WIDTH, WIDTH);
         img.Mutate(ctx =>
         {
-            var size = shiftedRolledHorizon.Size();
+            var size = shiftedRolledHorizon.Size;
             ctx.DrawImage(shiftedRolledHorizon, new Point(
                 (int)Math.Round((float)-size.Width / 2 + HALF_WIDTH),
                 (int)Math.Round((float)-size.Height / 2 + HALF_WIDTH)
@@ -167,9 +167,9 @@ public class ImageLogic : IImageLogic
             PointF[] leftLine = { new PointF(6, 36), new PointF(26, 36) };
             PointF[] rightLine = { new PointF(46, 36), new PointF(66, 36) };
             PointF[] bottomLine = { new PointF(36, 41), new PointF(36, 51) };
-            ctx.DrawLines(pen, leftLine);
-            ctx.DrawLines(pen, rightLine);
-            ctx.DrawLines(pen, bottomLine);
+            ctx.DrawLine(pen, leftLine);
+            ctx.DrawLine(pen, rightLine);
+            ctx.DrawLine(pen, bottomLine);
         });
 
         return ToBase64PNG(img);
@@ -199,37 +199,37 @@ public class ImageLogic : IImageLogic
         using var img = new Image<Rgba32>(WIDTH, WIDTH);
         img.Mutate(ctx =>
         {
-            var size = rotatedImg.Size();
+            var size = rotatedImg.Size;
             ctx.DrawImage(rotatedImg, new Point(
                 (int)Math.Round((float)-size.Width / 2 + HALF_WIDTH),
                 (int)Math.Round((float)-size.Height / 2 + HALF_WIDTH)
                 ), new GraphicsOptions());
 
             FontRectangle fsize = new FontRectangle(0, 0, 0, 0);
-            fsize = TextMeasurer.Measure(txtDir, new TextOptions(fontDegree));
+            fsize = TextMeasurer.MeasureSize(txtDir, new TextOptions(fontDegree));
             ctx.DrawText(txtDir + "°", fontDegree, Color.Yellow, new PointF(HALF_WIDTH - fsize.Width / 2, 53));
 
             string text = intVel.ToString() + " kt";
-            fsize = TextMeasurer.Measure(text, new TextOptions(fontStrength));
+            fsize = TextMeasurer.MeasureSize(text, new TextOptions(fontStrength));
             ctx.DrawText(text, fontStrength, Color.Cyan, new PointF(HALF_WIDTH - fsize.Width / 2, 0));
 
 
-            var pen = new Pen(Color.Cyan, 4);
-            var penSmall = new Pen(Color.Cyan, 3);
+            var pen = new SolidPen(Color.Cyan, 4);
+            var penSmall = new SolidPen(Color.Cyan, 3);
 
             if (relative)
             {
                 PointF[] wingLine = { new PointF(1, 59), new PointF(17, 59) };
                 PointF[] middleLine = { new PointF(9, 54), new PointF(9, 68) };
                 PointF[] rudderLine = { new PointF(5, 67), new PointF(13, 67) };
-                ctx.DrawLines(pen, middleLine);
-                ctx.DrawLines(pen, wingLine);
-                ctx.DrawLines(penSmall, rudderLine);
+                ctx.DrawLine(pen, middleLine);
+                ctx.DrawLine(pen, wingLine);
+                ctx.DrawLine(penSmall, rudderLine);
             }
             else
             {
                 text = "N";
-                fsize = TextMeasurer.Measure(text, new TextOptions(fontDegree));
+                fsize = TextMeasurer.MeasureSize(text, new TextOptions(fontDegree));
                 ctx.DrawText(text, fontDegree, Color.Cyan, new PointF(3, 53));
             }
 
@@ -243,7 +243,7 @@ public class ImageLogic : IImageLogic
     {
         var font = SystemFonts.CreateFont("Arial", fontSize ?? 22, FontStyle.Regular);
         var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
-        var pen = new Pen(Color.DarkRed, 5);
+        var pen = new SolidPen(Color.DarkRed, 5);
         var range = max - min;
 
         if (range <= 0)
@@ -272,17 +272,17 @@ public class ImageLogic : IImageLogic
 
             PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
 
-            ctx.DrawLines(pen, needle);
+            ctx.DrawLine(pen, needle);
 
             FontRectangle size = new FontRectangle(0, 0, 0, 0);
             if (!string.IsNullOrWhiteSpace(text))
             {
-                size = TextMeasurer.Measure(text, new TextOptions(titleFont));
+                size = TextMeasurer.MeasureSize(text, new TextOptions(titleFont));
                 ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 43));
             }
 
             var valueText = value.ToString(valueFormat);
-            var sizeValue = TextMeasurer.Measure(valueText, new TextOptions(font));
+            var sizeValue = TextMeasurer.MeasureSize(valueText, new TextOptions(font));
             var textColor = value > max ? Color.Red : Color.White;
             ctx.DrawText(valueText, font, textColor, new PointF(18, 46 - sizeValue.Height));
 
@@ -308,7 +308,7 @@ public class ImageLogic : IImageLogic
 
         using var img = defaultBackground.Clone(ctx =>
         {
-            ctx.Draw(new Pen(Color.Black, 100), new RectangleF(0, 0, WIDTH, WIDTH));
+            ctx.Draw(new SolidPen(Color.Black, 100), new RectangleF(0, 0, WIDTH, WIDTH));
             int width_margin = 10;
             int img_width = WIDTH - (width_margin * 2);
 
@@ -418,7 +418,7 @@ public class ImageLogic : IImageLogic
 
         if (writeValueHeaderAndChevron && !missingHeaderLabel)
         {
-            var pen = new Pen(Color.White, chevronSize + 1);
+            var pen = new SolidPen(Color.White, chevronSize + 1);
 
             var arrowStartX = (ratio * img_width) + width_margin;
             var arrowStartY = (HALF_WIDTH - ((chart_width / 2) * (top ? 1 : -1)));
@@ -434,7 +434,7 @@ public class ImageLogic : IImageLogic
             var textColor = (floatValue > max || floatValue < min) ? Color.Red : Color.White;
             var font = SystemFonts.CreateFont("Arial", chevronSize * 4, FontStyle.Regular);
 
-            var size = TextMeasurer.Measure(valueText, new TextOptions(font));
+            var size = TextMeasurer.MeasureSize(valueText, new TextOptions(font));
             float adjustY = top ? Math.Abs(-5 - size.Height) : 5;
             arrowAddY = top ? arrowAddY - adjustY : arrowAddY + adjustY;
             var valuePoint = new PointF(HALF_WIDTH - size.Width / 2, arrowAddY);
@@ -442,7 +442,7 @@ public class ImageLogic : IImageLogic
 
             ctx.DrawPolygon(pen, needle);
             var text = !string.IsNullOrEmpty(labelText) ? labelText[0].ToString() : string.Empty;
-            size = TextMeasurer.Measure(text, new TextOptions(SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular)));
+            size = TextMeasurer.MeasureSize(text, new TextOptions(SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular)));
             startPoint.Y -= top ? size.Height : 0;
             startPoint.X -= size.Width / 2;
             ctx.DrawText(text, SystemFonts.CreateFont("Arial", chevronSize * 3, FontStyle.Regular), Color.Black, startPoint);
