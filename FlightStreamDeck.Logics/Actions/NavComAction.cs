@@ -37,12 +37,9 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     private readonly IEventRegistrar eventRegistrar;
     private readonly IEventDispatcher eventDispatcher;
     private readonly SimVarManager simVarManager;
-    private readonly RegistrationParameters registrationParameters;
 
     private readonly Timer timer;
     private readonly EmbedLinkLogic embedLinkLogic;
-
-    private IdentifiableDeviceInfo? device;
 
     NavComHandler? handler = null;
 
@@ -60,7 +57,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         IEventDispatcher eventDispatcher,
         SimVarManager simVarManager,
         RegistrationParameters registrationParameters
-    )
+    ) : base(registrationParameters)
     {
         this.logger = logger;
         this.imageLogic = imageLogic;
@@ -68,7 +65,6 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
         this.eventRegistrar = eventRegistrar;
         this.eventDispatcher = eventDispatcher;
         this.simVarManager = simVarManager;
-        this.registrationParameters = registrationParameters;
         timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
         timer.Elapsed += Timer_Elapsed;
 
@@ -95,6 +91,8 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
+        await base.OnWillAppear(args);
+
         flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
         var settings = args.Payload.GetSettings<NavComSettings>();
@@ -222,7 +220,7 @@ public class NavComAction : BaseAction<NavComSettings>, EmbedLinkLogic.IAction
     {
         if (settings != null)
         {
-            await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly, settings.ImageBackground, GetImageBytes()));
+            await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly, settings.ImageBackground, GetImageBytes(), device.IsHighResolution()));
         }
     }
 

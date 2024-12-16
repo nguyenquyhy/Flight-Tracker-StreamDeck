@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Timers;
 
 namespace FlightStreamDeck.Logics.Actions;
 
@@ -28,12 +27,9 @@ public class PresetToggleSettings
 }
 
 [StreamDeckAction("tech.flighttracker.streamdeck.preset.toggle")]
-public class PresetToggleAction : PresetBaseAction
+public class PresetToggleAction(ILogger<PresetToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic, PresetLogicFactory logicFactory, RegistrationParameters registrationParameters) :
+    PresetBaseAction(logger, flightConnector, imageLogic, logicFactory, registrationParameters)
 {
-    public PresetToggleAction(ILogger<PresetToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic, PresetLogicFactory logicFactory)
-        : base(logger, flightConnector, imageLogic, logicFactory)
-    {
-    }
 }
 
 public abstract class PresetBaseAction : BaseAction<PresetToggleSettings>, EmbedLinkLogic.IAction
@@ -48,7 +44,8 @@ public abstract class PresetBaseAction : BaseAction<PresetToggleSettings>, Embed
 
     protected IPresetToggleLogic? logic = null;
 
-    public PresetBaseAction(ILogger logger, IFlightConnector flightConnector, IImageLogic imageLogic, PresetLogicFactory logicFactory)
+    public PresetBaseAction(ILogger logger, IFlightConnector flightConnector, IImageLogic imageLogic, PresetLogicFactory logicFactory, RegistrationParameters registrationParameters)
+        : base(registrationParameters)
     {
         this.logger = logger;
         this.flightConnector = flightConnector;
@@ -71,6 +68,8 @@ public abstract class PresetBaseAction : BaseAction<PresetToggleSettings>, Embed
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
+        await base.OnWillAppear(args);
+
         var settings = args.Payload.GetSettings<PresetToggleSettings>();
         await InitializeSettingsAsync(settings);
 
@@ -181,7 +180,8 @@ public abstract class PresetBaseAction : BaseAction<PresetToggleSettings>, Embed
                 logic is IPresetValueLogic valueLogic ? valueLogic.GetValue(currentStatus)?.ToString() : null,
                 fontSize: fontSize,
                 imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes
+                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes,
+                highResolution: device.IsHighResolution()
             );
 
             if (image != null)

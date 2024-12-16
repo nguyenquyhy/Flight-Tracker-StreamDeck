@@ -11,14 +11,14 @@ namespace FlightStreamDeck.Logics.Actions;
 [StreamDeckAction("tech.flighttracker.streamdeck.preset.increase")]
 public class ValueIncreaseAction : PresetChangeAction
 {
-    public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, PresetLogicFactory logicFactory)
-        : base(logger, flightConnector, eventRegistrar, eventDispatcher, logicFactory) { }
+    public ValueIncreaseAction(ILogger<ValueIncreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, PresetLogicFactory logicFactory, RegistrationParameters registrationParameters)
+        : base(logger, flightConnector, eventRegistrar, eventDispatcher, logicFactory, registrationParameters) { }
 }
 [StreamDeckAction("tech.flighttracker.streamdeck.preset.decrease")]
 public class ValueDecreaseAction : PresetChangeAction
 {
-    public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, PresetLogicFactory logicFactory)
-        : base(logger, flightConnector, eventRegistrar, eventDispatcher, logicFactory) { }
+    public ValueDecreaseAction(ILogger<ValueDecreaseAction> logger, IFlightConnector flightConnector, IEventRegistrar eventRegistrar, IEventDispatcher eventDispatcher, PresetLogicFactory logicFactory, RegistrationParameters registrationParameters)
+        : base(logger, flightConnector, eventRegistrar, eventDispatcher, logicFactory, registrationParameters) { }
 }
 
 #endregion
@@ -47,8 +47,9 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
         IFlightConnector flightConnector,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        PresetLogicFactory logicFactory
-    )
+        PresetLogicFactory logicFactory,
+        RegistrationParameters registrationParameters
+    ) : base(registrationParameters)
     {
         this.logger = logger;
         this.flightConnector = flightConnector;

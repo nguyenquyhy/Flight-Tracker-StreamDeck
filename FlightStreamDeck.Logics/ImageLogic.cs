@@ -1,7 +1,6 @@
 ﻿using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
@@ -11,9 +10,9 @@ namespace FlightStreamDeck.Logics;
 
 public interface IImageLogic
 {
-    string GetImage(string text, bool active, string? value = null, int? fontSize = null, string? imageOnFilePath = null, byte[]? imageOnBytes = null, string? imageOffFilePath = null, byte[]? imageOffBytes = null);
+    string GetImage(string text, bool active, string? value = null, int? fontSize = null, string? imageOnFilePath = null, byte[]? imageOnBytes = null, string? imageOffFilePath = null, byte[]? imageOffBytes = null, bool highResolution = false);
     string GetNumberImage(int number);
-    string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageOnFilePath = null, byte[]? imageOnBytes = null);
+    string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageOnFilePath = null, byte[]? imageOnBytes = null, bool highResolution = false);
     public string GetHorizonImage(double pitchInDegrees, double rollInDegrees);
     public string GetGenericGaugeImage(string text, double value, double min, double max, int? fontSize, string valueFormat, string? subValueText = null);
     public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] chartSplits, int chartWidth, float chevronSize, bool absoluteValueText, bool hideHeaderTop, bool hideHeaderBottom);
@@ -24,6 +23,8 @@ public class ImageLogic : IImageLogic
 {
     readonly Image defaultBackground = Image.Load("Images/button.png");
     readonly Image defaultActiveBackground = Image.Load("Images/button_active.png");
+    readonly Image defaultBackgroundHighResolution = Image.Load("Images/button@2x.png");
+    readonly Image defaultActiveBackgroundHighResolution = Image.Load("Images/button_active@2x.png");
     readonly Image horizon = Image.Load("Images/horizon.png");
     readonly Image gaugeImage = Image.Load("Images/gauge.png");
     readonly Image windImage = Image.Load("Images/wind.png");
@@ -38,7 +39,8 @@ public class ImageLogic : IImageLogic
     public string GetImage(string text, bool active, string? value = null,
         int? fontSize = null,
         string? imageOnFilePath = null, byte[]? imageOnBytes = null,
-        string? imageOffFilePath = null, byte[]? imageOffBytes = null)
+        string? imageOffFilePath = null, byte[]? imageOffBytes = null,
+        bool highResolution = false)
     {
         var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
         var valueFont = SystemFonts.CreateFont("Arial", fontSize ?? 15, FontStyle.Regular);
@@ -49,21 +51,31 @@ public class ImageLogic : IImageLogic
         // 2. If user select custom images (esp Active one), the custom Active image is used based on Feedback value
         //    ignoring Display value.
         using var img = active ?
-            GetBackgroundImage(imageOnBytes, imageOnFilePath, () => (string.IsNullOrEmpty(value) ? defaultActiveBackground : defaultBackground).Clone(_ => { })) :
-            GetBackgroundImage(imageOffBytes, imageOffFilePath, () => defaultBackground.Clone(_ => { }));
+            GetBackgroundImage(imageOnBytes, imageOnFilePath, () => (string.IsNullOrEmpty(value) ? getDefaultActiveBackground(highResolution) : getDefaultBackground(highResolution)).Clone(_ => { })) :
+            GetBackgroundImage(imageOffBytes, imageOffFilePath, () => getDefaultBackground(highResolution).Clone(_ => { }));
+
+        var width = highResolution ? WIDTH * 2 : WIDTH;
 
         img.Mutate(ctx =>
         {
-            ctx.Resize(WIDTH, WIDTH); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
+            ctx.Resize(width, width); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
 
             var imgSize = ctx.GetCurrentSize();
 
             // Calculate scaling for header
             var smallerDim = imgSize.Width < imgSize.Height ? imgSize.Width : imgSize.Height;
             var scale = 1f;
-            if (smallerDim != WIDTH)
+            if (smallerDim != width)
             {
-                scale = (float)smallerDim / WIDTH;
+                scale = (float)smallerDim / width;
+            }
+            if (highResolution)
+            {
+                scale *= 2;
+            }
+            
+            if (scale != 1)
+            {
                 font = new Font(font, font.Size * scale);
                 valueFont = new Font(valueFont, valueFont.Size * scale);
             }
@@ -81,7 +93,7 @@ public class ImageLogic : IImageLogic
             }
         });
 
-        return ToBase64PNG(img);
+        return img.ToBase64PNG();
     }
 
     /// <returns>Base64 image data</returns>
@@ -97,21 +109,44 @@ public class ImageLogic : IImageLogic
             ctx.DrawText(text, font, Color.White, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 2 - size.Height / 2));
         });
 
-        return ToBase64PNG(img);
+        return img.ToBase64PNG();
     }
 
-    public string GetNavComImage(string type, bool dependant, string value1, string value2, bool showMainOnly = false, string? imageFilePath = null, byte[]? imageBytes = null)
+    public string GetNavComImage(
+        string type, bool dependant, string value1, string value2, bool showMainOnly = false, 
+        string? imageFilePath = null, byte[]? imageBytes = null,
+        bool highResolution = false)
     {
         var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
         var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
 
-        using var img = GetBackgroundImage(imageBytes, imageFilePath, () => defaultBackground.Clone(_ => { }));
+        using var img = GetBackgroundImage(imageBytes, imageFilePath, () => getDefaultBackground(highResolution).Clone(_ => { }));
+
+        var width = highResolution ? WIDTH * 2 : WIDTH;
 
         img.Mutate(ctx =>
         {
-            ctx.Resize(WIDTH, WIDTH); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
+            ctx.Resize(width, width); // Force image to rescale to our button size, otherwise text gets super small if it is bigger.
 
             var imgSize = ctx.GetCurrentSize();
+
+            // Calculate scaling for header
+            var smallerDim = imgSize.Width < imgSize.Height ? imgSize.Width : imgSize.Height;
+            var scale = 1f;
+            if (smallerDim != width)
+            {
+                scale = (float)smallerDim / width;
+            }
+            if (highResolution)
+            {
+                scale *= 2;
+            }
+
+            if (scale != 1)
+            {
+                font = new Font(font, font.Size * scale);
+                valueFont = new Font(valueFont, valueFont.Size * scale);
+            }
 
             if (!string.IsNullOrWhiteSpace(type))
             {
@@ -134,13 +169,11 @@ public class ImageLogic : IImageLogic
             }
         });
 
-        return ToBase64PNG(img);
+        return img.ToBase64PNG();
     }
 
     public string GetHorizonImage(double pitchInDegrees, double rollInDegrees)
     {
-        //var font = SystemFonts.CreateFont("Arial", 10, FontStyle.Regular);
-        //var valueFont = SystemFonts.CreateFont("Arial", 12, FontStyle.Regular);
         var pen = new SolidPen(Color.Yellow, 3);
 
         using var shiftedRolledHorizon = new Image<Rgba32>(105, 105);
@@ -172,7 +205,7 @@ public class ImageLogic : IImageLogic
             ctx.DrawLine(pen, bottomLine);
         });
 
-        return ToBase64PNG(img);
+        return img.ToBase64PNG();
     }
 
     public string GetWindImage(double windDirectionInDegrees, double windVelocity, double headingInDegrees, bool relative)
@@ -235,8 +268,7 @@ public class ImageLogic : IImageLogic
 
         });
 
-        return ToBase64PNG(img);
-
+        return img.ToBase64PNG();
     }
 
     public string GetGenericGaugeImage(string text, double value, double min, double max, int? fontSize, string valueFormat, string? subValueText = null)
@@ -289,7 +321,7 @@ public class ImageLogic : IImageLogic
             if (!string.IsNullOrWhiteSpace(subValueText)) ctx.DrawText(subValueText, titleFont, textColor, new PointF(20, 41 + size.Height));
         });
 
-        return ToBase64PNG(img);
+        return img.ToBase64PNG();
     }
 
     public string GetCustomGaugeImage(string textTop, string textBottom, double valueTop, double valueBottom, double min, double max, string valueFormat, bool horizontal, string[] splitGauge, int chartWidth, float chevronSize, bool displayAbsoluteValue, bool hideHeaderTop, bool hideHeaderBottom)
@@ -368,8 +400,11 @@ public class ImageLogic : IImageLogic
             if (!horizontal) ctx.Rotate(-90);
         });
 
-        return ToBase64PNG(img);
+        return img.ToBase64PNG();
     }
+
+    private Image getDefaultActiveBackground(bool highResolution) => highResolution ? defaultActiveBackgroundHighResolution : defaultActiveBackground;
+    private Image getDefaultBackground(bool highResolution) => highResolution ? defaultBackgroundHighResolution : defaultBackground;
 
     private Image GetBackgroundImage(byte[]? imageBytes, string? imageFilePath, Func<Image> imageDefaultFactory)
     {
@@ -399,15 +434,6 @@ public class ImageLogic : IImageLogic
         }
 
         return imageDefaultFactory();
-    }
-
-    private string ToBase64PNG(Image image)
-    {
-        using var memoryStream = new MemoryStream();
-        image.Save(memoryStream, new PngEncoder());
-        var base64 = Convert.ToBase64String(memoryStream.ToArray());
-
-        return "data:image/png;base64, " + base64;
     }
 
     private void DrawCustomGauge(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)

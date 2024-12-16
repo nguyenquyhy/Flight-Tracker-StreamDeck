@@ -93,7 +93,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
         IEvaluator evaluator,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        SimVarManager simVarManager)
+        SimVarManager simVarManager,
+        RegistrationParameters registrationParameters) : base(registrationParameters)
     {
         this.logger = logger;
         this.flightConnector = flightConnector;
@@ -107,6 +108,8 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
+        await base.OnWillAppear(args);
+
         var settings = args.Payload.GetSettings<GenericToggleSettings>();
         await InitializeSettingsAsync(settings);
 
@@ -405,7 +408,9 @@ public class GenericToggleAction : BaseAction<GenericToggleSettings>, EmbedLinkL
                 value: valueToShow,
                 fontSize: fontSize,
                 imageOnFilePath: settings.ImageOn, imageOnBytes: imageOnBytes,
-                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes);
+                imageOffFilePath: settings.ImageOff, imageOffBytes: imageOffBytes,
+                highResolution: device.IsHighResolution()
+            );
 
             await SetImageSafeAsync(image);
         }

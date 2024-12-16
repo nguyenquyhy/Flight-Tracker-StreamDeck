@@ -1,7 +1,4 @@
 ﻿using SharpDeck.Layouts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using System.Diagnostics;
 
 namespace FlightStreamDeck.Logics.Actions;
 
@@ -11,28 +8,21 @@ public class NumberDialActionSettings
 }
 
 [StreamDeckAction("tech.flighttracker.streamdeck.number.dial.outer")]
-public class NumberDialOuterAction : NumberDialAction
+public class NumberDialOuterAction(RegistrationParameters registrationParameters) 
+    : NumberDialAction(registrationParameters)
 {
-    public NumberDialOuterAction(IImageLogic imageLogic) : base(imageLogic)
-    {
-    }
 }
 
 [StreamDeckAction("tech.flighttracker.streamdeck.number.dial.inner")]
-public class NumberDialInnerAction : NumberDialAction
+public class NumberDialInnerAction(RegistrationParameters registrationParameters) 
+    : NumberDialAction(registrationParameters)
 {
-    public NumberDialInnerAction(IImageLogic imageLogic) : base(imageLogic)
-    {
-    }
 }
 
 public abstract class NumberDialAction : BaseAction<NumberDialActionSettings>
 {
-    private readonly IImageLogic imageLogic;
-
-    public NumberDialAction(IImageLogic imageLogic)
+    public NumberDialAction(RegistrationParameters registrationParameters) : base(registrationParameters)
     {
-        this.imageLogic = imageLogic;
     }
 
     public override Task InitializeSettingsAsync(NumberDialActionSettings? settings)
@@ -99,7 +89,7 @@ public abstract class NumberDialAction : BaseAction<NumberDialActionSettings>
                     }
                     break;
             }
-            
+
             NumpadStorage.NumpadParams.Value = front + back;
         }
         return Task.CompletedTask;

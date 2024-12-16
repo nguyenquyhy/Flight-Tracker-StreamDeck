@@ -1,13 +1,25 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 
 namespace FlightStreamDeck.Logics.Actions;
 
-public abstract class BaseAction<TSettings> : StreamDeckAction<TSettings> where TSettings : class
+public abstract class BaseAction<TSettings>(RegistrationParameters registrationParameters) : StreamDeckAction<TSettings> where TSettings : class
 {
+    protected readonly RegistrationParameters registrationParameters = registrationParameters;
+
     protected TSettings? settings = null;
+
+    protected IdentifiableDeviceInfo? device;
+
+    protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
+    {
+        await base.OnWillAppear(args);
+
+        device = registrationParameters.Info.Devices.FirstOrDefault(o => o.Id == args.Device);
+    }
 
     public abstract Task InitializeSettingsAsync(TSettings? settings);
 

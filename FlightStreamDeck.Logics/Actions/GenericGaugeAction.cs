@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace FlightStreamDeck.Logics.Actions;
 
@@ -100,7 +101,8 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
         IImageLogic imageLogic,
         IEventRegistrar eventRegistrar,
         IEventDispatcher eventDispatcher,
-        SimVarManager simVarManager)
+        SimVarManager simVarManager,
+        RegistrationParameters registrationParameters) : base(registrationParameters)
     {
         this.settings = DefaultSettings;
         this.logger = logger;
@@ -113,6 +115,8 @@ public class GenericGaugeAction : BaseAction<GenericGaugeSettings>
 
     protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
     {
+        await base.OnWillAppear(args);
+
         await InitializeSettingsAsync(args.Payload.GetSettings<GenericGaugeSettings>());
 
         flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;

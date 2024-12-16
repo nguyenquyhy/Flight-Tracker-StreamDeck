@@ -12,8 +12,9 @@ public class PresetDialAction : PresetBaseAction
         IFlightConnector flightConnector, 
         IImageLogic imageLogic,
         IEventRegistrar eventRegistrar, 
-        PresetLogicFactory logicFactory
-    ) : base(logger, flightConnector, imageLogic, logicFactory)
+        PresetLogicFactory logicFactory,
+        RegistrationParameters registrationParameters
+    ) : base(logger, flightConnector, imageLogic, logicFactory, registrationParameters)
     {
         eventRegistrar.RegisterEvent(KnownEvents.VOR1_SET.ToString());
         eventRegistrar.RegisterEvent(KnownEvents.VOR2_SET.ToString());
