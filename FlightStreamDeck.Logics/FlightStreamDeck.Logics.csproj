@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpDeck" Version="7.0.0-beta1" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FlightStreamDeck.Core\FlightStreamDeck.Core.csproj" />
+    <ProjectReference Include="..\SharpDeck\src\SharpDeck\SharpDeck.csproj" />
   </ItemGroup>
 
 </Project>

@@ -86,24 +86,23 @@ public abstract class BaseAction<TSettings>(RegistrationParameters registrationP
 
     protected virtual Task OnDialLongPress(ActionEventArgs<DialPayload> args) => Task.CompletedTask;
 
-    protected override Task OnDialPress(ActionEventArgs<DialPayload> args)
+    protected override Task OnDialDown(ActionEventArgs<DialPayload> args)
     {
-        if (args.Payload.Pressed)
+        DialPressStack.Push(args);
+        if (LongKeyPressInterval > TimeSpan.Zero)
         {
-            DialPressStack.Push(args);
-            if (LongKeyPressInterval > TimeSpan.Zero)
+            Task.Run(async delegate
             {
-                Task.Run(async delegate
-                {
-                    await Task.Delay(LongKeyPressInterval);
-                    TryHandleDialPress(OnDialLongPress);
-                });
-            }
+                await Task.Delay(LongKeyPressInterval);
+                TryHandleDialPress(OnDialLongPress);
+            });
         }
-        else
-        {
-            TryHandleDialPress(OnDialShortPress);
-        }
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnDialUp(ActionEventArgs<DialPayload> args)
+    {
+        TryHandleDialPress(OnDialShortPress);
         return Task.CompletedTask;
     }
 

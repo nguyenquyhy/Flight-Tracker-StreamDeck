@@ -1,0 +1,3 @@
+[submodule "SharpDeck"]
+	path = SharpDeck
+	url = https://github.com/nguyenquyhy/SharpDeck
