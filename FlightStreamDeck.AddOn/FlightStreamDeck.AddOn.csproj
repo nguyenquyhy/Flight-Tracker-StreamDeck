@@ -12,6 +12,11 @@
 
   <ItemGroup>
     <None Remove="icon.ico" />
+    <None Remove="Sentry.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Sentry.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +25,7 @@
 	  <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+	  <PackageReference Include="Sentry" Version="4.13.0" />
 	  <PackageReference Include="Serilog" Version="4.2.0" />
 	  <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
 	  <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />

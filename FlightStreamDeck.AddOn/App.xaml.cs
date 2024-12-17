@@ -4,13 +4,16 @@ using FlightStreamDeck.SimConnectFSX;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sentry;
 using Serilog;
 using SharpDeck.Connectivity;
 using SharpDeck.Extensions.Hosting;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace FlightStreamDeck.AddOn;
 
@@ -22,6 +25,11 @@ public partial class App : Application
     public IConfigurationRoot Configuration { get; private set; } = null!;
 
     private MainWindow? mainWindow = null;
+
+    public App()
+    {
+        InitializeSentry();
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -46,6 +54,44 @@ public partial class App : Application
             mainWindow = scope.ServiceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
         }
+    }
+
+    private void InitializeSentry()
+    {
+        if (Assembly.GetExecutingAssembly().GetManifestResourceStream("FlightStreamDeck.AddOn.Sentry.txt") is Stream stream)
+        {
+            using (stream)
+            {
+                using var reader = new StreamReader(stream);
+                var dsn = reader.ReadLine();
+                if (!string.IsNullOrWhiteSpace(dsn))
+                {
+                    DispatcherUnhandledException += App_DispatcherUnhandledException;
+                    SentrySdk.Init(o =>
+                    {
+                        // Tells which project in Sentry to send events to:
+                        o.Dsn = dsn;
+                        // When configuring for the first time, to see what the SDK is doing:
+                        //o.Debug = true;
+                        // Set TracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+                        // We recommend adjusting this value in production.
+                        o.TracesSampleRate = 1.0;
+                        // Enable Global Mode since this is a client app
+                        o.IsGlobalModeEnabled = true;
+
+                        o.AutoSessionTracking = true;
+                    });
+                }
+            }
+        }
+    }
+
+    void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        SentrySdk.CaptureException(e.Exception);
+
+        // If you want to avoid the application from crashing:
+        //e.Handled = true;
     }
 
     private IHost? InitializeStreamDeckHost(ServiceCollection serviceCollection)
