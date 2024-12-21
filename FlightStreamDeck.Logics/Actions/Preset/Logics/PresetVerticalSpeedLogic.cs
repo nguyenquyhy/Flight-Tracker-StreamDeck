@@ -24,5 +24,5 @@ public class PresetVerticalSpeedLogic : PresetBaseValueLogic
 
     protected override double CalculateNewValue(double currentValue, int sign, int increment) => currentValue + 100 * sign;
 
-    protected override void UpdateSimValue(double value) => flightConnector.ApVsSet((uint)value);
+    protected override void UpdateSimValue(double value) => flightConnector.ApVsSet((int)value);
 }

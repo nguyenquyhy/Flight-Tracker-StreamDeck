@@ -232,9 +232,9 @@ public class SimConnectFlightConnector : IFlightConnector
         SendCommand(EVENTS.AP_ALT_DEC);
     }
 
-    public void ApVsSet(uint speed)
+    public void ApVsSet(int speed)
     {
-        SendCommand(EVENTS.AP_VS_SET, speed);
+        SendCommand(EVENTS.AP_VS_SET, unchecked((uint)speed));
     }
 
     public void ApAirSpeedSet(uint speed)

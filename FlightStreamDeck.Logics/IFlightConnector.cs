@@ -31,7 +31,7 @@ public interface IFlightConnector
     void ApAltDec();
 
     /// <param name="speed">In Feet per min</param>
-    void ApVsSet(uint speed);
+    void ApVsSet(int speed);
 
     void ApAirSpeedSet(uint speed);
     void ApAirSpeedInc();

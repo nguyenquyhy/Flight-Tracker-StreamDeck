@@ -37,7 +37,7 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
     private Timer timer;
     private string? action;
     private bool timerHaveTick = false;
-    private uint? originalValue = null;
+    private int? originalValue = null;
     private AircraftStatus? status;
 
     private IPresetToggleLogic? logic;
@@ -104,11 +104,11 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
             PresetFunctions.Altitude => 0,
             PresetFunctions.VerticalSpeed => 0,
             PresetFunctions.AirSpeed => 0,
-            PresetFunctions.VerticalSpeedAirSpeed => status.IsApFlcOn ? (uint)status.ApAirspeed : (uint)status.ApVs,
-            PresetFunctions.VOR1 => (uint)status.Nav1OBS,
-            PresetFunctions.VOR2 => (uint)status.Nav2OBS,
-            PresetFunctions.ADF => (uint)status.ADFCard,
-            PresetFunctions.QNH => (uint)status.QNHMbar,
+            PresetFunctions.VerticalSpeedAirSpeed => status.IsApFlcOn ? status.ApAirspeed : status.ApVs,
+            PresetFunctions.VOR1 => (int)status.Nav1OBS,
+            PresetFunctions.VOR2 => (int)status.Nav2OBS,
+            PresetFunctions.ADF => (int)status.ADFCard,
+            PresetFunctions.QNH => (int)status.QNHMbar,
 
             _ => throw new NotImplementedException($"Value type: {buttonType}")
         };
@@ -136,7 +136,7 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
                 case PresetFunctions.VerticalSpeedAirSpeed:
                     if (status.IsApFlcOn)
                     {
-                        ChangeAirSpeed(originalValue.Value, sign, increment);
+                        ChangeAirSpeed((uint)originalValue.Value, sign, increment);
                     }
                     else
                     {
@@ -148,7 +148,7 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
                     flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
                     break;
                 case PresetFunctions.ADF:
-                    ChangeSphericalValue(originalValue.Value, sign, increment, KnownEvents.ADF_SET);
+                    ChangeSphericalValue((uint)originalValue.Value, sign, increment, KnownEvents.ADF_SET);
                     break;
 
             }
@@ -202,9 +202,9 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
         this.logic = logicFactory.Create(settings?.Type);
     }
 
-    private void ChangeVerticalSpeed(uint value, int sign)
+    private void ChangeVerticalSpeed(int value, int sign)
     {
-        value = (uint)(value + 100 * sign);
+        value = value + 100 * sign;
         originalValue = value;
         flightConnector.ApVsSet(value);
     }
@@ -212,14 +212,14 @@ public abstract class PresetChangeAction : BaseAction<ValueChangeSettings>
     private void ChangeAirSpeed(uint value, int sign, int increment)
     {
         value = (uint)Math.Max(0, value + increment * sign);
-        originalValue = value;
+        originalValue = (int)value;
         flightConnector.ApAirSpeedSet(value);
     }
 
     private void ChangeSphericalValue(uint value, int sign, int increment, KnownEvents evt)
     {
         value = value.IncreaseSpherical(increment * sign);
-        originalValue = value;
+        originalValue = (int)value;
         eventDispatcher.Trigger(evt.ToString(), value);
     }
 }
