@@ -521,6 +521,10 @@ public class SimConnectFlightConnector : IFlightConnector
                             simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                         }
                     }
+                    catch (COMException ex) when (ex.Message == "0xC00000B0")
+                    {
+                        // Ignore
+                    }
                     finally
                     {
                         smGeneric.Release();
