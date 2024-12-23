@@ -28,7 +28,9 @@ public partial class App : Application
 
     public App()
     {
+#if !DEBUG
         InitializeSentry();
+#endif
     }
 
     protected override void OnStartup(StartupEventArgs e)
