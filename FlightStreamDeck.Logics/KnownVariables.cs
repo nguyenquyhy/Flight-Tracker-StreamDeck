@@ -362,6 +362,7 @@ public static class KnownVariables
         { "NAV DMESPEED:1", new ValueEntry("Knots", 0) },
         { "NAV DMESPEED:2", new ValueEntry("Knots", 0) },
         { "RECIP ENG COWL FLAP POSITION:1", new ValueEntry("Percent", 2) },
+        { "RECIP ENG COWL FLAP POSITION:2", new ValueEntry("Percent", 2) },
         { "TURN COORDINATOR BALL", new ValueEntry("Position 128", 0) },
         { "RECIP ENG MANIFOLD PRESSURE:1", new ValueEntry("Psi", 0) },
         { "RECIP ENG MANIFOLD PRESSURE:2", new ValueEntry("Psi", 0) },
