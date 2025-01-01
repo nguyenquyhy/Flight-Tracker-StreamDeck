@@ -273,7 +273,7 @@ public class ImageLogic : IImageLogic
 
     public string GetGenericGaugeImage(string text, double value, double min, double max, int? fontSize, string valueFormat, string? subValueText = null)
     {
-        var font = SystemFonts.CreateFont("Arial", fontSize ?? 22, FontStyle.Regular);
+        var valueFont = SystemFonts.CreateFont("Arial", fontSize ?? 22, FontStyle.Regular);
         var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
         var pen = new SolidPen(Color.DarkRed, 5);
         var range = max - min;
@@ -306,19 +306,22 @@ public class ImageLogic : IImageLogic
 
             ctx.DrawLine(pen, needle);
 
-            FontRectangle size = new FontRectangle(0, 0, 0, 0);
+            FontRectangle titleSize = new FontRectangle(0, 0, 0, 0);
             if (!string.IsNullOrWhiteSpace(text))
             {
-                size = TextMeasurer.MeasureSize(text, new TextOptions(titleFont));
-                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 43));
+                titleSize = TextMeasurer.MeasureSize(text, new TextOptions(titleFont));
+                ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - titleSize.Width / 2, 46));
             }
 
             var valueText = value.ToString(valueFormat);
-            var sizeValue = TextMeasurer.MeasureSize(valueText, new TextOptions(font));
+            var valueSize = TextMeasurer.MeasureSize(valueText, new TextOptions(valueFont));
             var textColor = value > max ? Color.Red : Color.White;
-            ctx.DrawText(valueText, font, textColor, new PointF(18, 46 - sizeValue.Height));
+            ctx.DrawText(valueText, valueFont, textColor, new PointF(18, 46 - 4 - valueSize.Height));
 
-            if (!string.IsNullOrWhiteSpace(subValueText)) ctx.DrawText(subValueText, titleFont, textColor, new PointF(20, 41 + size.Height));
+            if (!string.IsNullOrWhiteSpace(subValueText))
+            {
+                ctx.DrawText(subValueText, titleFont, textColor, new PointF(20, 46 + 3 + titleSize.Height));
+            }
         });
 
         return img.ToBase64PNG();
