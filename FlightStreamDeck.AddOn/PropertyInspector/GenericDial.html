@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Property Inspector</title>
+    <link rel="stylesheet" href="css/sdpi.css">
+</head>
+
+<body>
+    <div class="sdpi-wrapper">
+        <div class="sdpi-heading">PUSH DIAL</div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event</div>
+            <input class="sdpi-item-value" id="PushToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE"
+                pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter</div>
+            <input class="sdpi-item-value" id="PushToggleValueData" value="" placeholder="">
+        </div>
+
+        <div class="sdpi-heading">TOUCH SCREEN</div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event</div>
+            <input class="sdpi-item-value" id="TouchToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE"
+                pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter</div>
+            <input class="sdpi-item-value" id="TouchToggleValueData" value="" placeholder="">
+        </div>
+
+        <div class="sdpi-heading">LONG TOUCH SCREEN</div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event</div>
+            <input class="sdpi-item-value" id="LongTouchToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE"
+                pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter</div>
+            <input class="sdpi-item-value" id="LongTouchToggleValueData" value="" placeholder="">
+        </div>
+
+        <div class="sdpi-heading">CLOCKWISE TURN</div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event</div>
+            <input class="sdpi-item-value" id="ClockwiseToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE"
+                pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter</div>
+            <input class="sdpi-item-value" id="ClockwiseToggleValueData" value="" placeholder="">
+        </div>
+
+        <div class="sdpi-heading">COUNTERCLOCKWISE TURN</div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle event</div>
+            <input class="sdpi-item-value" id="CounterClockwiseToggleValue" value="" placeholder="e.g. YAW_DAMPER_TOGGLE"
+                pattern="[A-Z_]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Toggle parameter</div>
+            <input class="sdpi-item-value" id="CounterClockwiseToggleValueData" value="" placeholder="">
+        </div>
+
+        <div class="sdpi-heading">DISPLAY VALUE</div>
+        <details class="message">
+            <summary>This is the value that will be shown in the display</summary>
+        </details>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Display value</div>
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="Empty to show no number"
+                pattern="[A-Z0-9: ]*">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Unit & Decimals</div>
+            <input class="sdpi-item-value" id="DisplayValueUnit" value="" placeholder="The unit such as ft or kt"
+                pattern="[A-Z0-9: ]*" style="margin-right: 0">
+            <input class="sdpi-item-value" id="DisplayValuePrecision" value="" placeholder="Default decimals"
+                pattern="[0-9: ]*" style="max-width: 90px">
+        </div>
+        <input type="hidden" id="IsEmbedding" />
+    </div>
+    <script src="common.js"></script>
+    <script src="embedimages.js"></script>
+    <script language="JavaScript" type="text/javascript">
+        function loadSettings(settings) {
+            if (settings['ToggleValue']) { ToggleValue.value = settings['PushToggleValue'] };
+            if (settings['ToggleValueData']) { ToggleValueData.value = settings['PushToggleValueData'] };
+
+            if (settings['ToggleValue']) { ToggleValue.value = settings['TouchToggleValue'] };
+            if (settings['ToggleValueData']) { ToggleValueData.value = settings['TouchToggleValueData'] };
+
+            if (settings['ToggleValue']) { ToggleValue.value = settings['LongTouchToggleValue'] };
+            if (settings['ToggleValueData']) { ToggleValueData.value = settings['LongTouchToggleValueData'] };
+
+            if (settings['ToggleValue']) { ToggleValue.value = settings['ClockwiseToggleValue'] };
+            if (settings['ToggleValueData']) { ToggleValueData.value = settings['ClockwiseToggleValueData'] };
+
+            if (settings['ToggleValue']) { ToggleValue.value = settings['CounterClockwiseToggleValue'] };
+            if (settings['ToggleValueData']) { ToggleValueData.value = settings['CounterClockwiseToggleValueData'] };
+
+            if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+            if (settings['DisplayValueUnit']) { DisplayValueUnit.value = settings['DisplayValueUnit'] };
+            if (settings['DisplayValuePrecision']) { DisplayValuePrecision.value = settings['DisplayValuePrecision'] };
+            if (settings['FontSize']) { FontSize.value = settings['FontSize'] };
+            if (settings['ImageOn']) {
+                setFileLabel(on_image_file_selector, settings['ImageOn'], !!settings['ImageOn_base64']);
+            };
+            if (settings['ImageOff']) {
+                setFileLabel(off_image_file_selector, settings['ImageOff'], !!settings['ImageOff_base64']);
+            };
+        }
+    </script>
+    <script src="init.js"></script>
+</body>
+
+</html>

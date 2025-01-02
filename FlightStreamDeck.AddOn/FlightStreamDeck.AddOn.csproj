@@ -194,6 +194,9 @@
     <None Update="PropertyInspector\GenericGauge.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="PropertyInspector\GenericDial.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="PropertyInspector\PresetChange.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
